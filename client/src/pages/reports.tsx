@@ -1,22 +1,33 @@
 import { useState } from "react";
-import { useMonthlyReport } from "@/hooks/use-finance";
+import { useMonthlyReport, useIncome, useExpenses, usePayments } from "@/hooks/use-finance";
 import { useStudents } from "@/hooks/use-students";
+import { useStaff } from "@/hooks/use-staff";
+import { useSalaryPayments } from "@/hooks/use-salary-payments";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, TrendingUp, TrendingDown, Banknote, Printer, FileDown } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, TrendingUp, TrendingDown, Banknote, Printer, FileDown, Users, Wallet, Receipt, CreditCard, BadgeDollarSign } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { format } from "date-fns";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 export default function ReportsPage() {
   const { data: report, isLoading } = useMonthlyReport();
   const { data: students, isLoading: studentsLoading } = useStudents();
+  const { data: income, isLoading: incomeLoading } = useIncome();
+  const { data: expenses, isLoading: expensesLoading } = useExpenses();
+  const { data: payments, isLoading: paymentsLoading } = usePayments();
+  const { data: staff, isLoading: staffLoading } = useStaff();
+  const { data: salaryPayments, isLoading: salaryLoading } = useSalaryPayments();
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
 
-  if (isLoading || studentsLoading) {
+  const allLoading = isLoading || studentsLoading || incomeLoading || expensesLoading || paymentsLoading || staffLoading || salaryLoading;
+
+  if (allLoading) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -31,6 +42,13 @@ export default function ReportsPage() {
 
   const profit = report?.netProfit || 0;
   const isProfitable = profit >= 0;
+
+  // Calculate totals
+  const totalIncome = income?.reduce((sum, i) => sum + Number(i.amount), 0) || 0;
+  const totalExpenses = expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+  const totalPayments = payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+  const totalSalaries = salaryPayments?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+  const totalStaffSalary = staff?.reduce((sum, s) => sum + Number(s.salary), 0) || 0;
 
   // Filter students by payment status
   const filteredStudents = students?.filter(student => {
@@ -50,116 +68,223 @@ export default function ReportsPage() {
     }
   }) || [];
 
-  // Export to PDF function
-  const exportToPDF = () => {
-    const doc = new jsPDF({
-      orientation: "landscape",
-      unit: "mm",
-      format: "a4"
-    });
+  // Helper to get student name
+  const getStudentName = (id: number) => students?.find(s => s.id === id)?.fullName || "-";
+  const getStaffName = (id: number) => staff?.find(s => s.id === id)?.fullName || "-";
 
-    // Add Kurdish font support (using built-in fonts for now)
+  // Export comprehensive PDF
+  const exportFullReport = () => {
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     doc.setFont("helvetica");
-    
+    let y = 15;
+
     // Title
     doc.setFontSize(18);
-    doc.text("Lutka School - Student Payment Report", 148, 15, { align: "center" });
-    
-    // Filter info
+    doc.text("Lutka School - Comprehensive Report", 105, y, { align: "center" });
+    y += 10;
+    doc.setFontSize(10);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 105, y, { align: "center" });
+    y += 15;
+
+    // Summary Section
+    doc.setFontSize(14);
+    doc.text("Financial Summary", 14, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.text(`Total Income: ${totalIncome.toLocaleString()} IQD`, 14, y);
+    doc.text(`Total Expenses: ${totalExpenses.toLocaleString()} IQD`, 105, y);
+    y += 6;
+    doc.text(`Student Payments: ${totalPayments.toLocaleString()} IQD`, 14, y);
+    doc.text(`Salary Payments: ${totalSalaries.toLocaleString()} IQD`, 105, y);
+    y += 6;
+    doc.text(`Net Profit/Loss: ${profit.toLocaleString()} IQD`, 14, y);
+    y += 15;
+
+    // Income Table
     doc.setFontSize(12);
-    const filterText = paymentFilter === "all" ? "All Students" :
-                       paymentFilter === "fully_paid" ? "Fully Paid" :
-                       paymentFilter === "partially_paid" ? "Partially Paid" : "Not Paid";
+    doc.text("Income Records", 14, y);
+    y += 3;
+    autoTable(doc, {
+      startY: y,
+      head: [["Source", "Amount (IQD)", "Date"]],
+      body: income?.map(i => [i.source, Number(i.amount).toLocaleString(), format(new Date(i.date), "yyyy-MM-dd")]) || [],
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [22, 163, 74] },
+      margin: { left: 14, right: 14 }
+    });
+    y = (doc as any).lastAutoTable.finalY + 10;
+
+    // Expenses Table
+    doc.setFontSize(12);
+    doc.text("Expense Records", 14, y);
+    y += 3;
+    autoTable(doc, {
+      startY: y,
+      head: [["Category", "Amount (IQD)", "Date"]],
+      body: expenses?.map(e => [e.category, Number(e.amount).toLocaleString(), format(new Date(e.date), "yyyy-MM-dd")]) || [],
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [220, 38, 38] },
+      margin: { left: 14, right: 14 }
+    });
+    y = (doc as any).lastAutoTable.finalY + 10;
+
+    // Check if need new page
+    if (y > 250) {
+      doc.addPage();
+      y = 15;
+    }
+
+    // Student Payments Table
+    doc.setFontSize(12);
+    doc.text("Student Payments", 14, y);
+    y += 3;
+    autoTable(doc, {
+      startY: y,
+      head: [["Student", "Amount (IQD)", "Date"]],
+      body: payments?.map(p => [getStudentName(p.studentId), Number(p.amount).toLocaleString(), format(new Date(p.date), "yyyy-MM-dd")]) || [],
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [79, 70, 229] },
+      margin: { left: 14, right: 14 }
+    });
+    y = (doc as any).lastAutoTable.finalY + 10;
+
+    // Check if need new page
+    if (y > 250) {
+      doc.addPage();
+      y = 15;
+    }
+
+    // Staff Table
+    doc.setFontSize(12);
+    doc.text("Staff Members", 14, y);
+    y += 3;
+    autoTable(doc, {
+      startY: y,
+      head: [["Name", "Role", "Salary (IQD)"]],
+      body: staff?.map(s => [s.fullName, s.role, Number(s.salary).toLocaleString()]) || [],
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [234, 88, 12] },
+      margin: { left: 14, right: 14 }
+    });
+    y = (doc as any).lastAutoTable.finalY + 10;
+
+    // Salary Payments Table
+    if (y > 250) {
+      doc.addPage();
+      y = 15;
+    }
+    doc.setFontSize(12);
+    doc.text("Salary Payments", 14, y);
+    y += 3;
+    autoTable(doc, {
+      startY: y,
+      head: [["Staff", "Amount (IQD)", "Month", "Date"]],
+      body: salaryPayments?.map(s => [getStaffName(s.staffId), Number(s.amount).toLocaleString(), s.month, format(new Date(s.date), "yyyy-MM-dd")]) || [],
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [147, 51, 234] },
+      margin: { left: 14, right: 14 }
+    });
+
+    doc.save(`lutka-full-report-${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  // Export students PDF
+  const exportStudentsPDF = () => {
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    doc.setFont("helvetica");
+    doc.setFontSize(18);
+    doc.text("Lutka School - Student Payment Report", 148, 15, { align: "center" });
+    doc.setFontSize(12);
+    const filterText = paymentFilter === "all" ? "All Students" : paymentFilter === "fully_paid" ? "Fully Paid" : paymentFilter === "partially_paid" ? "Partially Paid" : "Not Paid";
     doc.text(`Filter: ${filterText} | Total: ${filteredStudents.length} students`, 148, 25, { align: "center" });
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 148, 32, { align: "center" });
 
-    // Table data
-    const tableData = filteredStudents.map(s => [
-      s.fullName,
-      s.grade || "-",
-      s.mobile,
-      `${Number(s.tuitionFee).toLocaleString()} IQD`,
-      `${Number(s.paidAmount).toLocaleString()} IQD`,
-      `${Number(s.remainingAmount).toLocaleString()} IQD`
-    ]);
-
-    // Add table
-    (doc as any).autoTable({
+    autoTable(doc, {
       startY: 40,
       head: [["Name", "Grade", "Mobile", "Tuition Fee", "Paid Amount", "Remaining"]],
-      body: tableData,
+      body: filteredStudents.map(s => [s.fullName, s.grade || "-", s.mobile, `${Number(s.tuitionFee).toLocaleString()} IQD`, `${Number(s.paidAmount).toLocaleString()} IQD`, `${Number(s.remainingAmount).toLocaleString()} IQD`]),
       styles: { fontSize: 10, cellPadding: 3 },
       headStyles: { fillColor: [79, 70, 229], textColor: 255 },
       alternateRowStyles: { fillColor: [245, 245, 245] },
       margin: { left: 14, right: 14 }
     });
 
-    // Save the PDF
     doc.save(`student-payments-${paymentFilter}-${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title="ڕاپۆرتی مانگانە"
-        description={`پوختەی دارایی بۆ مانگی: ${report?.month || "..."}`}
+        title="ڕاپۆرتەکان"
+        description="پوختەی تەواوی زانیاری دارایی قوتابخانە"
         action={
-          <Button
-            variant="outline"
-            size="lg"
-            className="gap-2"
-            onClick={() => {
-              const printWindow = window.open('', '_blank');
-              if (!printWindow) return;
-              printWindow.document.write(`
-                <!DOCTYPE html>
-                <html dir="rtl" lang="ku">
-                <head>
-                  <meta charset="UTF-8">
-                  <title>ڕاپۆرتی مانگانە</title>
-                  <style>
-                    body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
-                    h1 { text-align: center; margin-bottom: 10px; }
-                    .month { text-align: center; margin-bottom: 30px; color: #666; }
-                    .summary { display: flex; justify-content: space-around; margin-bottom: 30px; }
-                    .card { padding: 20px; border-radius: 10px; text-align: center; min-width: 150px; }
-                    .income { background: #d1fae5; color: #16a34a; }
-                    .expense { background: #fee2e2; color: #dc2626; }
-                    .profit { background: #dbeafe; color: #2563eb; }
-                    .loss { background: #fed7aa; color: #ea580c; }
-                    .card h3 { font-size: 24px; margin: 10px 0; }
-                    .footer { text-align: center; margin-top: 40px; font-size: 12px; color: #888; }
-                  </style>
-                </head>
-                <body>
-                  <h1>قوتابخانەی لوتکەی ناحکومی</h1>
-                  <div class="month">ڕاپۆرتی مانگی: ${report?.month || "..."}</div>
-                  <div class="summary">
-                    <div class="card income">
-                      <p>کۆی داهات</p>
-                      <h3>${report?.totalIncome.toLocaleString()} د.ع</h3>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2"
+              onClick={() => {
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) return;
+                printWindow.document.write(`
+                  <!DOCTYPE html>
+                  <html dir="rtl" lang="ku">
+                  <head>
+                    <meta charset="UTF-8">
+                    <title>ڕاپۆرتی مانگانە</title>
+                    <style>
+                      body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
+                      h1 { text-align: center; margin-bottom: 10px; }
+                      .month { text-align: center; margin-bottom: 30px; color: #666; }
+                      .summary { display: flex; justify-content: space-around; margin-bottom: 30px; }
+                      .card { padding: 20px; border-radius: 10px; text-align: center; min-width: 150px; }
+                      .income { background: #d1fae5; color: #16a34a; }
+                      .expense { background: #fee2e2; color: #dc2626; }
+                      .profit { background: #dbeafe; color: #2563eb; }
+                      .loss { background: #fed7aa; color: #ea580c; }
+                      .card h3 { font-size: 24px; margin: 10px 0; }
+                      .footer { text-align: center; margin-top: 40px; font-size: 12px; color: #888; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>قوتابخانەی لوتکەی ناحکومی</h1>
+                    <div class="month">ڕاپۆرتی مانگی: ${report?.month || "..."}</div>
+                    <div class="summary">
+                      <div class="card income">
+                        <p>کۆی داهات</p>
+                        <h3>${report?.totalIncome.toLocaleString()} د.ع</h3>
+                      </div>
+                      <div class="card expense">
+                        <p>کۆی خەرجی</p>
+                        <h3>${report?.totalExpenses.toLocaleString()} د.ع</h3>
+                      </div>
+                      <div class="card ${isProfitable ? 'profit' : 'loss'}">
+                        <p>${isProfitable ? 'قازانجی سافی' : 'زیان'}</p>
+                        <h3>${Math.abs(profit).toLocaleString()} د.ع</h3>
+                      </div>
                     </div>
-                    <div class="card expense">
-                      <p>کۆی خەرجی</p>
-                      <h3>${report?.totalExpenses.toLocaleString()} د.ع</h3>
-                    </div>
-                    <div class="card ${isProfitable ? 'profit' : 'loss'}">
-                      <p>${isProfitable ? 'قازانجی سافی' : 'زیان'}</p>
-                      <h3>${Math.abs(profit).toLocaleString()} د.ع</h3>
-                    </div>
-                  </div>
-                  <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
-                  <script>window.onload = function() { window.print(); }</script>
-                </body>
-                </html>
-              `);
-              printWindow.document.close();
-            }}
-            data-testid="button-print-report"
-          >
-            <Printer className="h-5 w-5" />
-            چاپکردن
-          </Button>
+                    <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
+                    <script>window.onload = function() { window.print(); }</script>
+                  </body>
+                  </html>
+                `);
+                printWindow.document.close();
+              }}
+              data-testid="button-print-report"
+            >
+              <Printer className="h-5 w-5" />
+              چاپکردن
+            </Button>
+            <Button
+              size="lg"
+              className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+              onClick={exportFullReport}
+              data-testid="button-export-full-pdf"
+            >
+              <FileDown className="h-5 w-5" />
+              داگرتنی ڕاپۆرتی تەواو (PDF)
+            </Button>
+          </div>
         }
       />
 
@@ -265,7 +390,7 @@ export default function ReportsPage() {
               </SelectContent>
             </Select>
             <Button
-              onClick={exportToPDF}
+              onClick={exportStudentsPDF}
               className="gap-2 bg-indigo-600 hover:bg-indigo-700"
               data-testid="button-export-pdf"
             >
@@ -311,6 +436,207 @@ export default function ReportsPage() {
               </TableBody>
             </Table>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Detailed Reports Tabs */}
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>ڕاپۆرتی وردەکاری</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="income" className="w-full">
+            <TabsList className="grid w-full grid-cols-5 mb-6">
+              <TabsTrigger value="income" className="gap-2">
+                <Wallet className="h-4 w-4" />
+                داهاتەکان
+              </TabsTrigger>
+              <TabsTrigger value="expenses" className="gap-2">
+                <Receipt className="h-4 w-4" />
+                خەرجییەکان
+              </TabsTrigger>
+              <TabsTrigger value="payments" className="gap-2">
+                <CreditCard className="h-4 w-4" />
+                قیستەکان
+              </TabsTrigger>
+              <TabsTrigger value="staff" className="gap-2">
+                <Users className="h-4 w-4" />
+                کارمەندان
+              </TabsTrigger>
+              <TabsTrigger value="salaries" className="gap-2">
+                <BadgeDollarSign className="h-4 w-4" />
+                مووچەکان
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Income Tab */}
+            <TabsContent value="income">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm text-muted-foreground">کۆی: {income?.length || 0} تۆمار | {totalIncome.toLocaleString()} د.ع</span>
+              </div>
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-green-50 dark:bg-green-900/20">
+                      <TableHead className="text-right">سەرچاوە</TableHead>
+                      <TableHead className="text-right">بڕ (د.ع)</TableHead>
+                      <TableHead className="text-right">بەروار</TableHead>
+                      <TableHead className="text-right">تێبینی</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {income?.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.source}</TableCell>
+                        <TableCell className="font-mono text-green-600">+{Number(item.amount).toLocaleString()}</TableCell>
+                        <TableCell>{format(new Date(item.date), "yyyy-MM-dd")}</TableCell>
+                        <TableCell className="text-muted-foreground">{item.description || "-"}</TableCell>
+                      </TableRow>
+                    ))}
+                    {(!income || income.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ تۆمارێک نییە</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+
+            {/* Expenses Tab */}
+            <TabsContent value="expenses">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm text-muted-foreground">کۆی: {expenses?.length || 0} تۆمار | {totalExpenses.toLocaleString()} د.ع</span>
+              </div>
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-red-50 dark:bg-red-900/20">
+                      <TableHead className="text-right">جۆر</TableHead>
+                      <TableHead className="text-right">بڕ (د.ع)</TableHead>
+                      <TableHead className="text-right">بەروار</TableHead>
+                      <TableHead className="text-right">تێبینی</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {expenses?.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.category}</TableCell>
+                        <TableCell className="font-mono text-red-600">-{Number(item.amount).toLocaleString()}</TableCell>
+                        <TableCell>{format(new Date(item.date), "yyyy-MM-dd")}</TableCell>
+                        <TableCell className="text-muted-foreground">{item.description || "-"}</TableCell>
+                      </TableRow>
+                    ))}
+                    {(!expenses || expenses.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ تۆمارێک نییە</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+
+            {/* Payments Tab */}
+            <TabsContent value="payments">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm text-muted-foreground">کۆی: {payments?.length || 0} قیست | {totalPayments.toLocaleString()} د.ع</span>
+              </div>
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-indigo-50 dark:bg-indigo-900/20">
+                      <TableHead className="text-right">قوتابی</TableHead>
+                      <TableHead className="text-right">بڕ (د.ع)</TableHead>
+                      <TableHead className="text-right">بەروار</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {payments?.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{getStudentName(item.studentId)}</TableCell>
+                        <TableCell className="font-mono text-indigo-600">{Number(item.amount).toLocaleString()}</TableCell>
+                        <TableCell>{format(new Date(item.date), "yyyy-MM-dd")}</TableCell>
+                      </TableRow>
+                    ))}
+                    {(!payments || payments.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">هیچ قیستێک نییە</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+
+            {/* Staff Tab */}
+            <TabsContent value="staff">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm text-muted-foreground">کۆی: {staff?.length || 0} کارمەند | مووچەی مانگانە: {totalStaffSalary.toLocaleString()} د.ع</span>
+              </div>
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-orange-50 dark:bg-orange-900/20">
+                      <TableHead className="text-right">ناو</TableHead>
+                      <TableHead className="text-right">پلە</TableHead>
+                      <TableHead className="text-right">مۆبایل</TableHead>
+                      <TableHead className="text-right">مووچە (د.ع)</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {staff?.map((person) => (
+                      <TableRow key={person.id}>
+                        <TableCell className="font-medium">{person.fullName}</TableCell>
+                        <TableCell>{person.role}</TableCell>
+                        <TableCell>{person.mobile}</TableCell>
+                        <TableCell className="font-mono">{Number(person.salary).toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                    {(!staff || staff.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ کارمەندێک نییە</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+
+            {/* Salary Payments Tab */}
+            <TabsContent value="salaries">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm text-muted-foreground">کۆی: {salaryPayments?.length || 0} تۆمار | {totalSalaries.toLocaleString()} د.ع</span>
+              </div>
+              <div className="rounded-lg border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-purple-50 dark:bg-purple-900/20">
+                      <TableHead className="text-right">کارمەند</TableHead>
+                      <TableHead className="text-right">بڕ (د.ع)</TableHead>
+                      <TableHead className="text-right">مانگ</TableHead>
+                      <TableHead className="text-right">بەروار</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {salaryPayments?.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{getStaffName(item.staffId)}</TableCell>
+                        <TableCell className="font-mono text-purple-600">{Number(item.amount).toLocaleString()}</TableCell>
+                        <TableCell>{item.month}</TableCell>
+                        <TableCell>{format(new Date(item.date), "yyyy-MM-dd")}</TableCell>
+                      </TableRow>
+                    ))}
+                    {(!salaryPayments || salaryPayments.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ مووچەیەک نییە</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
