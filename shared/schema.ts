@@ -105,6 +105,21 @@ export const insertSalaryPaymentSchema = createInsertSchema(salaryPayments);
 export type InsertSalaryPayment = z.infer<typeof insertSalaryPaymentSchema>;
 export type SalaryPayment = typeof salaryPayments.$inferSelect;
 
+// Food Payments (پارەی خواردن)
+export const foodPayments = pgTable("food_payments", {
+  id: serial("id").primaryKey(),
+  studentId: integer("student_id").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  month: text("month").notNull(), // e.g., "2026-01" for January 2026
+  date: date("date").defaultNow().notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertFoodPaymentSchema = createInsertSchema(foodPayments).omit({ id: true, createdAt: true });
+export type InsertFoodPayment = z.infer<typeof insertFoodPaymentSchema>;
+export type FoodPayment = typeof foodPayments.$inferSelect;
+
 // Financial Report Types (Page 7)
 export type FinancialReport = {
   totalIncome: number;

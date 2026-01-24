@@ -7,13 +7,15 @@ import {
   insertPaymentSchema, 
   insertStaffSchema,
   insertSalaryPaymentSchema,
+  insertFoodPaymentSchema,
   schoolSettings,
   students,
   income,
   expenses,
   payments,
   staff,
-  salaryPayments
+  salaryPayments,
+  foodPayments
 } from './schema';
 
 // Export everything from schema so frontend can import from @shared/routes if it wants to
@@ -208,6 +210,31 @@ export const api = {
     delete: {
       method: 'DELETE' as const,
       path: '/api/salary-payments/:id',
+      responses: {
+        204: z.void(),
+      },
+    },
+  },
+  foodPayments: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/food-payments',
+      responses: {
+        200: z.array(z.custom<typeof foodPayments.$inferSelect>()),
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/food-payments',
+      input: insertFoodPaymentSchema,
+      responses: {
+        201: z.custom<typeof foodPayments.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/food-payments/:id',
       responses: {
         204: z.void(),
       },

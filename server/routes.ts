@@ -250,6 +250,43 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
+  // Food Payments
+  app.get(api.foodPayments.list.path, async (req, res) => {
+    const foodPayments = await storage.getFoodPayments();
+    res.json(foodPayments);
+  });
+
+  app.post(api.foodPayments.create.path, async (req, res) => {
+    try {
+      const bodySchema = api.foodPayments.create.input.extend({
+        studentId: z.coerce.number(),
+        amount: z.coerce.number(),
+      });
+      const input = bodySchema.parse(req.body);
+      
+      // Check for duplicate food payment (same student + same month)
+      const existingPayment = await storage.getFoodPaymentByStudentAndMonth(input.studentId, input.month);
+      if (existingPayment) {
+        return res.status(400).json({ 
+          message: "ئەم قوتابییە پێشتر پارەی خواردنی ئەم مانگەی داوە" 
+        });
+      }
+      
+      const payment = await storage.createFoodPayment({ ...input, amount: String(input.amount) });
+      res.status(201).json(payment);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.delete(api.foodPayments.delete.path, async (req, res) => {
+    await storage.deleteFoodPayment(Number(req.params.id));
+    res.status(204).send();
+  });
+
   // Reports
   app.get(api.reports.monthly.path, async (req, res) => {
     const now = new Date();

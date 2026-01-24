@@ -1,14 +1,15 @@
 import { db } from "./db";
 import { eq, sql, and, gte, lte } from "drizzle-orm";
 import { 
-  schoolSettings, students, income, expenses, payments, staff, salaryPayments,
+  schoolSettings, students, income, expenses, payments, staff, salaryPayments, foodPayments,
   type InsertSchoolSettings, type SchoolSettings,
   type InsertStudent, type Student,
   type InsertIncome, type Income,
   type InsertExpense, type Expense,
   type InsertPayment, type Payment,
   type InsertStaff, type Staff,
-  type InsertSalaryPayment, type SalaryPayment
+  type InsertSalaryPayment, type SalaryPayment,
+  type InsertFoodPayment, type FoodPayment
 } from "@shared/schema";
 
 export interface IStorage {
@@ -47,6 +48,12 @@ export interface IStorage {
   getSalaryPaymentByStaffAndMonth(staffId: number, month: string): Promise<SalaryPayment | undefined>;
   createSalaryPayment(payment: InsertSalaryPayment): Promise<SalaryPayment>;
   deleteSalaryPayment(id: number): Promise<void>;
+
+  // Food Payments
+  getFoodPayments(): Promise<FoodPayment[]>;
+  getFoodPaymentByStudentAndMonth(studentId: number, month: string): Promise<FoodPayment | undefined>;
+  createFoodPayment(payment: InsertFoodPayment): Promise<FoodPayment>;
+  deleteFoodPayment(id: number): Promise<void>;
 
   // Reports
   getMonthlyReport(month: Date): Promise<{
@@ -214,6 +221,35 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSalaryPayment(id: number): Promise<void> {
     await db.delete(salaryPayments).where(eq(salaryPayments.id, id));
+  }
+
+  // Food Payments
+  async getFoodPayments(): Promise<FoodPayment[]> {
+    return await db.select().from(foodPayments).orderBy(foodPayments.date);
+  }
+
+  async getFoodPaymentByStudentAndMonth(studentId: number, month: string): Promise<FoodPayment | undefined> {
+    const [payment] = await db.select().from(foodPayments)
+      .where(and(eq(foodPayments.studentId, studentId), eq(foodPayments.month, month)));
+    return payment;
+  }
+
+  async createFoodPayment(insertPayment: InsertFoodPayment): Promise<FoodPayment> {
+    const [payment] = await db.insert(foodPayments).values(insertPayment).returning();
+    
+    // Also add to Income table as food payment
+    await this.createIncome({
+      source: "پارەی خواردن",
+      amount: insertPayment.amount,
+      date: insertPayment.date,
+      description: `پارەی خواردنی مانگی ${insertPayment.month} - قوتابی ${insertPayment.studentId}`
+    });
+
+    return payment;
+  }
+
+  async deleteFoodPayment(id: number): Promise<void> {
+    await db.delete(foodPayments).where(eq(foodPayments.id, id));
   }
 
   // Reports
