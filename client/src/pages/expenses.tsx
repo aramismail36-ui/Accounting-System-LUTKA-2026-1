@@ -148,6 +148,13 @@ export default function ExpensesPage() {
                   </TableCell>
                 </TableRow>
               )}
+              {expenses && expenses.length > 0 && (
+                <TableRow className="bg-red-100 dark:bg-red-900/40 font-bold">
+                  <TableCell>کۆی گشتی</TableCell>
+                  <TableCell className="font-mono text-red-700 dark:text-red-400">-{totalExpenses.toLocaleString()} د.ع</TableCell>
+                  <TableCell colSpan={3}></TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         )}

@@ -132,6 +132,15 @@ export default function StaffPage() {
                   </TableCell>
                 </TableRow>
               )}
+              {staff && staff.length > 0 && (
+                <TableRow className="bg-orange-100 dark:bg-orange-900/40 font-bold">
+                  <TableCell>کۆی گشتی مووچە</TableCell>
+                  <TableCell></TableCell>
+                  <TableCell></TableCell>
+                  <TableCell className="font-mono text-orange-700 dark:text-orange-400">{staff.reduce((sum, p) => sum + Number(p.salary), 0).toLocaleString()} د.ع</TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         )}

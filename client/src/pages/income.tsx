@@ -150,6 +150,13 @@ export default function IncomePage() {
                   </TableCell>
                 </TableRow>
               )}
+              {income && income.length > 0 && (
+                <TableRow className="bg-green-100 dark:bg-green-900/40 font-bold">
+                  <TableCell>کۆی گشتی</TableCell>
+                  <TableCell className="font-mono text-green-700 dark:text-green-400">+{totalIncome.toLocaleString()} د.ع</TableCell>
+                  <TableCell colSpan={3}></TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         )}

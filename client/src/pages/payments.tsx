@@ -192,6 +192,14 @@ export default function PaymentsPage() {
                   </TableCell>
                 </TableRow>
               )}
+              {filteredPayments && filteredPayments.length > 0 && (
+                <TableRow className="bg-indigo-100 dark:bg-indigo-900/40 font-bold">
+                  <TableCell>کۆی گشتی</TableCell>
+                  <TableCell></TableCell>
+                  <TableCell className="font-mono text-indigo-700 dark:text-indigo-400">{filteredPayments.reduce((sum, p) => sum + Number(p.amount), 0).toLocaleString()} د.ع</TableCell>
+                  <TableCell colSpan={2}></TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         )}

@@ -171,6 +171,13 @@ export default function SalaryPaymentsPage() {
                   </TableCell>
                 </TableRow>
               ))}
+              {salaryPayments && salaryPayments.length > 0 && (
+                <TableRow className="bg-purple-100 dark:bg-purple-900/40 font-bold">
+                  <TableCell>کۆی گشتی</TableCell>
+                  <TableCell className="font-mono text-purple-700 dark:text-purple-400">{totalPaid.toLocaleString()} د.ع</TableCell>
+                  <TableCell colSpan={3}></TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         )}
