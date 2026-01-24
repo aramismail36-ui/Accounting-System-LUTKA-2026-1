@@ -109,17 +109,23 @@ export default function PaymentsPage() {
   );
 }
 
+interface PaymentFormData {
+  studentId: number;
+  amount: number;
+  date: string;
+}
+
 function CreatePaymentDialog({ open, onOpenChange, students }: { open: boolean, onOpenChange: (open: boolean) => void, students: any[] }) {
   const { mutate, isPending } = useCreatePayment();
   const { toast } = useToast();
 
-  const formSchema = insertPaymentSchema.extend({
+  const formSchema = z.object({
     amount: z.coerce.number().min(1, "بڕی پارە دەبێت لە ٠ زیاتر بێت"),
     studentId: z.coerce.number().min(1, "تکایە قوتابی هەڵبژێرە"),
-    date: z.coerce.string(),
+    date: z.string(),
   });
 
-  const form = useForm<InsertPayment>({
+  const form = useForm<PaymentFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       studentId: 0,
@@ -128,12 +134,13 @@ function CreatePaymentDialog({ open, onOpenChange, students }: { open: boolean, 
     },
   });
 
-  function onSubmit(data: InsertPayment) {
+  function onSubmit(data: PaymentFormData) {
     const payload = {
-      ...data,
+      studentId: data.studentId,
       amount: String(data.amount),
+      date: data.date,
     };
-    mutate(payload as any, {
+    mutate(payload, {
       onSuccess: () => {
         toast({ title: "سەرکەوتوو بوو", description: "قیستەکە وەرگیرا" });
         form.reset();
