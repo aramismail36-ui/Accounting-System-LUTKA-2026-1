@@ -132,6 +132,7 @@ export default function SalaryPaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="text-right w-[60px]">ژ</TableHead>
                 <TableHead className="text-right">ناوی فەرمانبەر</TableHead>
                 <TableHead className="text-right">بڕی مووچە (د.ع)</TableHead>
                 <TableHead className="text-right">مانگ</TableHead>
@@ -140,8 +141,9 @@ export default function SalaryPaymentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {salaryPayments?.map((payment) => (
+              {salaryPayments?.map((payment, index) => (
                 <TableRow key={payment.id}>
+                  <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                   <TableCell className="font-medium">{getStaffName(payment.staffId)}</TableCell>
                   <TableCell className="text-purple-600 font-bold font-mono">
                     {Number(payment.amount).toLocaleString()} د.ع
@@ -173,6 +175,7 @@ export default function SalaryPaymentsPage() {
               ))}
               {salaryPayments && salaryPayments.length > 0 && (
                 <TableRow className="bg-purple-100 dark:bg-purple-900/40 font-bold">
+                  <TableCell></TableCell>
                   <TableCell>کۆی گشتی</TableCell>
                   <TableCell className="font-mono text-purple-700 dark:text-purple-400">{totalPaid.toLocaleString()} د.ع</TableCell>
                   <TableCell colSpan={3}></TableCell>

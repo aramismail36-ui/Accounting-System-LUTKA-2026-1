@@ -162,6 +162,7 @@ export default function FoodPaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="text-right w-[60px]">ژ</TableHead>
                 <TableHead className="text-right">ناوی قوتابی</TableHead>
                 <TableHead className="text-right">پۆل</TableHead>
                 <TableHead className="text-right">بڕ (د.ع)</TableHead>
@@ -171,8 +172,9 @@ export default function FoodPaymentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPayments?.map((payment) => (
-                <FoodPaymentRow 
+              {filteredPayments?.map((payment, index) => (
+                <FoodPaymentRow
+                  rowNumber={index + 1} 
                   key={payment.id} 
                   payment={payment} 
                   studentName={getStudentName(payment.studentId)}
@@ -181,13 +183,14 @@ export default function FoodPaymentsPage() {
               ))}
               {filteredPayments?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                     هیچ پارەیەکی خواردن وەرنەگیراوە
                   </TableCell>
                 </TableRow>
               )}
               {filteredPayments && filteredPayments.length > 0 && (
                 <TableRow className="bg-orange-100 dark:bg-orange-900/40 font-bold">
+                  <TableCell></TableCell>
                   <TableCell>کۆی گشتی</TableCell>
                   <TableCell></TableCell>
                   <TableCell className="font-mono text-orange-700 dark:text-orange-400">{totalPaid.toLocaleString()} د.ع</TableCell>
@@ -204,7 +207,7 @@ export default function FoodPaymentsPage() {
   );
 }
 
-function FoodPaymentRow({ payment, studentName, studentGrade }: { payment: FoodPayment; studentName: string; studentGrade: string }) {
+function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { payment: FoodPayment; studentName: string; studentGrade: string; rowNumber: number }) {
   const { mutate: deletePayment } = useDeleteFoodPayment();
   const { toast } = useToast();
 
@@ -219,6 +222,7 @@ function FoodPaymentRow({ payment, studentName, studentGrade }: { payment: FoodP
 
   return (
     <TableRow>
+      <TableCell className="text-muted-foreground font-mono">{rowNumber}</TableCell>
       <TableCell className="font-medium">{studentName}</TableCell>
       <TableCell className="text-slate-500">{studentGrade}</TableCell>
       <TableCell className="text-orange-600 font-bold font-mono">{Number(payment.amount).toLocaleString()} د.ع</TableCell>

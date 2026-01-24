@@ -122,6 +122,7 @@ export default function IncomePage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="text-right w-[60px]">ژ</TableHead>
                 <TableHead className="text-right">سەرچاوە</TableHead>
                 <TableHead className="text-right">بڕ (د.ع)</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
@@ -130,8 +131,9 @@ export default function IncomePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {income?.map((item) => (
+              {income?.map((item, index) => (
                 <TableRow key={item.id}>
+                  <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                   <TableCell className="font-medium">{item.source}</TableCell>
                   <TableCell className="text-green-600 font-bold font-mono">+{Number(item.amount).toLocaleString()} د.ع</TableCell>
                   <TableCell className="text-slate-500 font-mono">
@@ -145,13 +147,14 @@ export default function IncomePage() {
               ))}
               {income?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                     هیچ داهاتێک تۆمار نەکراوە
                   </TableCell>
                 </TableRow>
               )}
               {income && income.length > 0 && (
                 <TableRow className="bg-green-100 dark:bg-green-900/40 font-bold">
+                  <TableCell></TableCell>
                   <TableCell>کۆی گشتی</TableCell>
                   <TableCell className="font-mono text-green-700 dark:text-green-400">+{totalIncome.toLocaleString()} د.ع</TableCell>
                   <TableCell colSpan={3}></TableCell>

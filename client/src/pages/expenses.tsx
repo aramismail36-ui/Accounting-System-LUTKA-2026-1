@@ -120,6 +120,7 @@ export default function ExpensesPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="text-right w-[60px]">ژ</TableHead>
                 <TableHead className="text-right">جۆر / بەش</TableHead>
                 <TableHead className="text-right">بڕ (د.ع)</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
@@ -128,8 +129,9 @@ export default function ExpensesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses?.map((item) => (
+              {expenses?.map((item, index) => (
                 <TableRow key={item.id}>
+                  <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                   <TableCell className="font-medium">{item.category}</TableCell>
                   <TableCell className="text-red-600 font-bold font-mono">-{Number(item.amount).toLocaleString()} د.ع</TableCell>
                   <TableCell className="text-slate-500 font-mono">
@@ -143,13 +145,14 @@ export default function ExpensesPage() {
               ))}
               {expenses?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                     هیچ خەرجییەک تۆمار نەکراوە
                   </TableCell>
                 </TableRow>
               )}
               {expenses && expenses.length > 0 && (
                 <TableRow className="bg-red-100 dark:bg-red-900/40 font-bold">
+                  <TableCell></TableCell>
                   <TableCell>کۆی گشتی</TableCell>
                   <TableCell className="font-mono text-red-700 dark:text-red-400">-{totalExpenses.toLocaleString()} د.ع</TableCell>
                   <TableCell colSpan={3}></TableCell>

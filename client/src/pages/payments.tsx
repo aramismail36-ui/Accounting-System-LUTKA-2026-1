@@ -152,6 +152,7 @@ export default function PaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="text-right w-[60px]">ژ</TableHead>
                 <TableHead className="text-right">ناوی قوتابی</TableHead>
                 <TableHead className="text-right">پۆل</TableHead>
                 <TableHead className="text-right">بڕی واصل (د.ع)</TableHead>
@@ -160,8 +161,9 @@ export default function PaymentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPayments?.map((payment) => (
+              {filteredPayments?.map((payment, index) => (
                 <TableRow key={payment.id}>
+                  <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                   <TableCell className="font-medium">{getStudentName(payment.studentId)}</TableCell>
                   <TableCell className="text-slate-500">{getStudentGrade(payment.studentId)}</TableCell>
                   <TableCell className="text-indigo-600 font-bold font-mono">{Number(payment.amount).toLocaleString()} د.ع</TableCell>
@@ -187,13 +189,14 @@ export default function PaymentsPage() {
               ))}
               {filteredPayments?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                     هیچ قیستێک وەرنەگیراوە
                   </TableCell>
                 </TableRow>
               )}
               {filteredPayments && filteredPayments.length > 0 && (
                 <TableRow className="bg-indigo-100 dark:bg-indigo-900/40 font-bold">
+                  <TableCell></TableCell>
                   <TableCell>کۆی گشتی</TableCell>
                   <TableCell></TableCell>
                   <TableCell className="font-mono text-indigo-700 dark:text-indigo-400">{filteredPayments.reduce((sum, p) => sum + Number(p.amount), 0).toLocaleString()} د.ع</TableCell>

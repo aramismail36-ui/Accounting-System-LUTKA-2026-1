@@ -139,6 +139,7 @@ export default function StudentsPage() {
             <Table>
               <TableHeader className="bg-slate-50 dark:bg-slate-900">
                 <TableRow>
+                  <TableHead className="text-right font-bold w-[60px]">ژ</TableHead>
                   <TableHead className="text-right font-bold">ناوی سیانی</TableHead>
                   <TableHead className="text-right font-bold">پۆل</TableHead>
                   <TableHead className="text-right font-bold">ژمارەی مۆبایل</TableHead>
@@ -151,13 +152,14 @@ export default function StudentsPage() {
               <TableBody>
                 {filteredStudents?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                       هیچ قوتابیەک نەدۆزرایەوە
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredStudents?.map((student) => (
+                  filteredStudents?.map((student, index) => (
                     <TableRow key={student.id} className="group hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                      <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                       <TableCell className="font-medium">{student.fullName}</TableCell>
                       <TableCell>{student.grade}</TableCell>
                       <TableCell>{student.mobile}</TableCell>

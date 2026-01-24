@@ -102,6 +102,7 @@ export default function StaffPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="text-right w-[60px]">ژ</TableHead>
                 <TableHead className="text-right">ناوی سیانی</TableHead>
                 <TableHead className="text-right">پلە / کار</TableHead>
                 <TableHead className="text-right">مۆبایل</TableHead>
@@ -110,8 +111,9 @@ export default function StaffPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {staff?.map((person) => (
+              {staff?.map((person, index) => (
                 <TableRow key={person.id}>
+                  <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                   <TableCell className="font-medium">{person.fullName}</TableCell>
                   <TableCell>
                     <span className="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -127,13 +129,14 @@ export default function StaffPage() {
               ))}
               {staff?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                     هیچ کارمەندێک تۆمار نەکراوە
                   </TableCell>
                 </TableRow>
               )}
               {staff && staff.length > 0 && (
                 <TableRow className="bg-orange-100 dark:bg-orange-900/40 font-bold">
+                  <TableCell></TableCell>
                   <TableCell>کۆی گشتی مووچە</TableCell>
                   <TableCell></TableCell>
                   <TableCell></TableCell>
