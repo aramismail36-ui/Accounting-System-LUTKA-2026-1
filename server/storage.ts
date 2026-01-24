@@ -91,7 +91,7 @@ export class DatabaseStorage implements IStorage {
 
   // Students
   async getStudents(): Promise<Student[]> {
-    return await db.select().from(students).orderBy(students.id);
+    return await db.select().from(students).orderBy(students.grade, students.fullName);
   }
 
   async getStudent(id: number): Promise<Student | undefined> {
