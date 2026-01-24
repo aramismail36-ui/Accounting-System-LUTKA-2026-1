@@ -464,6 +464,7 @@ export default function ReportsPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50 dark:bg-slate-800">
+                  <TableHead className="text-right w-[60px]">ژ</TableHead>
                   <TableHead className="text-right">ناوی سیانی</TableHead>
                   <TableHead className="text-right">پۆل</TableHead>
                   <TableHead className="text-right">مۆبایل</TableHead>
@@ -473,8 +474,9 @@ export default function ReportsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredStudents.map((student) => (
+                {filteredStudents.map((student, index) => (
                   <TableRow key={student.id}>
+                    <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                     <TableCell className="font-medium">{student.fullName}</TableCell>
                     <TableCell>{student.grade || "-"}</TableCell>
                     <TableCell>{student.mobile}</TableCell>
@@ -485,7 +487,7 @@ export default function ReportsPage() {
                 ))}
                 {filteredStudents.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       هیچ قوتابیەک نەدۆزرایەوە
                     </TableCell>
                   </TableRow>
@@ -566,6 +568,7 @@ export default function ReportsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-green-50 dark:bg-green-900/20">
+                      <TableHead className="text-right w-[60px]">ژ</TableHead>
                       <TableHead className="text-right">سەرچاوە</TableHead>
                       <TableHead className="text-right">بڕ (د.ع)</TableHead>
                       <TableHead className="text-right">بەروار</TableHead>
@@ -573,8 +576,9 @@ export default function ReportsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {income?.map((item) => (
+                    {income?.map((item, index) => (
                       <TableRow key={item.id}>
+                        <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                         <TableCell className="font-medium">{item.source}</TableCell>
                         <TableCell className="font-mono text-green-600">+{Number(item.amount).toLocaleString()}</TableCell>
                         <TableCell>{format(new Date(item.date), "yyyy-MM-dd")}</TableCell>
@@ -583,11 +587,12 @@ export default function ReportsPage() {
                     ))}
                     {(!income || income.length === 0) && (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ تۆمارێک نییە</TableCell>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">هیچ تۆمارێک نییە</TableCell>
                       </TableRow>
                     )}
                     {income && income.length > 0 && (
                       <TableRow className="bg-green-100 dark:bg-green-900/40 font-bold">
+                        <TableCell></TableCell>
                         <TableCell>کۆی گشتی</TableCell>
                         <TableCell className="font-mono text-green-700 dark:text-green-400">{totalIncome.toLocaleString()} د.ع</TableCell>
                         <TableCell colSpan={2}></TableCell>
@@ -634,6 +639,7 @@ export default function ReportsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-red-50 dark:bg-red-900/20">
+                      <TableHead className="text-right w-[60px]">ژ</TableHead>
                       <TableHead className="text-right">جۆر</TableHead>
                       <TableHead className="text-right">بڕ (د.ع)</TableHead>
                       <TableHead className="text-right">بەروار</TableHead>
@@ -641,8 +647,9 @@ export default function ReportsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {expenses?.map((item) => (
+                    {expenses?.map((item, index) => (
                       <TableRow key={item.id}>
+                        <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                         <TableCell className="font-medium">{item.category}</TableCell>
                         <TableCell className="font-mono text-red-600">-{Number(item.amount).toLocaleString()}</TableCell>
                         <TableCell>{format(new Date(item.date), "yyyy-MM-dd")}</TableCell>
@@ -651,11 +658,12 @@ export default function ReportsPage() {
                     ))}
                     {(!expenses || expenses.length === 0) && (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ تۆمارێک نییە</TableCell>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">هیچ تۆمارێک نییە</TableCell>
                       </TableRow>
                     )}
                     {expenses && expenses.length > 0 && (
                       <TableRow className="bg-red-100 dark:bg-red-900/40 font-bold">
+                        <TableCell></TableCell>
                         <TableCell>کۆی گشتی</TableCell>
                         <TableCell className="font-mono text-red-700 dark:text-red-400">{totalExpenses.toLocaleString()} د.ع</TableCell>
                         <TableCell colSpan={2}></TableCell>
@@ -702,14 +710,16 @@ export default function ReportsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-indigo-50 dark:bg-indigo-900/20">
+                      <TableHead className="text-right w-[60px]">ژ</TableHead>
                       <TableHead className="text-right">قوتابی</TableHead>
                       <TableHead className="text-right">بڕ (د.ع)</TableHead>
                       <TableHead className="text-right">بەروار</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {payments?.map((item) => (
+                    {payments?.map((item, index) => (
                       <TableRow key={item.id}>
+                        <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                         <TableCell className="font-medium">{getStudentName(item.studentId)}</TableCell>
                         <TableCell className="font-mono text-indigo-600">{Number(item.amount).toLocaleString()}</TableCell>
                         <TableCell>{format(new Date(item.date), "yyyy-MM-dd")}</TableCell>
@@ -717,11 +727,12 @@ export default function ReportsPage() {
                     ))}
                     {(!payments || payments.length === 0) && (
                       <TableRow>
-                        <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">هیچ قیستێک نییە</TableCell>
+                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ قیستێک نییە</TableCell>
                       </TableRow>
                     )}
                     {payments && payments.length > 0 && (
                       <TableRow className="bg-indigo-100 dark:bg-indigo-900/40 font-bold">
+                        <TableCell></TableCell>
                         <TableCell>کۆی گشتی</TableCell>
                         <TableCell className="font-mono text-indigo-700 dark:text-indigo-400">{totalPayments.toLocaleString()} د.ع</TableCell>
                         <TableCell></TableCell>
@@ -768,6 +779,7 @@ export default function ReportsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-orange-50 dark:bg-orange-900/20">
+                      <TableHead className="text-right w-[60px]">ژ</TableHead>
                       <TableHead className="text-right">ناو</TableHead>
                       <TableHead className="text-right">پلە</TableHead>
                       <TableHead className="text-right">مۆبایل</TableHead>
@@ -775,8 +787,9 @@ export default function ReportsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {staff?.map((person) => (
+                    {staff?.map((person, index) => (
                       <TableRow key={person.id}>
+                        <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                         <TableCell className="font-medium">{person.fullName}</TableCell>
                         <TableCell>{person.role}</TableCell>
                         <TableCell>{person.mobile}</TableCell>
@@ -785,11 +798,12 @@ export default function ReportsPage() {
                     ))}
                     {(!staff || staff.length === 0) && (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ کارمەندێک نییە</TableCell>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">هیچ کارمەندێک نییە</TableCell>
                       </TableRow>
                     )}
                     {staff && staff.length > 0 && (
                       <TableRow className="bg-orange-100 dark:bg-orange-900/40 font-bold">
+                        <TableCell></TableCell>
                         <TableCell>کۆی مووچەی مانگانە</TableCell>
                         <TableCell colSpan={2}></TableCell>
                         <TableCell className="font-mono text-orange-700 dark:text-orange-400">{totalStaffSalary.toLocaleString()} د.ع</TableCell>
@@ -836,6 +850,7 @@ export default function ReportsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-purple-50 dark:bg-purple-900/20">
+                      <TableHead className="text-right w-[60px]">ژ</TableHead>
                       <TableHead className="text-right">کارمەند</TableHead>
                       <TableHead className="text-right">بڕ (د.ع)</TableHead>
                       <TableHead className="text-right">مانگ</TableHead>
@@ -843,8 +858,9 @@ export default function ReportsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {salaryPayments?.map((item) => (
+                    {salaryPayments?.map((item, index) => (
                       <TableRow key={item.id}>
+                        <TableCell className="text-muted-foreground font-mono">{index + 1}</TableCell>
                         <TableCell className="font-medium">{getStaffName(item.staffId)}</TableCell>
                         <TableCell className="font-mono text-purple-600">{Number(item.amount).toLocaleString()}</TableCell>
                         <TableCell>{item.month}</TableCell>
@@ -853,11 +869,12 @@ export default function ReportsPage() {
                     ))}
                     {(!salaryPayments || salaryPayments.length === 0) && (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ مووچەیەک نییە</TableCell>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">هیچ مووچەیەک نییە</TableCell>
                       </TableRow>
                     )}
                     {salaryPayments && salaryPayments.length > 0 && (
                       <TableRow className="bg-purple-100 dark:bg-purple-900/40 font-bold">
+                        <TableCell></TableCell>
                         <TableCell>کۆی گشتی</TableCell>
                         <TableCell className="font-mono text-purple-700 dark:text-purple-400">{totalSalaries.toLocaleString()} د.ع</TableCell>
                         <TableCell colSpan={2}></TableCell>
@@ -961,6 +978,7 @@ export default function ReportsPage() {
                       <Table>
                         <TableHeader>
                           <TableRow className="bg-orange-50 dark:bg-orange-900/20">
+                            <TableHead className="text-right w-[60px]">ژ</TableHead>
                             <TableHead className="text-right">بابەت / جۆر</TableHead>
                             <TableHead className="text-right">کۆی خەرجی (د.ع)</TableHead>
                           </TableRow>
@@ -968,17 +986,19 @@ export default function ReportsPage() {
                         <TableBody>
                           {categoryData.map((item, idx) => (
                             <TableRow key={idx}>
+                              <TableCell className="text-muted-foreground font-mono">{idx + 1}</TableCell>
                               <TableCell className="font-medium">{item.category}</TableCell>
                               <TableCell className="font-mono text-orange-600">{item.amount.toLocaleString()}</TableCell>
                             </TableRow>
                           ))}
                           {categoryData.length === 0 && (
                             <TableRow>
-                              <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">هیچ خەرجییەک لەم ماوەیەدا نییە</TableCell>
+                              <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">هیچ خەرجییەک لەم ماوەیەدا نییە</TableCell>
                             </TableRow>
                           )}
                           {categoryData.length > 0 && (
                             <TableRow className="bg-orange-100 dark:bg-orange-900/40 font-bold">
+                              <TableCell></TableCell>
                               <TableCell>کۆی گشتی</TableCell>
                               <TableCell className="font-mono text-orange-700 dark:text-orange-400">{grandTotal.toLocaleString()} د.ع</TableCell>
                             </TableRow>
