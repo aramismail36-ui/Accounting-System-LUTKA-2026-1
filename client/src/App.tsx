@@ -18,10 +18,12 @@ import SalaryPaymentsPage from "@/pages/salary-payments";
 import FoodPaymentsPage from "@/pages/food-payments";
 import ShareholdersPage from "@/pages/shareholders";
 import ReportsPage from "@/pages/reports";
+import UsersPage from "@/pages/users";
 import LoginPage from "@/pages/login";
+import ShareholderDashboardPage from "@/pages/shareholder-dashboard";
 import NotFound from "@/pages/not-found";
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+function ProtectedRoute({ component: Component, adminOnly = false }: { component: React.ComponentType; adminOnly?: boolean }) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -34,6 +36,14 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 
   if (!user) {
     return <LoginPage />;
+  }
+
+  if (user.role === 'shareholder') {
+    return <ShareholderDashboardPage />;
+  }
+
+  if (adminOnly && user.role !== 'admin') {
+    return <ShareholderDashboardPage />;
   }
 
   return (
@@ -57,6 +67,7 @@ function Router() {
       <Route path="/food-payments" component={() => <ProtectedRoute component={FoodPaymentsPage} />} />
       <Route path="/shareholders" component={() => <ProtectedRoute component={ShareholdersPage} />} />
       <Route path="/reports" component={() => <ProtectedRoute component={ReportsPage} />} />
+      <Route path="/users" component={() => <ProtectedRoute component={UsersPage} adminOnly />} />
       <Route path="/login" component={LoginPage} />
       <Route component={NotFound} />
     </Switch>
