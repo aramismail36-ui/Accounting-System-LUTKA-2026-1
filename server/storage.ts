@@ -44,6 +44,7 @@ export interface IStorage {
 
   // Salary Payments
   getSalaryPayments(): Promise<SalaryPayment[]>;
+  getSalaryPaymentByStaffAndMonth(staffId: number, month: string): Promise<SalaryPayment | undefined>;
   createSalaryPayment(payment: InsertSalaryPayment): Promise<SalaryPayment>;
   deleteSalaryPayment(id: number): Promise<void>;
 
@@ -189,6 +190,12 @@ export class DatabaseStorage implements IStorage {
   // Salary Payments
   async getSalaryPayments(): Promise<SalaryPayment[]> {
     return await db.select().from(salaryPayments).orderBy(salaryPayments.date);
+  }
+
+  async getSalaryPaymentByStaffAndMonth(staffId: number, month: string): Promise<SalaryPayment | undefined> {
+    const [payment] = await db.select().from(salaryPayments)
+      .where(and(eq(salaryPayments.staffId, staffId), eq(salaryPayments.month, month)));
+    return payment;
   }
 
   async createSalaryPayment(insertPayment: InsertSalaryPayment): Promise<SalaryPayment> {

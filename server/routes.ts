@@ -226,6 +226,15 @@ export async function registerRoutes(
         amount: z.coerce.number(),
       });
       const input = bodySchema.parse(req.body);
+      
+      // Check for duplicate salary payment (same staff + same month)
+      const existingPayment = await storage.getSalaryPaymentByStaffAndMonth(input.staffId, input.month);
+      if (existingPayment) {
+        return res.status(400).json({ 
+          message: "ئەم کارمەندە پێشتر مووچەی ئەم مانگەی وەرگرتووە" 
+        });
+      }
+      
       const payment = await storage.createSalaryPayment({ ...input, amount: String(input.amount) });
       res.status(201).json(payment);
     } catch (err) {
