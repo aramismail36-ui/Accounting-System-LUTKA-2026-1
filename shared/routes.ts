@@ -1,0 +1,215 @@
+import { z } from 'zod';
+import { 
+  insertSchoolSettingsSchema, 
+  insertStudentSchema, 
+  insertIncomeSchema, 
+  insertExpenseSchema, 
+  insertPaymentSchema, 
+  insertStaffSchema,
+  schoolSettings,
+  students,
+  income,
+  expenses,
+  payments,
+  staff
+} from './schema';
+
+// Export everything from schema so frontend can import from @shared/routes if it wants to
+export * from './schema';
+
+export const errorSchemas = {
+  validation: z.object({
+    message: z.string(),
+    field: z.string().optional(),
+  }),
+  notFound: z.object({
+    message: z.string(),
+  }),
+  internal: z.object({
+    message: z.string(),
+  }),
+};
+
+export const api = {
+  schoolSettings: {
+    get: {
+      method: 'GET' as const,
+      path: '/api/settings',
+      responses: {
+        200: z.custom<typeof schoolSettings.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
+    update: {
+      method: 'POST' as const,
+      path: '/api/settings',
+      input: insertSchoolSettingsSchema,
+      responses: {
+        200: z.custom<typeof schoolSettings.$inferSelect>(),
+        201: z.custom<typeof schoolSettings.$inferSelect>(),
+      },
+    },
+  },
+  students: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/students',
+      responses: {
+        200: z.array(z.custom<typeof students.$inferSelect>()),
+      },
+    },
+    get: {
+      method: 'GET' as const,
+      path: '/api/students/:id',
+      responses: {
+        200: z.custom<typeof students.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/students',
+      input: insertStudentSchema,
+      responses: {
+        201: z.custom<typeof students.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    update: {
+      method: 'PUT' as const,
+      path: '/api/students/:id',
+      input: insertStudentSchema.partial(),
+      responses: {
+        200: z.custom<typeof students.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/students/:id',
+      responses: {
+        204: z.void(),
+        404: errorSchemas.notFound,
+      },
+    },
+  },
+  income: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/income',
+      responses: {
+        200: z.array(z.custom<typeof income.$inferSelect>()),
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/income',
+      input: insertIncomeSchema,
+      responses: {
+        201: z.custom<typeof income.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/income/:id',
+      responses: {
+        204: z.void(),
+      },
+    },
+  },
+  expenses: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/expenses',
+      responses: {
+        200: z.array(z.custom<typeof expenses.$inferSelect>()),
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/expenses',
+      input: insertExpenseSchema,
+      responses: {
+        201: z.custom<typeof expenses.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/expenses/:id',
+      responses: {
+        204: z.void(),
+      },
+    },
+  },
+  payments: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/payments',
+      responses: {
+        200: z.array(z.custom<typeof payments.$inferSelect>()),
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/payments',
+      input: insertPaymentSchema,
+      responses: {
+        201: z.custom<typeof payments.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+  },
+  staff: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/staff',
+      responses: {
+        200: z.array(z.custom<typeof staff.$inferSelect>()),
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/staff',
+      input: insertStaffSchema,
+      responses: {
+        201: z.custom<typeof staff.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/staff/:id',
+      responses: {
+        204: z.void(),
+      },
+    },
+  },
+  reports: {
+    monthly: {
+      method: 'GET' as const,
+      path: '/api/reports/monthly',
+      responses: {
+        200: z.object({
+          totalIncome: z.number(),
+          totalExpenses: z.number(),
+          netProfit: z.number(),
+          month: z.string(),
+        }),
+      },
+    },
+  },
+};
+
+export function buildUrl(path: string, params?: Record<string, string | number>): string {
+  let url = path;
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (url.includes(`:${key}`)) {
+        url = url.replace(`:${key}`, String(value));
+      }
+    });
+  }
+  return url;
+}
