@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { api } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, UserCheck, Loader2 } from "lucide-react";
+import { Shield, UserCheck, Loader2, Trash2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 type User = {
@@ -48,6 +48,30 @@ export default function UsersPage() {
 
   const handleRoleChange = (userId: string, newRole: string) => {
     updateRoleMutation.mutate({ id: userId, role: newRole });
+  };
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiRequest("DELETE", `/api/users/${id}`);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "سڕینەوە سەرنەکەوت");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.users.list.path] });
+      toast({ title: "سڕایەوە", description: "بەکارهێنەر سڕایەوە" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "هەڵە", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const handleDeleteUser = (userId: string) => {
+    if (confirm("ئایا دڵنیایت لە سڕینەوەی ئەم بەکارهێنەرە؟")) {
+      deleteUserMutation.mutate(userId);
+    }
   };
 
   const getRoleBadge = (role: string) => {
@@ -97,6 +121,7 @@ export default function UsersPage() {
             <TableHead className="text-right">ڕۆڵی ئێستا</TableHead>
             <TableHead className="text-right">ڕێکەوت و کات</TableHead>
             <TableHead className="text-right">گۆڕینی ڕۆڵ</TableHead>
+            <TableHead className="text-right w-[80px]">سڕینەوە</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -127,11 +152,23 @@ export default function UsersPage() {
                   </SelectContent>
                 </Select>
               </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-slate-400 hover:text-red-600"
+                  onClick={() => handleDeleteUser(user.id)}
+                  disabled={deleteUserMutation.isPending}
+                  data-testid={`button-delete-user-${user.id}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
           {(!users || users.length === 0) && (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
+              <TableCell colSpan={7} className="text-center text-muted-foreground">
                 هیچ بەکارهێنەرێک نییە
               </TableCell>
             </TableRow>

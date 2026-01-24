@@ -301,6 +301,7 @@ export const api = {
           firstName: z.string().nullable(),
           lastName: z.string().nullable(),
           role: z.string(),
+          createdAt: z.string().nullable(),
         })),
       },
     },
@@ -318,6 +319,15 @@ export const api = {
           lastName: z.string().nullable(),
           role: z.string(),
         }),
+        404: errorSchemas.notFound,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/users/:id',
+      responses: {
+        200: z.object({ success: z.boolean() }),
+        400: z.object({ message: z.string() }),
         404: errorSchemas.notFound,
       },
     },

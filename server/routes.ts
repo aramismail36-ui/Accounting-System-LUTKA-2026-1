@@ -368,6 +368,7 @@ export async function registerRoutes(
       firstName: u.firstName,
       lastName: u.lastName,
       role: u.role,
+      createdAt: u.createdAt,
     })));
   });
 
@@ -391,6 +392,18 @@ export async function registerRoutes(
       }
       throw err;
     }
+  });
+
+  app.delete(api.users.delete.path, requireAdmin, async (req, res) => {
+    const currentUser = (req as any).user;
+    if (currentUser.id === req.params.id) {
+      return res.status(400).json({ message: "ناتوانیت خۆت بسڕیتەوە" });
+    }
+    const deleted = await storage.deleteUser(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ message: "بەکارهێنەر نەدۆزرایەوە" });
+    }
+    res.json({ success: true });
   });
 
   // SEED DATA
