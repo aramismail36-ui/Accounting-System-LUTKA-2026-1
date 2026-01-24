@@ -73,144 +73,200 @@ export default function ReportsPage() {
   const getStudentName = (id: number) => students?.find(s => s.id === id)?.fullName || "-";
   const getStaffName = (id: number) => staff?.find(s => s.id === id)?.fullName || "-";
 
-  // Export comprehensive PDF
+  // Export comprehensive PDF using HTML for proper Kurdish text support
   const exportFullReport = () => {
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    doc.setFont("helvetica");
-    let y = 15;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html dir="rtl" lang="ku">
+      <head>
+        <meta charset="UTF-8">
+        <title>ڕاپۆرتی تەواو - قوتابخانەی لوتکە</title>
+        <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet">
+        <style>
+          * { font-family: 'Vazirmatn', 'Arial', sans-serif; }
+          body { direction: rtl; padding: 20px; font-size: 12px; }
+          h1 { text-align: center; margin-bottom: 5px; font-size: 20px; }
+          .date { text-align: center; margin-bottom: 20px; color: #666; }
+          .summary { display: flex; justify-content: space-around; margin-bottom: 25px; flex-wrap: wrap; gap: 10px; }
+          .summary-card { padding: 15px 25px; border-radius: 8px; text-align: center; min-width: 120px; }
+          .income-card { background: #d1fae5; color: #16a34a; }
+          .expense-card { background: #fee2e2; color: #dc2626; }
+          .profit-card { background: #dbeafe; color: #2563eb; }
+          .loss-card { background: #fed7aa; color: #ea580c; }
+          .summary-card h3 { font-size: 18px; margin: 5px 0; }
+          .section { margin-bottom: 25px; page-break-inside: avoid; }
+          .section-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; padding: 5px; border-radius: 4px; }
+          .income-title { background: #16a34a; color: white; }
+          .expense-title { background: #dc2626; color: white; }
+          .payment-title { background: #4f46e5; color: white; }
+          .staff-title { background: #ea580c; color: white; }
+          .salary-title { background: #9333ea; color: white; }
+          table { width: 100%; border-collapse: collapse; font-size: 11px; }
+          th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: right; }
+          th { background: #f5f5f5; font-weight: 600; }
+          .total-row { background: #f0f0f0; font-weight: bold; }
+          .amount-green { color: #16a34a; }
+          .amount-red { color: #dc2626; }
+          .amount-purple { color: #9333ea; }
+          .amount-indigo { color: #4f46e5; }
+          .footer { text-align: center; margin-top: 30px; font-size: 10px; color: #888; }
+          @media print { body { padding: 10px; } .section { page-break-inside: avoid; } }
+        </style>
+      </head>
+      <body>
+        <h1>قوتابخانەی لوتکەی ناحکومی</h1>
+        <div class="date">ڕاپۆرتی تەواو - ${new Date().toLocaleDateString('ku')}</div>
+        
+        <div class="summary">
+          <div class="summary-card income-card">
+            <p>کۆی داهات</p>
+            <h3>${totalIncome.toLocaleString()} د.ع</h3>
+          </div>
+          <div class="summary-card expense-card">
+            <p>کۆی خەرجی</p>
+            <h3>${totalExpenses.toLocaleString()} د.ع</h3>
+          </div>
+          <div class="summary-card ${isProfitable ? 'profit-card' : 'loss-card'}">
+            <p>${isProfitable ? 'قازانجی سافی' : 'زیان'}</p>
+            <h3>${Math.abs(profit).toLocaleString()} د.ع</h3>
+          </div>
+        </div>
 
-    // Title
-    doc.setFontSize(18);
-    doc.text("Lutka School - Comprehensive Report", 105, y, { align: "center" });
-    y += 10;
-    doc.setFontSize(10);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 105, y, { align: "center" });
-    y += 15;
+        <div class="section">
+          <div class="section-title income-title">داهاتەکان (${income?.length || 0} تۆمار)</div>
+          <table>
+            <thead><tr><th>سەرچاوە</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
+            <tbody>
+              ${income?.map(i => `<tr><td>${i.source}</td><td class="amount-green">+${Number(i.amount).toLocaleString()}</td><td>${format(new Date(i.date), "yyyy-MM-dd")}</td><td>${i.description || '-'}</td></tr>`).join('') || ''}
+              <tr class="total-row"><td>کۆی گشتی</td><td class="amount-green">${totalIncome.toLocaleString()} د.ع</td><td colspan="2"></td></tr>
+            </tbody>
+          </table>
+        </div>
 
-    // Summary Section
-    doc.setFontSize(14);
-    doc.text("Financial Summary", 14, y);
-    y += 8;
-    doc.setFontSize(10);
-    doc.text(`Total Income: ${totalIncome.toLocaleString()} IQD`, 14, y);
-    doc.text(`Total Expenses: ${totalExpenses.toLocaleString()} IQD`, 105, y);
-    y += 6;
-    doc.text(`Student Payments: ${totalPayments.toLocaleString()} IQD`, 14, y);
-    doc.text(`Salary Payments: ${totalSalaries.toLocaleString()} IQD`, 105, y);
-    y += 6;
-    doc.text(`Net Profit/Loss: ${profit.toLocaleString()} IQD`, 14, y);
-    y += 15;
+        <div class="section">
+          <div class="section-title expense-title">خەرجییەکان (${expenses?.length || 0} تۆمار)</div>
+          <table>
+            <thead><tr><th>جۆر</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
+            <tbody>
+              ${expenses?.map(e => `<tr><td>${e.category}</td><td class="amount-red">-${Number(e.amount).toLocaleString()}</td><td>${format(new Date(e.date), "yyyy-MM-dd")}</td><td>${e.description || '-'}</td></tr>`).join('') || ''}
+              <tr class="total-row"><td>کۆی گشتی</td><td class="amount-red">${totalExpenses.toLocaleString()} د.ع</td><td colspan="2"></td></tr>
+            </tbody>
+          </table>
+        </div>
 
-    // Income Table
-    doc.setFontSize(12);
-    doc.text("Income Records", 14, y);
-    y += 3;
-    autoTable(doc, {
-      startY: y,
-      head: [["Source", "Amount (IQD)", "Date"]],
-      body: income?.map(i => [i.source, Number(i.amount).toLocaleString(), format(new Date(i.date), "yyyy-MM-dd")]) || [],
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [22, 163, 74] },
-      margin: { left: 14, right: 14 }
-    });
-    y = (doc as any).lastAutoTable.finalY + 10;
+        <div class="section">
+          <div class="section-title payment-title">قیستەکان (${payments?.length || 0} تۆمار)</div>
+          <table>
+            <thead><tr><th>ناوی قوتابی</th><th>بڕ (د.ع)</th><th>بەروار</th></tr></thead>
+            <tbody>
+              ${payments?.map(p => `<tr><td>${getStudentName(p.studentId)}</td><td class="amount-indigo">${Number(p.amount).toLocaleString()}</td><td>${format(new Date(p.date), "yyyy-MM-dd")}</td></tr>`).join('') || ''}
+              <tr class="total-row"><td>کۆی گشتی</td><td class="amount-indigo">${totalPayments.toLocaleString()} د.ع</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
 
-    // Expenses Table
-    doc.setFontSize(12);
-    doc.text("Expense Records", 14, y);
-    y += 3;
-    autoTable(doc, {
-      startY: y,
-      head: [["Category", "Amount (IQD)", "Date"]],
-      body: expenses?.map(e => [e.category, Number(e.amount).toLocaleString(), format(new Date(e.date), "yyyy-MM-dd")]) || [],
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [220, 38, 38] },
-      margin: { left: 14, right: 14 }
-    });
-    y = (doc as any).lastAutoTable.finalY + 10;
+        <div class="section">
+          <div class="section-title staff-title">کارمەندان (${staff?.length || 0} کەس)</div>
+          <table>
+            <thead><tr><th>ناو</th><th>پلە / کار</th><th>مووچە (د.ع)</th></tr></thead>
+            <tbody>
+              ${staff?.map(s => `<tr><td>${s.fullName}</td><td>${s.role}</td><td>${Number(s.salary).toLocaleString()}</td></tr>`).join('') || ''}
+              <tr class="total-row"><td>کۆی گشتی مووچە</td><td></td><td>${totalStaffSalary.toLocaleString()} د.ع</td></tr>
+            </tbody>
+          </table>
+        </div>
 
-    // Check if need new page
-    if (y > 250) {
-      doc.addPage();
-      y = 15;
-    }
+        <div class="section">
+          <div class="section-title salary-title">مووچەی دراوەکان (${salaryPayments?.length || 0} تۆمار)</div>
+          <table>
+            <thead><tr><th>کارمەند</th><th>بڕ (د.ع)</th><th>مانگ</th><th>بەروار</th></tr></thead>
+            <tbody>
+              ${salaryPayments?.map(s => `<tr><td>${getStaffName(s.staffId)}</td><td class="amount-purple">${Number(s.amount).toLocaleString()}</td><td>${s.month}</td><td>${format(new Date(s.date), "yyyy-MM-dd")}</td></tr>`).join('') || ''}
+              <tr class="total-row"><td>کۆی گشتی</td><td class="amount-purple">${totalSalaries.toLocaleString()} د.ع</td><td colspan="2"></td></tr>
+            </tbody>
+          </table>
+        </div>
 
-    // Student Payments Table
-    doc.setFontSize(12);
-    doc.text("Student Payments", 14, y);
-    y += 3;
-    autoTable(doc, {
-      startY: y,
-      head: [["Student", "Amount (IQD)", "Date"]],
-      body: payments?.map(p => [getStudentName(p.studentId), Number(p.amount).toLocaleString(), format(new Date(p.date), "yyyy-MM-dd")]) || [],
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [79, 70, 229] },
-      margin: { left: 14, right: 14 }
-    });
-    y = (doc as any).lastAutoTable.finalY + 10;
-
-    // Check if need new page
-    if (y > 250) {
-      doc.addPage();
-      y = 15;
-    }
-
-    // Staff Table
-    doc.setFontSize(12);
-    doc.text("Staff Members", 14, y);
-    y += 3;
-    autoTable(doc, {
-      startY: y,
-      head: [["Name", "Role", "Salary (IQD)"]],
-      body: staff?.map(s => [s.fullName, s.role, Number(s.salary).toLocaleString()]) || [],
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [234, 88, 12] },
-      margin: { left: 14, right: 14 }
-    });
-    y = (doc as any).lastAutoTable.finalY + 10;
-
-    // Salary Payments Table
-    if (y > 250) {
-      doc.addPage();
-      y = 15;
-    }
-    doc.setFontSize(12);
-    doc.text("Salary Payments", 14, y);
-    y += 3;
-    autoTable(doc, {
-      startY: y,
-      head: [["Staff", "Amount (IQD)", "Month", "Date"]],
-      body: salaryPayments?.map(s => [getStaffName(s.staffId), Number(s.amount).toLocaleString(), s.month, format(new Date(s.date), "yyyy-MM-dd")]) || [],
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [147, 51, 234] },
-      margin: { left: 14, right: 14 }
-    });
-
-    doc.save(`lutka-full-report-${new Date().toISOString().split('T')[0]}.pdf`);
+        <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()} | بۆ داگرتنی PDF: چاپکردن > وەک PDF پاشەکەوت بکە</div>
+        <script>window.onload = function() { window.print(); }</script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
-  // Export students PDF
+  // Export students PDF using HTML for proper Kurdish text support
   const exportStudentsPDF = () => {
-    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-    doc.setFont("helvetica");
-    doc.setFontSize(18);
-    doc.text("Lutka School - Student Payment Report", 148, 15, { align: "center" });
-    doc.setFontSize(12);
-    const filterText = paymentFilter === "all" ? "All Students" : paymentFilter === "fully_paid" ? "Fully Paid" : paymentFilter === "partially_paid" ? "Partially Paid" : "Not Paid";
-    doc.text(`Filter: ${filterText} | Total: ${filteredStudents.length} students`, 148, 25, { align: "center" });
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 148, 32, { align: "center" });
-
-    autoTable(doc, {
-      startY: 40,
-      head: [["Name", "Grade", "Mobile", "Tuition Fee", "Paid Amount", "Remaining"]],
-      body: filteredStudents.map(s => [s.fullName, s.grade || "-", s.mobile, `${Number(s.tuitionFee).toLocaleString()} IQD`, `${Number(s.paidAmount).toLocaleString()} IQD`, `${Number(s.remainingAmount).toLocaleString()} IQD`]),
-      styles: { fontSize: 10, cellPadding: 3 },
-      headStyles: { fillColor: [79, 70, 229], textColor: 255 },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-      margin: { left: 14, right: 14 }
-    });
-
-    doc.save(`student-payments-${paymentFilter}-${new Date().toISOString().split('T')[0]}.pdf`);
+    const filterLabels: { [key: string]: string } = {
+      "all": "هەموو قوتابیان",
+      "fully_paid": "تەواو دراوە",
+      "partially_paid": "بەشێکی دراوە",
+      "not_paid": "هیچی نەدراوە"
+    };
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html dir="rtl" lang="ku">
+      <head>
+        <meta charset="UTF-8">
+        <title>ڕاپۆرتی پارەدانی قوتابیان</title>
+        <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet">
+        <style>
+          * { font-family: 'Vazirmatn', 'Arial', sans-serif; }
+          body { direction: rtl; padding: 20px; font-size: 12px; }
+          h1 { text-align: center; margin-bottom: 5px; font-size: 20px; }
+          .info { text-align: center; margin-bottom: 20px; color: #666; }
+          table { width: 100%; border-collapse: collapse; font-size: 11px; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+          th { background: #4f46e5; color: white; font-weight: 600; }
+          tr:nth-child(even) { background: #f9f9f9; }
+          .amount-green { color: #16a34a; }
+          .amount-red { color: #dc2626; }
+          .footer { text-align: center; margin-top: 30px; font-size: 10px; color: #888; }
+          @media print { body { padding: 10px; } }
+        </style>
+      </head>
+      <body>
+        <h1>قوتابخانەی لوتکەی ناحکومی</h1>
+        <div class="info">
+          ڕاپۆرتی پارەدانی قوتابیان | فلتەر: ${filterLabels[paymentFilter]} | کۆی قوتابی: ${filteredStudents.length}
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ناوی قوتابی</th>
+              <th>پۆل</th>
+              <th>مۆبایل</th>
+              <th>کرێی خوێندن (د.ع)</th>
+              <th>پارەی دراو (د.ع)</th>
+              <th>ماوە (د.ع)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredStudents.map(s => `
+              <tr>
+                <td>${s.fullName}</td>
+                <td>${s.grade || '-'}</td>
+                <td>${s.mobile}</td>
+                <td>${Number(s.tuitionFee).toLocaleString()}</td>
+                <td class="amount-green">${Number(s.paidAmount).toLocaleString()}</td>
+                <td class="amount-red">${Number(s.remainingAmount).toLocaleString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()} | بۆ داگرتنی PDF: چاپکردن > وەک PDF پاشەکەوت بکە</div>
+        <script>window.onload = function() { window.print(); }</script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   return (
