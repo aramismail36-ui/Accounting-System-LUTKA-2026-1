@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useStudents, useCreateStudent, useUpdateStudent, useDeleteStudent } from "@/hooks/use-students";
+import { useSchoolSettings } from "@/hooks/use-school-settings";
 import { insertStudentSchema, type InsertStudent, type Student } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { z } from "zod";
+import { generatePrintHtml, printDocument } from "@/lib/print-utils";
 
 export default function StudentsPage() {
   const { data: students, isLoading } = useStudents();
+  const { data: settings } = useSchoolSettings();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -36,57 +39,21 @@ export default function StudentsPage() {
               size="lg"
               className="gap-2"
               onClick={() => {
-                const printWindow = window.open('', '_blank');
-                if (!printWindow) return;
-                printWindow.document.write(`
-                  <!DOCTYPE html>
-                  <html dir="rtl" lang="ku">
-                  <head>
-                    <meta charset="UTF-8">
-                    <title>لیستی قوتابیان</title>
-                    <style>
-                      body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
-                      h1 { text-align: center; margin-bottom: 20px; }
-                      table { width: 100%; border-collapse: collapse; }
-                      th, td { border: 1px solid #333; padding: 8px; text-align: right; }
-                      th { background: #f0f0f0; }
-                      .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
-                    </style>
-                  </head>
-                  <body>
-                    <h1>قوتابخانەی لوتکەی ناحکومی - لیستی قوتابیان</h1>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>ژ</th>
-                          <th>ناوی سیانی</th>
-                          <th>پۆل</th>
-                          <th>مۆبایل</th>
-                          <th>کرێی خوێندن (د.ع)</th>
-                          <th>پارەی دراو (د.ع)</th>
-                          <th>ماوە (د.ع)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${filteredStudents?.map((s, i) => `
-                          <tr>
-                            <td>${i + 1}</td>
-                            <td>${s.fullName}</td>
-                            <td>${s.grade || '-'}</td>
-                            <td>${s.mobile}</td>
-                            <td>${Number(s.tuitionFee).toLocaleString()}</td>
-                            <td>${Number(s.paidAmount).toLocaleString()}</td>
-                            <td>${Number(s.remainingAmount).toLocaleString()}</td>
-                          </tr>
-                        `).join('') || ''}
-                      </tbody>
-                    </table>
-                    <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
-                    <script>window.onload = function() { window.print(); }</script>
-                  </body>
-                  </html>
-                `);
-                printWindow.document.close();
+                const html = generatePrintHtml({
+                  title: "لیستی قوتابیان",
+                  settings,
+                  tableHeaders: ["ژ", "ناوی سیانی", "پۆل", "مۆبایل", "کرێی خوێندن (د.ع)", "پارەی دراو (د.ع)", "ماوە (د.ع)"],
+                  tableRows: filteredStudents?.map((s, i) => [
+                    String(i + 1),
+                    s.fullName,
+                    s.grade || '-',
+                    s.mobile,
+                    Number(s.tuitionFee).toLocaleString(),
+                    Number(s.paidAmount).toLocaleString(),
+                    Number(s.remainingAmount).toLocaleString()
+                  ]) || []
+                });
+                printDocument(html);
               }}
               data-testid="button-print-students"
             >

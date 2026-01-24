@@ -4,6 +4,39 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+// Configure multer for logo uploads
+const logoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = "./uploads";
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `logo-${Date.now()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  },
+});
+
+const uploadLogo = multer({
+  storage: logoStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const ext = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mime = allowedTypes.test(file.mimetype);
+    if (ext && mime) {
+      cb(null, true);
+    } else {
+      cb(new Error("تەنها وێنەی PNG، JPG، GIF قبوڵ دەکرێت") as any);
+    }
+  },
+});
 
 // Middleware to require admin role for write operations
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
@@ -25,6 +58,23 @@ export async function registerRoutes(
   // Setup Replit Auth
   await setupAuth(app);
   registerAuthRoutes(app);
+
+  // Serve uploaded files
+  const express = await import('express');
+  app.use('/uploads', express.default.static('uploads'));
+
+  // Logo upload endpoint
+  app.post('/api/upload-logo', requireAdmin, uploadLogo.single('logo'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "هیچ وێنەیەک هەڵنەگیرا" });
+      }
+      const logoUrl = `/uploads/${req.file.filename}`;
+      res.json({ logoUrl });
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "هەڵە لە بارکردنی وێنە" });
+    }
+  });
 
   // School Settings
   app.get(api.schoolSettings.get.path, async (req, res) => {

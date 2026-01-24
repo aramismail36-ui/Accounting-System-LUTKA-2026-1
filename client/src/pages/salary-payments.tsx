@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSalaryPayments, useCreateSalaryPayment, useDeleteSalaryPayment } from "@/hooks/use-salary-payments";
 import { useStaff } from "@/hooks/use-staff";
+import { useSchoolSettings } from "@/hooks/use-school-settings";
 import { insertSalaryPaymentSchema, type InsertSalaryPayment, type SalaryPayment, type Staff } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -17,10 +18,12 @@ import { Loader2, Plus, Trash2, Printer, Wallet } from "lucide-react";
 import { format } from "date-fns";
 import { z } from "zod";
 import { SalaryReceipt } from "@/components/salary-receipt";
+import { generatePrintHtml, printDocument } from "@/lib/print-utils";
 
 export default function SalaryPaymentsPage() {
   const { data: salaryPayments, isLoading } = useSalaryPayments();
   const { data: staffList } = useStaff();
+  const { data: settings } = useSchoolSettings();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [receiptPayment, setReceiptPayment] = useState<{ payment: SalaryPayment; staff: Staff } | null>(null);
 
@@ -67,55 +70,20 @@ export default function SalaryPaymentsPage() {
           <Button
             variant="outline"
             onClick={() => {
-              const printWindow = window.open('', '_blank');
-              if (!printWindow) return;
-              printWindow.document.write(`
-                <!DOCTYPE html>
-                <html dir="rtl" lang="ku">
-                <head>
-                  <meta charset="UTF-8">
-                  <title>لیستی مووچەکان</title>
-                  <style>
-                    body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
-                    h1 { text-align: center; margin-bottom: 10px; }
-                    .summary { text-align: center; margin-bottom: 20px; font-size: 18px; font-weight: bold; color: #9333ea; }
-                    table { width: 100%; border-collapse: collapse; }
-                    th, td { border: 1px solid #333; padding: 8px; text-align: right; }
-                    th { background: #f0f0f0; }
-                    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
-                  </style>
-                </head>
-                <body>
-                  <h1>قوتابخانەی لوتکەی ناحکومی - مووچەکان</h1>
-                  <div class="summary">کۆی گشتی: ${totalPaid.toLocaleString()} د.ع</div>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>ژ</th>
-                        <th>ناوی فەرمانبەر</th>
-                        <th>بڕی مووچە (د.ع)</th>
-                        <th>مانگ</th>
-                        <th>بەروار</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${salaryPayments?.map((payment, i) => `
-                        <tr>
-                          <td>${i + 1}</td>
-                          <td>${getStaffName(payment.staffId)}</td>
-                          <td style="color: #9333ea; font-weight: bold;">${Number(payment.amount).toLocaleString()}</td>
-                          <td>${payment.month}</td>
-                          <td>${new Date(payment.date).toLocaleDateString()}</td>
-                        </tr>
-                      `).join('') || ''}
-                    </tbody>
-                  </table>
-                  <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
-                  <script>window.onload = function() { window.print(); }</script>
-                </body>
-                </html>
-              `);
-              printWindow.document.close();
+              const html = generatePrintHtml({
+                title: "مووچەکان",
+                settings,
+                filterText: `کۆی گشتی: ${totalPaid.toLocaleString()} د.ع`,
+                tableHeaders: ["ژ", "ناوی فەرمانبەر", "بڕی مووچە (د.ع)", "مانگ", "بەروار"],
+                tableRows: salaryPayments?.map((payment, i) => [
+                  String(i + 1),
+                  getStaffName(payment.staffId),
+                  Number(payment.amount).toLocaleString(),
+                  payment.month,
+                  new Date(payment.date).toLocaleDateString()
+                ]) || []
+              });
+              printDocument(html);
             }}
             data-testid="button-print-salaries"
           >

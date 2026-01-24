@@ -12,6 +12,7 @@ export const schoolSettings = pgTable("school_settings", {
   schoolName: text("school_name").notNull(),
   email: text("email").notNull(),
   password: text("password"), // Just storing it as requested, though Replit Auth handles actual login
+  logoUrl: text("logo_url"), // School logo URL
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 

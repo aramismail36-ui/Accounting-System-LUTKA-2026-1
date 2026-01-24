@@ -3,6 +3,7 @@ import { useMonthlyReport, useIncome, useExpenses, usePayments } from "@/hooks/u
 import { useStudents } from "@/hooks/use-students";
 import { useStaff } from "@/hooks/use-staff";
 import { useSalaryPayments } from "@/hooks/use-salary-payments";
+import { useSchoolSettings } from "@/hooks/use-school-settings";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,12 @@ export default function ReportsPage() {
   const { data: payments, isLoading: paymentsLoading } = usePayments();
   const { data: staff, isLoading: staffLoading } = useStaff();
   const { data: salaryPayments, isLoading: salaryLoading } = useSalaryPayments();
+  const { data: settings } = useSchoolSettings();
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
   const [expensePeriod, setExpensePeriod] = useState<string>("year");
+  
+  const schoolName = settings?.schoolName || "قوتابخانەی لوتکەی ناحکومی";
+  const logoUrl = settings?.logoUrl || "";
 
   const allLoading = isLoading || studentsLoading || incomeLoading || expensesLoading || paymentsLoading || staffLoading || salaryLoading;
 
@@ -117,7 +122,10 @@ export default function ReportsPage() {
         </style>
       </head>
       <body>
-        <h1>قوتابخانەی لوتکەی ناحکومی</h1>
+        <div style="text-align: center; margin-bottom: 10px;">
+          ${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" style="width: 60px; height: 60px; object-fit: contain;" />` : ''}
+        </div>
+        <h1>${schoolName}</h1>
         <div class="date">ڕاپۆرتی تەواو - ${new Date().toLocaleDateString('ku')}</div>
         
         <div class="summary">
@@ -233,7 +241,10 @@ export default function ReportsPage() {
         </style>
       </head>
       <body>
-        <h1>قوتابخانەی لوتکەی ناحکومی</h1>
+        <div style="text-align: center; margin-bottom: 10px;">
+          ${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" style="width: 60px; height: 60px; object-fit: contain;" />` : ''}
+        </div>
+        <h1>${schoolName}</h1>
         <div class="info">
           ڕاپۆرتی پارەدانی قوتابیان | فلتەر: ${filterLabels[paymentFilter]} | کۆی قوتابی: ${filteredStudents.length}
         </div>
@@ -304,7 +315,10 @@ export default function ReportsPage() {
                     </style>
                   </head>
                   <body>
-                    <h1>قوتابخانەی لوتکەی ناحکومی</h1>
+                    <div style="text-align: center; margin-bottom: 10px;">
+                      ${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" style="width: 60px; height: 60px; object-fit: contain;" />` : ''}
+                    </div>
+                    <h1>${schoolName}</h1>
                     <div class="month">ڕاپۆرتی مانگی: ${report?.month || "..."}</div>
                     <div class="summary">
                       <div class="card income">
@@ -549,7 +563,9 @@ export default function ReportsPage() {
                       table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:10px;text-align:right}
                       th{background:#16a34a;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
                       .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
-                      <body><h1>قوتابخانەی لوتکە - داهاتەکان</h1>
+                      <body>
+                      <div style="text-align:center;margin-bottom:10px">${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" style="width:50px;height:50px;object-fit:contain" />` : ''}</div>
+                      <h1>${schoolName} - داهاتەکان</h1>
                       <table><thead><tr><th>ژ</th><th>سەرچاوە</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
                       <tbody>${income?.map((i, idx) => `<tr><td>${idx + 1}</td><td>${i.source}</td><td style="color:#16a34a">+${Number(i.amount).toLocaleString()}</td><td>${format(new Date(i.date), "yyyy-MM-dd")}</td><td>${i.description || "-"}</td></tr>`).join('') || ''}</tbody></table>
                       <div class="total">کۆی گشتی: ${totalIncome.toLocaleString()} د.ع</div>
@@ -620,7 +636,9 @@ export default function ReportsPage() {
                       table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:10px;text-align:right}
                       th{background:#dc2626;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
                       .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
-                      <body><h1>قوتابخانەی لوتکە - خەرجییەکان</h1>
+                      <body>
+                      <div style="text-align:center;margin-bottom:10px">${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" style="width:50px;height:50px;object-fit:contain" />` : ''}</div>
+                      <h1>${schoolName} - خەرجییەکان</h1>
                       <table><thead><tr><th>ژ</th><th>جۆر</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
                       <tbody>${expenses?.map((e, idx) => `<tr><td>${idx + 1}</td><td>${e.category}</td><td style="color:#dc2626">-${Number(e.amount).toLocaleString()}</td><td>${format(new Date(e.date), "yyyy-MM-dd")}</td><td>${e.description || "-"}</td></tr>`).join('') || ''}</tbody></table>
                       <div class="total">کۆی گشتی: ${totalExpenses.toLocaleString()} د.ع</div>
@@ -691,7 +709,9 @@ export default function ReportsPage() {
                       table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:10px;text-align:right}
                       th{background:#4f46e5;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
                       .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
-                      <body><h1>قوتابخانەی لوتکە - قیستەکان</h1>
+                      <body>
+                      <div style="text-align:center;margin-bottom:10px">${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" style="width:50px;height:50px;object-fit:contain" />` : ''}</div>
+                      <h1>${schoolName} - قیستەکان</h1>
                       <table><thead><tr><th>ژ</th><th>قوتابی</th><th>بڕ (د.ع)</th><th>بەروار</th></tr></thead>
                       <tbody>${payments?.map((p, idx) => `<tr><td>${idx + 1}</td><td>${getStudentName(p.studentId)}</td><td style="color:#4f46e5">${Number(p.amount).toLocaleString()}</td><td>${format(new Date(p.date), "yyyy-MM-dd")}</td></tr>`).join('') || ''}</tbody></table>
                       <div class="total">کۆی گشتی: ${totalPayments.toLocaleString()} د.ع</div>
@@ -760,7 +780,9 @@ export default function ReportsPage() {
                       table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:10px;text-align:right}
                       th{background:#ea580c;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
                       .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
-                      <body><h1>قوتابخانەی لوتکە - کارمەندان</h1>
+                      <body>
+                      <div style="text-align:center;margin-bottom:10px">${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" style="width:50px;height:50px;object-fit:contain" />` : ''}</div>
+                      <h1>${schoolName} - کارمەندان</h1>
                       <table><thead><tr><th>ژ</th><th>ناو</th><th>پلە</th><th>مۆبایل</th><th>مووچە (د.ع)</th></tr></thead>
                       <tbody>${staff?.map((s, idx) => `<tr><td>${idx + 1}</td><td>${s.fullName}</td><td>${s.role}</td><td>${s.mobile}</td><td>${Number(s.salary).toLocaleString()}</td></tr>`).join('') || ''}</tbody></table>
                       <div class="total">کۆی مووچەی مانگانە: ${totalStaffSalary.toLocaleString()} د.ع</div>
@@ -831,7 +853,9 @@ export default function ReportsPage() {
                       table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:10px;text-align:right}
                       th{background:#9333ea;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
                       .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
-                      <body><h1>قوتابخانەی لوتکە - مووچەکان</h1>
+                      <body>
+                      <div style="text-align:center;margin-bottom:10px">${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" style="width:50px;height:50px;object-fit:contain" />` : ''}</div>
+                      <h1>${schoolName} - مووچەکان</h1>
                       <table><thead><tr><th>ژ</th><th>کارمەند</th><th>بڕ (د.ع)</th><th>مانگ</th><th>بەروار</th></tr></thead>
                       <tbody>${salaryPayments?.map((s, idx) => `<tr><td>${idx + 1}</td><td>${getStaffName(s.staffId)}</td><td style="color:#9333ea">${Number(s.amount).toLocaleString()}</td><td>${s.month}</td><td>${format(new Date(s.date), "yyyy-MM-dd")}</td></tr>`).join('') || ''}</tbody></table>
                       <div class="total">کۆی گشتی: ${totalSalaries.toLocaleString()} د.ع</div>
@@ -958,7 +982,9 @@ export default function ReportsPage() {
                             table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px;text-align:right}
                             th{background:#ea580c;color:white}.total-row{background:#fed7aa;font-weight:bold}
                             .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
-                            <body><h1>قوتابخانەی لوتکە - خەرجی بەپێی بابەت</h1>
+                            <body>
+                            <div style="text-align:center;margin-bottom:10px">${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" style="width:50px;height:50px;object-fit:contain" />` : ''}</div>
+                            <h1>${schoolName} - خەرجی بەپێی بابەت</h1>
                             <div class="period">ماوە: ${periodLabels[expensePeriod]}</div>
                             <table><thead><tr><th>بابەت / جۆر</th><th>کۆی خەرجی (د.ع)</th></tr></thead>
                             <tbody>${categoryData.map(c => `<tr><td>${c.category}</td><td style="color:#ea580c">${c.amount.toLocaleString()}</td></tr>`).join('')}

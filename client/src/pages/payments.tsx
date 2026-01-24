@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { usePayments, useCreatePayment } from "@/hooks/use-finance";
 import { useStudents } from "@/hooks/use-students";
+import { useSchoolSettings } from "@/hooks/use-school-settings";
 import { insertPaymentSchema, type InsertPayment, type Payment, type Student } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -16,10 +17,12 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { format } from "date-fns";
 import { PaymentReceipt } from "@/components/payment-receipt";
+import { generatePrintHtml, printDocument } from "@/lib/print-utils";
 
 export default function PaymentsPage() {
   const { data: payments, isLoading } = usePayments();
   const { data: students } = useStudents();
+  const { data: settings } = useSchoolSettings();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [receiptData, setReceiptData] = useState<{ payment: Payment; student: Student } | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<string>("all");
@@ -56,55 +59,20 @@ export default function PaymentsPage() {
               size="lg"
               className="gap-2"
               onClick={() => {
-                const printWindow = window.open('', '_blank');
-                if (!printWindow) return;
-                printWindow.document.write(`
-                  <!DOCTYPE html>
-                  <html dir="rtl" lang="ku">
-                  <head>
-                    <meta charset="UTF-8">
-                    <title>لیستی قیستەکان</title>
-                    <style>
-                      body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
-                      h1 { text-align: center; margin-bottom: 10px; }
-                      .filter { text-align: center; margin-bottom: 20px; color: #666; }
-                      table { width: 100%; border-collapse: collapse; }
-                      th, td { border: 1px solid #333; padding: 8px; text-align: right; }
-                      th { background: #f0f0f0; }
-                      .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
-                    </style>
-                  </head>
-                  <body>
-                    <h1>قوتابخانەی لوتکەی ناحکومی - قیستەکان</h1>
-                    ${selectedGrade !== "all" ? `<div class="filter">پۆل: ${selectedGrade}</div>` : ""}
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>ژ</th>
-                          <th>ناوی قوتابی</th>
-                          <th>پۆل</th>
-                          <th>بڕی واصل (د.ع)</th>
-                          <th>بەروار</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${filteredPayments?.map((payment, i) => `
-                          <tr>
-                            <td>${i + 1}</td>
-                            <td>${getStudentName(payment.studentId)}</td>
-                            <td>${getStudentGrade(payment.studentId)}</td>
-                            <td style="color: #4f46e5; font-weight: bold;">${Number(payment.amount).toLocaleString()}</td>
-                            <td>${new Date(payment.date).toLocaleDateString()}</td>
-                          </tr>
-                        `).join('') || ''}
-                      </tbody>
-                    </table>
-                    <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
-                    <script>window.onload = function() { window.print(); }</script>
-                  </body>
-                  </html>
-                `);
-                printWindow.document.close();
+                const html = generatePrintHtml({
+                  title: "قیستەکان",
+                  settings,
+                  filterText: selectedGrade !== "all" ? `پۆل: ${selectedGrade}` : undefined,
+                  tableHeaders: ["ژ", "ناوی قوتابی", "پۆل", "بڕی واصل (د.ع)", "بەروار"],
+                  tableRows: filteredPayments?.map((payment, i) => [
+                    String(i + 1),
+                    getStudentName(payment.studentId),
+                    getStudentGrade(payment.studentId),
+                    Number(payment.amount).toLocaleString(),
+                    new Date(payment.date).toLocaleDateString()
+                  ]) || []
+                });
+                printDocument(html);
               }}
               data-testid="button-print-payments"
             >

@@ -47,7 +47,7 @@ The auth system includes mandatory tables for sessions and users that should not
 
 ### Data Models
 Key entities managed by the system:
-- **School Settings**: Basic school configuration (name, email)
+- **School Settings**: Basic school configuration (name, email, logo)
 - **Students**: Student records with tuition fee tracking (full name, mobile, grade, fees, payments)
 - **Income**: Revenue sources with categorization
 - **Expenses**: Expenditure tracking
@@ -60,6 +60,13 @@ Key entities managed by the system:
 - **Currency**: All monetary amounts displayed in Iraqi Dinar (د.ع)
 - **Receipts**: A5 printable receipts with amounts shown in both numbers and Kurdish words
 - **Number to Words**: Kurdish number-to-words conversion utility in `client/src/lib/number-to-kurdish.ts`
+- **School Logo**: Logo appears on all printed reports and receipts when uploaded
+
+### Logo and Print System
+- **Logo Upload**: School logo can be uploaded via School Settings page (PNG, JPG, GIF, WebP, max 5MB)
+- **File Storage**: Uploaded logos stored in `./uploads` folder, served via `/uploads` route
+- **Print Utilities**: Centralized print HTML generation in `client/src/lib/print-utils.ts`
+- **Logo Integration**: All printed lists and receipts display the school logo and name from settings
 
 ### Build System
 - **Development**: Vite dev server with HMR

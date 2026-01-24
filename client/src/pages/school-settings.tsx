@@ -7,14 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Save, School, Loader2 } from "lucide-react";
+import { Save, School, Loader2, Upload, ImageIcon, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function SchoolSettingsPage() {
   const { data: settings, isLoading } = useSchoolSettings();
   const { mutate: updateSettings, isPending } = useUpdateSchoolSettings();
   const { toast } = useToast();
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<InsertSchoolSettings>({
     resolver: zodResolver(insertSchoolSettingsSchema),
@@ -22,14 +26,65 @@ export default function SchoolSettingsPage() {
       schoolName: "",
       email: "",
       password: "",
+      logoUrl: "",
     },
   });
 
   useEffect(() => {
     if (settings) {
       form.reset(settings);
+      if (settings.logoUrl) {
+        setLogoPreview(settings.logoUrl);
+      }
     }
   }, [settings, form]);
+
+  const uploadLogoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('logo', file);
+      const response = await fetch('/api/upload-logo', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'هەڵە لە بارکردنی وێنە');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setLogoPreview(data.logoUrl);
+      form.setValue('logoUrl', data.logoUrl);
+      toast({
+        title: "سەرکەوتوو بوو",
+        description: "لۆگۆ بارکرا",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "هەڵە",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadLogoMutation.mutate(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoPreview(null);
+    form.setValue('logoUrl', '');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   function onSubmit(data: InsertSchoolSettings) {
     updateSettings(data, {
@@ -75,6 +130,68 @@ export default function SchoolSettingsPage() {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-4">
+                  <FormLabel>لۆگۆی قوتابخانە</FormLabel>
+                  <div className="flex items-start gap-6">
+                    <div className="relative">
+                      {logoPreview ? (
+                        <div className="relative group">
+                          <img
+                            src={logoPreview}
+                            alt="لۆگۆی قوتابخانە"
+                            className="w-32 h-32 object-contain border rounded-xl bg-white p-2"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={handleRemoveLogo}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="w-32 h-32 border-2 border-dashed rounded-xl flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+                          <ImageIcon className="h-12 w-12 text-slate-300" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/gif,image/webp"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        id="logo-upload"
+                        data-testid="input-logo-upload"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadLogoMutation.isPending}
+                        className="gap-2"
+                        data-testid="button-upload-logo"
+                      >
+                        {uploadLogoMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="h-4 w-4" />
+                        )}
+                        هەڵبژاردنی وێنە
+                      </Button>
+                      <p className="text-xs text-muted-foreground">
+                        PNG، JPG، GIF یان WebP - زۆرترین قەبارە: 5MB
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        ئەم لۆگۆیە لە وەسڵ و ڕاپۆرتەکاندا دەردەکەوێت
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <FormField
                   control={form.control}
                   name="schoolName"

@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Printer, X } from "lucide-react";
 import { format } from "date-fns";
 import { formatAmountWithWords } from "@/lib/number-to-kurdish";
+import { useSchoolSettings } from "@/hooks/use-school-settings";
 
 interface PaymentReceiptProps {
   payment: Payment;
@@ -12,11 +13,18 @@ interface PaymentReceiptProps {
 }
 
 export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProps) {
+  const { data: settings } = useSchoolSettings();
+  const schoolName = settings?.schoolName || "قوتابخانەی لوتکەی ناحکومی";
+  const logoUrl = settings?.logoUrl || "";
+
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
     const amountInfo = formatAmountWithWords(Number(payment.amount));
+    const logoHtml = logoUrl 
+      ? `<img src="${logoUrl}" alt="لۆگۆ" style="width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px;" />`
+      : '';
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -138,7 +146,8 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
       <body>
         <div class="receipt">
           <div class="header">
-            <h1>قوتابخانەی لوتکەی ناحکومی</h1>
+            ${logoHtml}
+            <h1>${schoolName}</h1>
             <p>سیستەمی ژمێریاری قوتابخانە</p>
           </div>
           
@@ -227,7 +236,10 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
 
         <div className="border-2 border-slate-300 rounded-lg p-6 bg-white">
           <div className="text-center border-b-2 border-slate-300 pb-4 mb-4">
-            <h1 className="text-2xl font-bold text-slate-800">قوتابخانەی لوتکەی ناحکومی</h1>
+            {logoUrl && (
+              <img src={logoUrl} alt="لۆگۆ" className="w-16 h-16 object-contain mx-auto mb-2" />
+            )}
+            <h1 className="text-2xl font-bold text-slate-800">{schoolName}</h1>
             <p className="text-slate-500">سیستەمی ژمێریاری قوتابخانە</p>
           </div>
 

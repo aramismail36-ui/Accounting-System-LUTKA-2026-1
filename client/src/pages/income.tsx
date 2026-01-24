@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useIncome, useCreateIncome } from "@/hooks/use-finance";
+import { useSchoolSettings } from "@/hooks/use-school-settings";
 import { insertIncomeSchema, type InsertIncome } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -16,9 +17,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { z } from "zod";
 import { format } from "date-fns";
+import { generatePrintHtml, printDocument } from "@/lib/print-utils";
 
 export default function IncomePage() {
   const { data: income, isLoading } = useIncome();
+  const { data: settings } = useSchoolSettings();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const totalIncome = income?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
@@ -35,55 +38,20 @@ export default function IncomePage() {
               size="lg"
               className="gap-2"
               onClick={() => {
-                const printWindow = window.open('', '_blank');
-                if (!printWindow) return;
-                printWindow.document.write(`
-                  <!DOCTYPE html>
-                  <html dir="rtl" lang="ku">
-                  <head>
-                    <meta charset="UTF-8">
-                    <title>لیستی داهاتەکان</title>
-                    <style>
-                      body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
-                      h1 { text-align: center; margin-bottom: 10px; }
-                      .summary { text-align: center; margin-bottom: 20px; font-size: 18px; font-weight: bold; color: #16a34a; }
-                      table { width: 100%; border-collapse: collapse; }
-                      th, td { border: 1px solid #333; padding: 8px; text-align: right; }
-                      th { background: #f0f0f0; }
-                      .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
-                    </style>
-                  </head>
-                  <body>
-                    <h1>قوتابخانەی لوتکەی ناحکومی - داهاتەکان</h1>
-                    <div class="summary">کۆی گشتی: ${totalIncome.toLocaleString()} د.ع</div>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>ژ</th>
-                          <th>سەرچاوە</th>
-                          <th>بڕ (د.ع)</th>
-                          <th>بەروار</th>
-                          <th>تێبینی</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${income?.map((item, i) => `
-                          <tr>
-                            <td>${i + 1}</td>
-                            <td>${item.source}</td>
-                            <td style="color: #16a34a; font-weight: bold;">+${Number(item.amount).toLocaleString()}</td>
-                            <td>${new Date(item.date).toLocaleDateString()}</td>
-                            <td>${item.description || '-'}</td>
-                          </tr>
-                        `).join('') || ''}
-                      </tbody>
-                    </table>
-                    <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
-                    <script>window.onload = function() { window.print(); }</script>
-                  </body>
-                  </html>
-                `);
-                printWindow.document.close();
+                const html = generatePrintHtml({
+                  title: "داهاتەکان",
+                  settings,
+                  filterText: `کۆی گشتی: ${totalIncome.toLocaleString()} د.ع`,
+                  tableHeaders: ["ژ", "سەرچاوە", "بڕ (د.ع)", "بەروار", "تێبینی"],
+                  tableRows: income?.map((item, i) => [
+                    String(i + 1),
+                    item.source,
+                    `+${Number(item.amount).toLocaleString()}`,
+                    new Date(item.date).toLocaleDateString(),
+                    item.description || '-'
+                  ]) || []
+                });
+                printDocument(html);
               }}
               data-testid="button-print-income"
             >

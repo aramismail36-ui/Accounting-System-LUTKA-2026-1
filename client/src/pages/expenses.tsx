@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useExpenses, useCreateExpense } from "@/hooks/use-finance";
+import { useSchoolSettings } from "@/hooks/use-school-settings";
 import { insertExpenseSchema, type InsertExpense } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -15,9 +16,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { z } from "zod";
 import { format } from "date-fns";
+import { generatePrintHtml, printDocument } from "@/lib/print-utils";
 
 export default function ExpensesPage() {
   const { data: expenses, isLoading } = useExpenses();
+  const { data: settings } = useSchoolSettings();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const totalExpenses = expenses?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
@@ -34,55 +37,20 @@ export default function ExpensesPage() {
               size="lg"
               className="gap-2"
               onClick={() => {
-                const printWindow = window.open('', '_blank');
-                if (!printWindow) return;
-                printWindow.document.write(`
-                  <!DOCTYPE html>
-                  <html dir="rtl" lang="ku">
-                  <head>
-                    <meta charset="UTF-8">
-                    <title>لیستی خەرجییەکان</title>
-                    <style>
-                      body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
-                      h1 { text-align: center; margin-bottom: 10px; }
-                      .summary { text-align: center; margin-bottom: 20px; font-size: 18px; font-weight: bold; color: #dc2626; }
-                      table { width: 100%; border-collapse: collapse; }
-                      th, td { border: 1px solid #333; padding: 8px; text-align: right; }
-                      th { background: #f0f0f0; }
-                      .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
-                    </style>
-                  </head>
-                  <body>
-                    <h1>قوتابخانەی لوتکەی ناحکومی - خەرجییەکان</h1>
-                    <div class="summary">کۆی گشتی: ${totalExpenses.toLocaleString()} د.ع</div>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>ژ</th>
-                          <th>جۆر / بەش</th>
-                          <th>بڕ (د.ع)</th>
-                          <th>بەروار</th>
-                          <th>تێبینی</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${expenses?.map((item, i) => `
-                          <tr>
-                            <td>${i + 1}</td>
-                            <td>${item.category}</td>
-                            <td style="color: #dc2626; font-weight: bold;">-${Number(item.amount).toLocaleString()}</td>
-                            <td>${new Date(item.date).toLocaleDateString()}</td>
-                            <td>${item.description || '-'}</td>
-                          </tr>
-                        `).join('') || ''}
-                      </tbody>
-                    </table>
-                    <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
-                    <script>window.onload = function() { window.print(); }</script>
-                  </body>
-                  </html>
-                `);
-                printWindow.document.close();
+                const html = generatePrintHtml({
+                  title: "خەرجییەکان",
+                  settings,
+                  filterText: `کۆی گشتی: ${totalExpenses.toLocaleString()} د.ع`,
+                  tableHeaders: ["ژ", "جۆر / بەش", "بڕ (د.ع)", "بەروار", "تێبینی"],
+                  tableRows: expenses?.map((item, i) => [
+                    String(i + 1),
+                    item.category,
+                    `-${Number(item.amount).toLocaleString()}`,
+                    new Date(item.date).toLocaleDateString(),
+                    item.description || '-'
+                  ]) || []
+                });
+                printDocument(html);
               }}
               data-testid="button-print-expenses"
             >

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useStaff, useCreateStaff, useDeleteStaff } from "@/hooks/use-staff";
+import { useSchoolSettings } from "@/hooks/use-school-settings";
 import { insertStaffSchema, type InsertStaff } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { generatePrintHtml, printDocument } from "@/lib/print-utils";
 
 export default function StaffPage() {
   const { data: staff, isLoading } = useStaff();
+  const { data: settings } = useSchoolSettings();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
@@ -30,53 +33,19 @@ export default function StaffPage() {
               size="lg"
               className="gap-2"
               onClick={() => {
-                const printWindow = window.open('', '_blank');
-                if (!printWindow) return;
-                printWindow.document.write(`
-                  <!DOCTYPE html>
-                  <html dir="rtl" lang="ku">
-                  <head>
-                    <meta charset="UTF-8">
-                    <title>لیستی کارمەندان</title>
-                    <style>
-                      body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
-                      h1 { text-align: center; margin-bottom: 20px; }
-                      table { width: 100%; border-collapse: collapse; }
-                      th, td { border: 1px solid #333; padding: 8px; text-align: right; }
-                      th { background: #f0f0f0; }
-                      .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
-                    </style>
-                  </head>
-                  <body>
-                    <h1>قوتابخانەی لوتکەی ناحکومی - کارمەندان</h1>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>ژ</th>
-                          <th>ناوی سیانی</th>
-                          <th>پلە / کار</th>
-                          <th>مۆبایل</th>
-                          <th>مووچە (د.ع)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${staff?.map((person, i) => `
-                          <tr>
-                            <td>${i + 1}</td>
-                            <td>${person.fullName}</td>
-                            <td>${person.role}</td>
-                            <td>${person.mobile}</td>
-                            <td style="font-weight: bold;">${Number(person.salary).toLocaleString()}</td>
-                          </tr>
-                        `).join('') || ''}
-                      </tbody>
-                    </table>
-                    <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
-                    <script>window.onload = function() { window.print(); }</script>
-                  </body>
-                  </html>
-                `);
-                printWindow.document.close();
+                const html = generatePrintHtml({
+                  title: "کارمەندان",
+                  settings,
+                  tableHeaders: ["ژ", "ناوی سیانی", "پلە / کار", "مۆبایل", "مووچە (د.ع)"],
+                  tableRows: staff?.map((person, i) => [
+                    String(i + 1),
+                    person.fullName,
+                    person.role,
+                    person.mobile,
+                    Number(person.salary).toLocaleString()
+                  ]) || []
+                });
+                printDocument(html);
               }}
               data-testid="button-print-staff"
             >
