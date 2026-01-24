@@ -1,7 +1,7 @@
 import { db } from "./db";
 import { eq, sql, and, gte, lte } from "drizzle-orm";
 import { 
-  schoolSettings, students, income, expenses, payments, staff, salaryPayments, foodPayments, shareholders,
+  schoolSettings, students, income, expenses, payments, staff, salaryPayments, foodPayments, shareholders, users,
   type InsertSchoolSettings, type SchoolSettings,
   type InsertStudent, type Student,
   type InsertIncome, type Income,
@@ -10,7 +10,8 @@ import {
   type InsertStaff, type Staff,
   type InsertSalaryPayment, type SalaryPayment,
   type InsertFoodPayment, type FoodPayment,
-  type InsertShareholder, type Shareholder
+  type InsertShareholder, type Shareholder,
+  type User
 } from "@shared/schema";
 
 export interface IStorage {
@@ -62,6 +63,10 @@ export interface IStorage {
   createShareholder(shareholder: InsertShareholder): Promise<Shareholder>;
   updateShareholder(id: number, shareholder: Partial<InsertShareholder>): Promise<Shareholder>;
   deleteShareholder(id: number): Promise<void>;
+
+  // Users
+  getUsers(): Promise<User[]>;
+  updateUserRole(id: string, role: string): Promise<User | undefined>;
 
   // Reports
   getMonthlyReport(month: Date): Promise<{
@@ -306,6 +311,20 @@ export class DatabaseStorage implements IStorage {
     const netProfit = totalIncome - totalExpenses;
 
     return { totalIncome, totalExpenses, netProfit };
+  }
+
+  // Users
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(users.firstName);
+  }
+
+  async updateUserRole(id: string, role: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ role, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
   }
 }
 

@@ -347,6 +347,40 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
+  // Users (Admin only for management)
+  app.get(api.users.list.path, async (req, res) => {
+    const usersList = await storage.getUsers();
+    res.json(usersList.map(u => ({
+      id: u.id,
+      email: u.email,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      role: u.role,
+    })));
+  });
+
+  app.put(api.users.updateRole.path, async (req, res) => {
+    try {
+      const { role } = api.users.updateRole.input.parse(req.body);
+      const user = await storage.updateUserRole(req.params.id, role);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
   // SEED DATA
   const existingStudents = await storage.getStudents();
   if (existingStudents.length === 0) {

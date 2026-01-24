@@ -290,6 +290,38 @@ export const api = {
       },
     },
   },
+  users: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/users',
+      responses: {
+        200: z.array(z.object({
+          id: z.string(),
+          email: z.string().nullable(),
+          firstName: z.string().nullable(),
+          lastName: z.string().nullable(),
+          role: z.string(),
+        })),
+      },
+    },
+    updateRole: {
+      method: 'PUT' as const,
+      path: '/api/users/:id/role',
+      input: z.object({
+        role: z.enum(['admin', 'shareholder']),
+      }),
+      responses: {
+        200: z.object({
+          id: z.string(),
+          email: z.string().nullable(),
+          firstName: z.string().nullable(),
+          lastName: z.string().nullable(),
+          role: z.string(),
+        }),
+        404: errorSchemas.notFound,
+      },
+    },
+  },
 };
 
 export function buildUrl(path: string, params?: Record<string, string | number>): string {
