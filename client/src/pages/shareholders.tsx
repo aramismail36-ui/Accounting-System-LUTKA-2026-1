@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useShareholders, useCreateShareholder, useUpdateShareholder, useDeleteShareholder } from "@/hooks/use-shareholders";
 import { useIncome, useExpenses } from "@/hooks/use-finance";
-import { insertShareholderSchema, type InsertShareholder, type Shareholder, type Income, type Expense } from "@shared/routes";
+import { type Shareholder } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

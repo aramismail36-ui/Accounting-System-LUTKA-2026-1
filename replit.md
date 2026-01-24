@@ -45,6 +45,7 @@ Key entities managed by the system:
 - **Payments**: Student payment records linked to students
 - **Staff**: Teacher and employee records with salary information
 - **Salary Payments**: Staff salary disbursements with automatic expense creation
+- **Shareholders**: School owners/investors with share percentages for profit/loss distribution
 
 ### Currency and Receipts
 - **Currency**: All monetary amounts displayed in Iraqi Dinar (د.ع)
