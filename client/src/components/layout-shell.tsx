@@ -25,7 +25,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const navigation = [
-    { name: "ڕێکخستنەکان", href: "/", icon: Settings },
+    { name: "داشبۆرد", href: "/", icon: LayoutDashboard },
     { name: "قوتابیان", href: "/students", icon: GraduationCap },
     { name: "داهاتەکان", href: "/income", icon: Wallet },
     { name: "خەرجییەکان", href: "/expenses", icon: Receipt },
@@ -34,6 +34,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     { name: "خەرجی مووچە", href: "/salary-payments", icon: Banknote },
     { name: "پارەی خواردن", href: "/food-payments", icon: UtensilsCrossed },
     { name: "ڕاپۆرتەکان", href: "/reports", icon: PieChart },
+    { name: "ڕێکخستنەکان", href: "/school-settings", icon: Settings },
   ];
 
   const SidebarContent = () => (

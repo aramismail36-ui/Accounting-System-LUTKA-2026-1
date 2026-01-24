@@ -7,6 +7,7 @@ import { LayoutShell } from "@/components/layout-shell";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 
+import DashboardPage from "@/pages/dashboard";
 import SchoolSettingsPage from "@/pages/school-settings";
 import StudentsPage from "@/pages/students";
 import IncomePage from "@/pages/income";
@@ -44,7 +45,8 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={() => <ProtectedRoute component={SchoolSettingsPage} />} />
+      <Route path="/" component={() => <ProtectedRoute component={DashboardPage} />} />
+      <Route path="/school-settings" component={() => <ProtectedRoute component={SchoolSettingsPage} />} />
       <Route path="/students" component={() => <ProtectedRoute component={StudentsPage} />} />
       <Route path="/income" component={() => <ProtectedRoute component={IncomePage} />} />
       <Route path="/expenses" component={() => <ProtectedRoute component={ExpensesPage} />} />
