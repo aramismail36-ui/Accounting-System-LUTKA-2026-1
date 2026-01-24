@@ -26,8 +26,8 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
         <title>وەسڵی وەرگرتنی قیست</title>
         <style>
           @page {
-            size: A5 landscape;
-            margin: 10mm;
+            size: A6 landscape;
+            margin: 5mm;
           }
           * {
             box-sizing: border-box;
@@ -37,39 +37,40 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
           body {
             font-family: 'Vazirmatn', 'Nrt', Arial, sans-serif;
             direction: rtl;
-            padding: 15mm;
-            width: 210mm;
-            height: 148mm;
+            padding: 8mm;
+            width: 148mm;
+            height: 105mm;
+            font-size: 11px;
           }
           .receipt {
-            border: 2px solid #333;
-            padding: 20px;
+            border: 1.5px solid #333;
+            padding: 10px;
             height: 100%;
             display: flex;
             flex-direction: column;
           }
           .header {
             text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+            border-bottom: 1.5px solid #333;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
           }
           .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-size: 14px;
+            margin-bottom: 2px;
           }
           .header p {
-            font-size: 14px;
+            font-size: 9px;
             color: #666;
           }
           .receipt-title {
             text-align: center;
-            font-size: 20px;
+            font-size: 12px;
             font-weight: bold;
-            margin: 15px 0;
-            padding: 10px;
+            margin: 6px 0;
+            padding: 5px;
             background: #f0f0f0;
-            border-radius: 5px;
+            border-radius: 3px;
           }
           .content {
             flex: 1;
@@ -77,8 +78,9 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
           .row {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 4px 0;
             border-bottom: 1px dashed #ccc;
+            font-size: 10px;
           }
           .row:last-child {
             border-bottom: none;
@@ -93,41 +95,42 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
           .amount-box {
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 8px 0;
             text-align: center;
           }
           .amount-number {
-            font-size: 32px;
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
           }
           .amount-words {
-            font-size: 16px;
+            font-size: 10px;
             opacity: 0.9;
           }
           .signature-section {
             display: flex;
             justify-content: space-between;
             margin-top: auto;
-            padding-top: 30px;
+            padding-top: 10px;
           }
           .signature-box {
             width: 45%;
             text-align: center;
+            font-size: 9px;
           }
           .signature-line {
-            border-top: 2px solid #333;
-            margin-top: 50px;
-            padding-top: 10px;
+            border-top: 1px solid #333;
+            margin-top: 20px;
+            padding-top: 5px;
           }
           .footer {
             text-align: center;
-            font-size: 12px;
+            font-size: 8px;
             color: #888;
-            margin-top: 15px;
-            padding-top: 10px;
+            margin-top: 8px;
+            padding-top: 5px;
             border-top: 1px solid #ddd;
           }
         </style>
