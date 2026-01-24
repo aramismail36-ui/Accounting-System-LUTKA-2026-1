@@ -60,7 +60,7 @@ export default function PaymentsPage() {
               {payments?.map((payment) => (
                 <TableRow key={payment.id}>
                   <TableCell className="font-medium">{getStudentName(payment.studentId)}</TableCell>
-                  <TableCell className="text-indigo-600 font-bold font-mono">${Number(payment.amount).toLocaleString()}</TableCell>
+                  <TableCell className="text-indigo-600 font-bold font-mono">{Number(payment.amount).toLocaleString()} د.ع</TableCell>
                   <TableCell className="text-slate-500 font-mono">
                     {format(new Date(payment.date), "yyyy-MM-dd")}
                   </TableCell>

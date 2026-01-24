@@ -61,7 +61,7 @@ export default function StaffPage() {
                     </span>
                   </TableCell>
                   <TableCell>{person.mobile}</TableCell>
-                  <TableCell className="font-mono font-bold">${Number(person.salary).toLocaleString()}</TableCell>
+                  <TableCell className="font-mono font-bold">{Number(person.salary).toLocaleString()} د.ع</TableCell>
                   <TableCell>
                     <DeleteStaffButton id={person.id} />
                   </TableCell>

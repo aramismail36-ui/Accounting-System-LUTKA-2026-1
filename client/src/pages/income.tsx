@@ -45,7 +45,7 @@ export default function IncomePage() {
         <div>
           <p className="text-sm font-medium text-slate-500">کۆی گشتی داهاتەکان</p>
           <h2 className="text-4xl font-bold text-slate-900 dark:text-white mt-2">
-            ${totalIncome.toLocaleString()}
+            {totalIncome.toLocaleString()} د.ع
           </h2>
         </div>
         <div className="h-16 w-16 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center">
@@ -73,7 +73,7 @@ export default function IncomePage() {
               {income?.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.source}</TableCell>
-                  <TableCell className="text-green-600 font-bold font-mono">+${Number(item.amount).toLocaleString()}</TableCell>
+                  <TableCell className="text-green-600 font-bold font-mono">+{Number(item.amount).toLocaleString()} د.ع</TableCell>
                   <TableCell className="text-slate-500 font-mono">
                     {format(new Date(item.date), "yyyy-MM-dd")}
                   </TableCell>

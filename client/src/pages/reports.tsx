@@ -1,7 +1,7 @@
 import { useMonthlyReport } from "@/hooks/use-finance";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Banknote } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
 export default function ReportsPage() {
@@ -36,7 +36,7 @@ export default function ReportsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-green-100 font-medium">کۆی داهات</p>
-                <h3 className="text-3xl font-bold mt-1">${report?.totalIncome.toLocaleString()}</h3>
+                <h3 className="text-3xl font-bold mt-1">{report?.totalIncome.toLocaleString()} د.ع</h3>
               </div>
               <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-white" />
@@ -50,7 +50,7 @@ export default function ReportsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-red-100 font-medium">کۆی خەرجی</p>
-                <h3 className="text-3xl font-bold mt-1">${report?.totalExpenses.toLocaleString()}</h3>
+                <h3 className="text-3xl font-bold mt-1">{report?.totalExpenses.toLocaleString()} د.ع</h3>
               </div>
               <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
                 <TrendingDown className="h-6 w-6 text-white" />
@@ -66,10 +66,10 @@ export default function ReportsPage() {
                 <p className={`${isProfitable ? 'text-blue-100' : 'text-orange-100'} font-medium`}>
                   {isProfitable ? 'قازانجی سافی' : 'زیان'}
                 </p>
-                <h3 className="text-3xl font-bold mt-1">${Math.abs(profit).toLocaleString()}</h3>
+                <h3 className="text-3xl font-bold mt-1">{Math.abs(profit).toLocaleString()} د.ع</h3>
               </div>
               <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-white" />
+                <Banknote className="h-6 w-6 text-white" />
               </div>
             </div>
           </CardContent>
@@ -98,7 +98,7 @@ export default function ReportsPage() {
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: number) => `$${value.toLocaleString()}`}
+                  formatter={(value: number) => `${value.toLocaleString()} د.ع`}
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                 />
                 <Legend />
