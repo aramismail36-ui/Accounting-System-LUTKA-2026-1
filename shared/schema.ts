@@ -120,6 +120,20 @@ export const insertFoodPaymentSchema = createInsertSchema(foodPayments).omit({ i
 export type InsertFoodPayment = z.infer<typeof insertFoodPaymentSchema>;
 export type FoodPayment = typeof foodPayments.$inferSelect;
 
+// Shareholders (خاوەن پشکەکان)
+export const shareholders = pgTable("shareholders", {
+  id: serial("id").primaryKey(),
+  fullName: text("full_name").notNull(),
+  mobile: text("mobile").notNull(),
+  sharePercentage: decimal("share_percentage", { precision: 5, scale: 2 }).notNull(), // Percentage (e.g., 25.50 = 25.5%)
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertShareholderSchema = createInsertSchema(shareholders).omit({ id: true, createdAt: true });
+export type InsertShareholder = z.infer<typeof insertShareholderSchema>;
+export type Shareholder = typeof shareholders.$inferSelect;
+
 // Financial Report Types (Page 7)
 export type FinancialReport = {
   totalIncome: number;

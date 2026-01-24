@@ -1,7 +1,7 @@
 import { db } from "./db";
 import { eq, sql, and, gte, lte } from "drizzle-orm";
 import { 
-  schoolSettings, students, income, expenses, payments, staff, salaryPayments, foodPayments,
+  schoolSettings, students, income, expenses, payments, staff, salaryPayments, foodPayments, shareholders,
   type InsertSchoolSettings, type SchoolSettings,
   type InsertStudent, type Student,
   type InsertIncome, type Income,
@@ -9,7 +9,8 @@ import {
   type InsertPayment, type Payment,
   type InsertStaff, type Staff,
   type InsertSalaryPayment, type SalaryPayment,
-  type InsertFoodPayment, type FoodPayment
+  type InsertFoodPayment, type FoodPayment,
+  type InsertShareholder, type Shareholder
 } from "@shared/schema";
 
 export interface IStorage {
@@ -54,6 +55,13 @@ export interface IStorage {
   getFoodPaymentByStudentAndMonth(studentId: number, month: string): Promise<FoodPayment | undefined>;
   createFoodPayment(payment: InsertFoodPayment): Promise<FoodPayment>;
   deleteFoodPayment(id: number): Promise<void>;
+
+  // Shareholders
+  getShareholders(): Promise<Shareholder[]>;
+  getShareholder(id: number): Promise<Shareholder | undefined>;
+  createShareholder(shareholder: InsertShareholder): Promise<Shareholder>;
+  updateShareholder(id: number, shareholder: Partial<InsertShareholder>): Promise<Shareholder>;
+  deleteShareholder(id: number): Promise<void>;
 
   // Reports
   getMonthlyReport(month: Date): Promise<{
@@ -250,6 +258,30 @@ export class DatabaseStorage implements IStorage {
 
   async deleteFoodPayment(id: number): Promise<void> {
     await db.delete(foodPayments).where(eq(foodPayments.id, id));
+  }
+
+  // Shareholders
+  async getShareholders(): Promise<Shareholder[]> {
+    return await db.select().from(shareholders).orderBy(shareholders.fullName);
+  }
+
+  async getShareholder(id: number): Promise<Shareholder | undefined> {
+    const [shareholder] = await db.select().from(shareholders).where(eq(shareholders.id, id));
+    return shareholder;
+  }
+
+  async createShareholder(insertShareholder: InsertShareholder): Promise<Shareholder> {
+    const [shareholder] = await db.insert(shareholders).values(insertShareholder).returning();
+    return shareholder;
+  }
+
+  async updateShareholder(id: number, shareholder: Partial<InsertShareholder>): Promise<Shareholder> {
+    const [updated] = await db.update(shareholders).set(shareholder).where(eq(shareholders.id, id)).returning();
+    return updated;
+  }
+
+  async deleteShareholder(id: number): Promise<void> {
+    await db.delete(shareholders).where(eq(shareholders.id, id));
   }
 
   // Reports

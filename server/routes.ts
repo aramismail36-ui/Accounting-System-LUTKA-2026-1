@@ -297,6 +297,56 @@ export async function registerRoutes(
     });
   });
 
+  // Shareholders
+  app.get(api.shareholders.list.path, async (req, res) => {
+    const shareholders = await storage.getShareholders();
+    res.json(shareholders);
+  });
+
+  app.post(api.shareholders.create.path, async (req, res) => {
+    try {
+      const bodySchema = api.shareholders.create.input.extend({
+        sharePercentage: z.coerce.number(),
+      });
+      const input = bodySchema.parse(req.body);
+      const shareholder = await storage.createShareholder({
+        ...input,
+        sharePercentage: String(input.sharePercentage)
+      });
+      res.status(201).json(shareholder);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.put(api.shareholders.update.path, async (req, res) => {
+    try {
+      const bodySchema = api.shareholders.update.input.extend({
+        sharePercentage: z.coerce.number().optional(),
+      });
+      const input = bodySchema.parse(req.body);
+      const updateData: any = { ...input };
+      if (input.sharePercentage !== undefined) {
+        updateData.sharePercentage = String(input.sharePercentage);
+      }
+      const shareholder = await storage.updateShareholder(Number(req.params.id), updateData);
+      res.json(shareholder);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.delete(api.shareholders.delete.path, async (req, res) => {
+    await storage.deleteShareholder(Number(req.params.id));
+    res.status(204).send();
+  });
+
   // SEED DATA
   const existingStudents = await storage.getStudents();
   if (existingStudents.length === 0) {

@@ -8,6 +8,7 @@ import {
   insertStaffSchema,
   insertSalaryPaymentSchema,
   insertFoodPaymentSchema,
+  insertShareholderSchema,
   schoolSettings,
   students,
   income,
@@ -15,7 +16,8 @@ import {
   payments,
   staff,
   salaryPayments,
-  foodPayments
+  foodPayments,
+  shareholders
 } from './schema';
 
 // Export everything from schema so frontend can import from @shared/routes if it wants to
@@ -251,6 +253,40 @@ export const api = {
           netProfit: z.number(),
           month: z.string(),
         }),
+      },
+    },
+  },
+  shareholders: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/shareholders',
+      responses: {
+        200: z.array(z.custom<typeof shareholders.$inferSelect>()),
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/shareholders',
+      input: insertShareholderSchema,
+      responses: {
+        201: z.custom<typeof shareholders.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    update: {
+      method: 'PUT' as const,
+      path: '/api/shareholders/:id',
+      input: insertShareholderSchema.partial(),
+      responses: {
+        200: z.custom<typeof shareholders.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/shareholders/:id',
+      responses: {
+        204: z.void(),
       },
     },
   },
