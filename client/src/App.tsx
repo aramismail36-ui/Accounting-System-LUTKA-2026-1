@@ -13,6 +13,7 @@ import IncomePage from "@/pages/income";
 import ExpensesPage from "@/pages/expenses";
 import PaymentsPage from "@/pages/payments";
 import StaffPage from "@/pages/staff";
+import SalaryPaymentsPage from "@/pages/salary-payments";
 import ReportsPage from "@/pages/reports";
 import LoginPage from "@/pages/login";
 import NotFound from "@/pages/not-found";
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/expenses" component={() => <ProtectedRoute component={ExpensesPage} />} />
       <Route path="/payments" component={() => <ProtectedRoute component={PaymentsPage} />} />
       <Route path="/staff" component={() => <ProtectedRoute component={StaffPage} />} />
+      <Route path="/salary-payments" component={() => <ProtectedRoute component={SalaryPaymentsPage} />} />
       <Route path="/reports" component={() => <ProtectedRoute component={ReportsPage} />} />
       <Route path="/login" component={LoginPage} />
       <Route component={NotFound} />
