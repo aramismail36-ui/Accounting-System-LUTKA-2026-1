@@ -50,15 +50,75 @@ export default function PaymentsPage() {
         title="قیستەکان"
         description="وەرگرتنی قیستی قوتابیان و چاپکردنی وەسڵ"
         action={
-          <Button
-            size="lg"
-            className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20"
-            onClick={() => setIsDialogOpen(true)}
-            data-testid="button-add-payment"
-          >
-            <Plus className="h-5 w-5" />
-            وەرگرتنی قیست
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2"
+              onClick={() => {
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) return;
+                printWindow.document.write(`
+                  <!DOCTYPE html>
+                  <html dir="rtl" lang="ku">
+                  <head>
+                    <meta charset="UTF-8">
+                    <title>لیستی قیستەکان</title>
+                    <style>
+                      body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
+                      h1 { text-align: center; margin-bottom: 10px; }
+                      .filter { text-align: center; margin-bottom: 20px; color: #666; }
+                      table { width: 100%; border-collapse: collapse; }
+                      th, td { border: 1px solid #333; padding: 8px; text-align: right; }
+                      th { background: #f0f0f0; }
+                      .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>قوتابخانەی لوتکەی ناحکومی - قیستەکان</h1>
+                    ${selectedGrade !== "all" ? `<div class="filter">پۆل: ${selectedGrade}</div>` : ""}
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ناوی قوتابی</th>
+                          <th>پۆل</th>
+                          <th>بڕی واصل (د.ع)</th>
+                          <th>بەروار</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${filteredPayments?.map(payment => `
+                          <tr>
+                            <td>${getStudentName(payment.studentId)}</td>
+                            <td>${getStudentGrade(payment.studentId)}</td>
+                            <td style="color: #4f46e5; font-weight: bold;">${Number(payment.amount).toLocaleString()}</td>
+                            <td>${new Date(payment.date).toLocaleDateString()}</td>
+                          </tr>
+                        `).join('') || ''}
+                      </tbody>
+                    </table>
+                    <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
+                    <script>window.onload = function() { window.print(); }</script>
+                  </body>
+                  </html>
+                `);
+                printWindow.document.close();
+              }}
+              data-testid="button-print-payments"
+            >
+              <Printer className="h-5 w-5" />
+              چاپکردن
+            </Button>
+            <Button
+              size="lg"
+              className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20"
+              onClick={() => setIsDialogOpen(true)}
+              data-testid="button-add-payment"
+            >
+              <Plus className="h-5 w-5" />
+              وەرگرتنی قیست
+            </Button>
+          </div>
         }
       />
 

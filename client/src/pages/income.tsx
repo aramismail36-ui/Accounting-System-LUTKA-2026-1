@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Wallet, Loader2, Trash2 } from "lucide-react";
+import { Plus, Wallet, Loader2, Trash2, Printer } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
@@ -29,14 +29,74 @@ export default function IncomePage() {
         title="داهاتەکان"
         description="تۆمارکردن و بەڕێوەبردنی سەرچاوەکانی داهات"
         action={
-          <Button
-            size="lg"
-            className="gap-2 bg-green-600 hover:bg-green-700 shadow-lg shadow-green-600/20"
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <Plus className="h-5 w-5" />
-            زیادکردنی داهات
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2"
+              onClick={() => {
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) return;
+                printWindow.document.write(`
+                  <!DOCTYPE html>
+                  <html dir="rtl" lang="ku">
+                  <head>
+                    <meta charset="UTF-8">
+                    <title>لیستی داهاتەکان</title>
+                    <style>
+                      body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
+                      h1 { text-align: center; margin-bottom: 10px; }
+                      .summary { text-align: center; margin-bottom: 20px; font-size: 18px; font-weight: bold; color: #16a34a; }
+                      table { width: 100%; border-collapse: collapse; }
+                      th, td { border: 1px solid #333; padding: 8px; text-align: right; }
+                      th { background: #f0f0f0; }
+                      .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>قوتابخانەی لوتکەی ناحکومی - داهاتەکان</h1>
+                    <div class="summary">کۆی گشتی: ${totalIncome.toLocaleString()} د.ع</div>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>سەرچاوە</th>
+                          <th>بڕ (د.ع)</th>
+                          <th>بەروار</th>
+                          <th>تێبینی</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${income?.map(item => `
+                          <tr>
+                            <td>${item.source}</td>
+                            <td style="color: #16a34a; font-weight: bold;">+${Number(item.amount).toLocaleString()}</td>
+                            <td>${new Date(item.date).toLocaleDateString()}</td>
+                            <td>${item.description || '-'}</td>
+                          </tr>
+                        `).join('') || ''}
+                      </tbody>
+                    </table>
+                    <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
+                    <script>window.onload = function() { window.print(); }</script>
+                  </body>
+                  </html>
+                `);
+                printWindow.document.close();
+              }}
+              data-testid="button-print-income"
+            >
+              <Printer className="h-5 w-5" />
+              چاپکردن
+            </Button>
+            <Button
+              size="lg"
+              className="gap-2 bg-green-600 hover:bg-green-700 shadow-lg shadow-green-600/20"
+              onClick={() => setIsDialogOpen(true)}
+            >
+              <Plus className="h-5 w-5" />
+              زیادکردنی داهات
+            </Button>
+          </div>
         }
       />
 

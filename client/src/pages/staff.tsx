@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, UserPlus, Trash2, Loader2 } from "lucide-react";
+import { Plus, UserPlus, Trash2, Loader2, Printer } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
@@ -24,14 +24,72 @@ export default function StaffPage() {
         title="مامۆستا و فەرمانبەران"
         description="بەڕێوەبردنی میلاکاتی قوتابخانە و مووچە"
         action={
-          <Button
-            size="lg"
-            className="gap-2 bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-600/20"
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <UserPlus className="h-5 w-5" />
-            زیادکردنی کارمەند
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2"
+              onClick={() => {
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) return;
+                printWindow.document.write(`
+                  <!DOCTYPE html>
+                  <html dir="rtl" lang="ku">
+                  <head>
+                    <meta charset="UTF-8">
+                    <title>لیستی کارمەندان</title>
+                    <style>
+                      body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
+                      h1 { text-align: center; margin-bottom: 20px; }
+                      table { width: 100%; border-collapse: collapse; }
+                      th, td { border: 1px solid #333; padding: 8px; text-align: right; }
+                      th { background: #f0f0f0; }
+                      .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>قوتابخانەی لوتکەی ناحکومی - کارمەندان</h1>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ناوی سیانی</th>
+                          <th>پلە / کار</th>
+                          <th>مۆبایل</th>
+                          <th>مووچە (د.ع)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${staff?.map(person => `
+                          <tr>
+                            <td>${person.fullName}</td>
+                            <td>${person.role}</td>
+                            <td>${person.mobile}</td>
+                            <td style="font-weight: bold;">${Number(person.salary).toLocaleString()}</td>
+                          </tr>
+                        `).join('') || ''}
+                      </tbody>
+                    </table>
+                    <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
+                    <script>window.onload = function() { window.print(); }</script>
+                  </body>
+                  </html>
+                `);
+                printWindow.document.close();
+              }}
+              data-testid="button-print-staff"
+            >
+              <Printer className="h-5 w-5" />
+              چاپکردن
+            </Button>
+            <Button
+              size="lg"
+              className="gap-2 bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-600/20"
+              onClick={() => setIsDialogOpen(true)}
+            >
+              <UserPlus className="h-5 w-5" />
+              زیادکردنی کارمەند
+            </Button>
+          </div>
         }
       />
 

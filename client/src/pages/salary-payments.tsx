@@ -63,9 +63,66 @@ export default function SalaryPaymentsPage() {
       </div>
 
       <div className="flex justify-between items-center">
-        <Button onClick={() => setIsDialogOpen(true)} data-testid="button-add-salary">
-          <Plus className="h-4 w-4 ml-2" /> خەرجکردنی مووچە
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              const printWindow = window.open('', '_blank');
+              if (!printWindow) return;
+              printWindow.document.write(`
+                <!DOCTYPE html>
+                <html dir="rtl" lang="ku">
+                <head>
+                  <meta charset="UTF-8">
+                  <title>لیستی مووچەکان</title>
+                  <style>
+                    body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
+                    h1 { text-align: center; margin-bottom: 10px; }
+                    .summary { text-align: center; margin-bottom: 20px; font-size: 18px; font-weight: bold; color: #9333ea; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1px solid #333; padding: 8px; text-align: right; }
+                    th { background: #f0f0f0; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
+                  </style>
+                </head>
+                <body>
+                  <h1>قوتابخانەی لوتکەی ناحکومی - مووچەکان</h1>
+                  <div class="summary">کۆی گشتی: ${totalPaid.toLocaleString()} د.ع</div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ناوی فەرمانبەر</th>
+                        <th>بڕی مووچە (د.ع)</th>
+                        <th>مانگ</th>
+                        <th>بەروار</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${salaryPayments?.map(payment => `
+                        <tr>
+                          <td>${getStaffName(payment.staffId)}</td>
+                          <td style="color: #9333ea; font-weight: bold;">${Number(payment.amount).toLocaleString()}</td>
+                          <td>${payment.month}</td>
+                          <td>${new Date(payment.date).toLocaleDateString()}</td>
+                        </tr>
+                      `).join('') || ''}
+                    </tbody>
+                  </table>
+                  <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
+                  <script>window.onload = function() { window.print(); }</script>
+                </body>
+                </html>
+              `);
+              printWindow.document.close();
+            }}
+            data-testid="button-print-salaries"
+          >
+            <Printer className="h-4 w-4 ml-2" /> چاپکردن
+          </Button>
+          <Button onClick={() => setIsDialogOpen(true)} data-testid="button-add-salary">
+            <Plus className="h-4 w-4 ml-2" /> خەرجکردنی مووچە
+          </Button>
+        </div>
       </div>
 
       <Card className="p-4">

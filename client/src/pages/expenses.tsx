@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, Receipt, Loader2, Trash2 } from "lucide-react";
+import { Plus, Receipt, Loader2, Trash2, Printer } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
@@ -28,14 +28,74 @@ export default function ExpensesPage() {
         title="خەرجییەکان"
         description="تۆمارکردنی خەرجییەکانی ڕۆژانە و مانگانە"
         action={
-          <Button
-            size="lg"
-            className="gap-2 bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20"
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <Plus className="h-5 w-5" />
-            زیادکردنی خەرجی
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2"
+              onClick={() => {
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) return;
+                printWindow.document.write(`
+                  <!DOCTYPE html>
+                  <html dir="rtl" lang="ku">
+                  <head>
+                    <meta charset="UTF-8">
+                    <title>لیستی خەرجییەکان</title>
+                    <style>
+                      body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
+                      h1 { text-align: center; margin-bottom: 10px; }
+                      .summary { text-align: center; margin-bottom: 20px; font-size: 18px; font-weight: bold; color: #dc2626; }
+                      table { width: 100%; border-collapse: collapse; }
+                      th, td { border: 1px solid #333; padding: 8px; text-align: right; }
+                      th { background: #f0f0f0; }
+                      .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>قوتابخانەی لوتکەی ناحکومی - خەرجییەکان</h1>
+                    <div class="summary">کۆی گشتی: ${totalExpenses.toLocaleString()} د.ع</div>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>جۆر / بەش</th>
+                          <th>بڕ (د.ع)</th>
+                          <th>بەروار</th>
+                          <th>تێبینی</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${expenses?.map(item => `
+                          <tr>
+                            <td>${item.category}</td>
+                            <td style="color: #dc2626; font-weight: bold;">-${Number(item.amount).toLocaleString()}</td>
+                            <td>${new Date(item.date).toLocaleDateString()}</td>
+                            <td>${item.description || '-'}</td>
+                          </tr>
+                        `).join('') || ''}
+                      </tbody>
+                    </table>
+                    <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
+                    <script>window.onload = function() { window.print(); }</script>
+                  </body>
+                  </html>
+                `);
+                printWindow.document.close();
+              }}
+              data-testid="button-print-expenses"
+            >
+              <Printer className="h-5 w-5" />
+              چاپکردن
+            </Button>
+            <Button
+              size="lg"
+              className="gap-2 bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20"
+              onClick={() => setIsDialogOpen(true)}
+            >
+              <Plus className="h-5 w-5" />
+              زیادکردنی خەرجی
+            </Button>
+          </div>
         }
       />
 

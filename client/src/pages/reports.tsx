@@ -1,7 +1,8 @@
 import { useMonthlyReport } from "@/hooks/use-finance";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, TrendingUp, TrendingDown, Banknote } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, TrendingUp, TrendingDown, Banknote, Printer } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
 export default function ReportsPage() {
@@ -28,6 +29,64 @@ export default function ReportsPage() {
       <PageHeader
         title="ڕاپۆرتی مانگانە"
         description={`پوختەی دارایی بۆ مانگی: ${report?.month || "..."}`}
+        action={
+          <Button
+            variant="outline"
+            size="lg"
+            className="gap-2"
+            onClick={() => {
+              const printWindow = window.open('', '_blank');
+              if (!printWindow) return;
+              printWindow.document.write(`
+                <!DOCTYPE html>
+                <html dir="rtl" lang="ku">
+                <head>
+                  <meta charset="UTF-8">
+                  <title>ڕاپۆرتی مانگانە</title>
+                  <style>
+                    body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
+                    h1 { text-align: center; margin-bottom: 10px; }
+                    .month { text-align: center; margin-bottom: 30px; color: #666; }
+                    .summary { display: flex; justify-content: space-around; margin-bottom: 30px; }
+                    .card { padding: 20px; border-radius: 10px; text-align: center; min-width: 150px; }
+                    .income { background: #d1fae5; color: #16a34a; }
+                    .expense { background: #fee2e2; color: #dc2626; }
+                    .profit { background: #dbeafe; color: #2563eb; }
+                    .loss { background: #fed7aa; color: #ea580c; }
+                    .card h3 { font-size: 24px; margin: 10px 0; }
+                    .footer { text-align: center; margin-top: 40px; font-size: 12px; color: #888; }
+                  </style>
+                </head>
+                <body>
+                  <h1>قوتابخانەی لوتکەی ناحکومی</h1>
+                  <div class="month">ڕاپۆرتی مانگی: ${report?.month || "..."}</div>
+                  <div class="summary">
+                    <div class="card income">
+                      <p>کۆی داهات</p>
+                      <h3>${report?.totalIncome.toLocaleString()} د.ع</h3>
+                    </div>
+                    <div class="card expense">
+                      <p>کۆی خەرجی</p>
+                      <h3>${report?.totalExpenses.toLocaleString()} د.ع</h3>
+                    </div>
+                    <div class="card ${isProfitable ? 'profit' : 'loss'}">
+                      <p>${isProfitable ? 'قازانجی سافی' : 'زیان'}</p>
+                      <h3>${Math.abs(profit).toLocaleString()} د.ع</h3>
+                    </div>
+                  </div>
+                  <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
+                  <script>window.onload = function() { window.print(); }</script>
+                </body>
+                </html>
+              `);
+              printWindow.document.close();
+            }}
+            data-testid="button-print-report"
+          >
+            <Printer className="h-5 w-5" />
+            چاپکردن
+          </Button>
+        }
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

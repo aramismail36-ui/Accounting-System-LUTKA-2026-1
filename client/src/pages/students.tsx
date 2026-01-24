@@ -30,17 +30,79 @@ export default function StudentsPage() {
         title="قوتابیان"
         description="بەڕێوەبردنی زانیاری قوتابیان و کرێی خوێندن"
         action={
-          <Button
-            size="lg"
-            className="gap-2 bg-primary shadow-lg shadow-primary/25 hover:shadow-xl transition-all"
-            onClick={() => {
-              setEditingStudent(null);
-              setIsDialogOpen(true);
-            }}
-          >
-            <Plus className="h-5 w-5" />
-            زیادکردنی قوتابی
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2"
+              onClick={() => {
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) return;
+                printWindow.document.write(`
+                  <!DOCTYPE html>
+                  <html dir="rtl" lang="ku">
+                  <head>
+                    <meta charset="UTF-8">
+                    <title>لیستی قوتابیان</title>
+                    <style>
+                      body { font-family: 'Vazirmatn', Arial, sans-serif; direction: rtl; padding: 20px; }
+                      h1 { text-align: center; margin-bottom: 20px; }
+                      table { width: 100%; border-collapse: collapse; }
+                      th, td { border: 1px solid #333; padding: 8px; text-align: right; }
+                      th { background: #f0f0f0; }
+                      .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>قوتابخانەی لوتکەی ناحکومی - لیستی قوتابیان</h1>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ناوی سیانی</th>
+                          <th>پۆل</th>
+                          <th>مۆبایل</th>
+                          <th>کرێی خوێندن (د.ع)</th>
+                          <th>پارەی دراو (د.ع)</th>
+                          <th>ماوە (د.ع)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${filteredStudents?.map(s => `
+                          <tr>
+                            <td>${s.fullName}</td>
+                            <td>${s.grade || '-'}</td>
+                            <td>${s.mobile}</td>
+                            <td>${Number(s.tuitionFee).toLocaleString()}</td>
+                            <td>${Number(s.paidAmount).toLocaleString()}</td>
+                            <td>${Number(s.remainingAmount).toLocaleString()}</td>
+                          </tr>
+                        `).join('') || ''}
+                      </tbody>
+                    </table>
+                    <div class="footer">چاپکرا لە بەرواری ${new Date().toLocaleDateString()}</div>
+                    <script>window.onload = function() { window.print(); }</script>
+                  </body>
+                  </html>
+                `);
+                printWindow.document.close();
+              }}
+              data-testid="button-print-students"
+            >
+              <Printer className="h-5 w-5" />
+              چاپکردن
+            </Button>
+            <Button
+              size="lg"
+              className="gap-2 bg-primary shadow-lg shadow-primary/25 hover:shadow-xl transition-all"
+              onClick={() => {
+                setEditingStudent(null);
+                setIsDialogOpen(true);
+              }}
+            >
+              <Plus className="h-5 w-5" />
+              زیادکردنی قوتابی
+            </Button>
+          </div>
         }
       />
 
