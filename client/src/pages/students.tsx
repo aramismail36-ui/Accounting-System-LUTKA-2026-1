@@ -197,7 +197,7 @@ export default function StudentsPage() {
                               onClick={() => {
                                 const phone = student.mobile.replace(/^0/, "964");
                                 const remaining = Number(student.remainingAmount).toLocaleString();
-                                const message = `سڵاو ${student.fullName}،\n\nئەمە بیرهێنانەوەیە لە قوتابخانەی لوتکە. تکایە ئاگادار بە کە بڕی ${remaining} د.ع لە کرێی خوێندنەکەت ماوە بۆ پێدان.\n\nسوپاس بۆ هاوکاریت.`;
+                                const message = `بەخێوکاری بەڕێز تکایە سەردانی بەشی ژمێریاری قوتابخانە بکە بۆ پێدانی قیستی قوتابیەکەت. سوپاس بۆ هاوکاریتان`;
                                 const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
                                 window.open(url, "_blank");
                               }}
