@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
@@ -115,11 +115,9 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
             </div>
             <span className="font-bold text-lg">سیستەمی لوتکە</span>
           </div>
-          <SheetTrigger asChild onClick={() => setIsOpen(true)}>
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
+          <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)}>
+            <Menu className="h-6 w-6" />
+          </Button>
         </header>
 
         <div className="flex-1 p-4 md:p-8 overflow-x-hidden">
