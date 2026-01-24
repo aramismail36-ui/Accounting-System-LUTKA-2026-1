@@ -1,9 +1,21 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
+
+// Middleware to require admin role for write operations
+function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  const user = (req as any).user;
+  if (!user) {
+    return res.status(401).json({ message: "تکایە چوونەژوورەوە بکە" });
+  }
+  if (user.role !== "admin") {
+    return res.status(403).json({ message: "ناتوانیت ئەم کردارە ئەنجام بدەیت. تەنها بەڕێوەبەر دەتوانێت" });
+  }
+  next();
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -23,7 +35,7 @@ export async function registerRoutes(
     res.json(settings);
   });
 
-  app.post(api.schoolSettings.update.path, async (req, res) => {
+  app.post(api.schoolSettings.update.path, requireAdmin, async (req, res) => {
     try {
       const input = api.schoolSettings.update.input.parse(req.body);
       const settings = await storage.updateSchoolSettings(input);
@@ -48,7 +60,7 @@ export async function registerRoutes(
     res.json(student);
   });
 
-  app.post(api.students.create.path, async (req, res) => {
+  app.post(api.students.create.path, requireAdmin, async (req, res) => {
     try {
       const bodySchema = api.students.create.input.extend({
         tuitionFee: z.coerce.number(),
@@ -81,7 +93,7 @@ export async function registerRoutes(
     }
   });
 
-  app.put(api.students.update.path, async (req, res) => {
+  app.put(api.students.update.path, requireAdmin, async (req, res) => {
     try {
         const bodySchema = api.students.update.input.extend({
             tuitionFee: z.coerce.number().optional(),
@@ -104,7 +116,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.students.delete.path, async (req, res) => {
+  app.delete(api.students.delete.path, requireAdmin, async (req, res) => {
     await storage.deleteStudent(Number(req.params.id));
     res.status(204).send();
   });
@@ -115,7 +127,7 @@ export async function registerRoutes(
     res.json(incomes);
   });
 
-  app.post(api.income.create.path, async (req, res) => {
+  app.post(api.income.create.path, requireAdmin, async (req, res) => {
     try {
       const bodySchema = api.income.create.input.extend({
         amount: z.coerce.number(),
@@ -131,7 +143,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.income.delete.path, async (req, res) => {
+  app.delete(api.income.delete.path, requireAdmin, async (req, res) => {
     await storage.deleteIncome(Number(req.params.id));
     res.status(204).send();
   });
@@ -142,7 +154,7 @@ export async function registerRoutes(
     res.json(expenses);
   });
 
-  app.post(api.expenses.create.path, async (req, res) => {
+  app.post(api.expenses.create.path, requireAdmin, async (req, res) => {
     try {
       const bodySchema = api.expenses.create.input.extend({
         amount: z.coerce.number(),
@@ -158,7 +170,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.expenses.delete.path, async (req, res) => {
+  app.delete(api.expenses.delete.path, requireAdmin, async (req, res) => {
     await storage.deleteExpense(Number(req.params.id));
     res.status(204).send();
   });
@@ -169,7 +181,7 @@ export async function registerRoutes(
     res.json(payments);
   });
 
-  app.post(api.payments.create.path, async (req, res) => {
+  app.post(api.payments.create.path, requireAdmin, async (req, res) => {
     try {
       const bodySchema = api.payments.create.input.extend({
         studentId: z.coerce.number(),
@@ -192,7 +204,7 @@ export async function registerRoutes(
     res.json(staff);
   });
 
-  app.post(api.staff.create.path, async (req, res) => {
+  app.post(api.staff.create.path, requireAdmin, async (req, res) => {
     try {
       const bodySchema = api.staff.create.input.extend({
         salary: z.coerce.number(),
@@ -208,7 +220,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.staff.delete.path, async (req, res) => {
+  app.delete(api.staff.delete.path, requireAdmin, async (req, res) => {
     await storage.deleteStaff(Number(req.params.id));
     res.status(204).send();
   });
@@ -219,7 +231,7 @@ export async function registerRoutes(
     res.json(salaryPayments);
   });
 
-  app.post(api.salaryPayments.create.path, async (req, res) => {
+  app.post(api.salaryPayments.create.path, requireAdmin, async (req, res) => {
     try {
       const bodySchema = api.salaryPayments.create.input.extend({
         staffId: z.coerce.number(),
@@ -245,7 +257,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.salaryPayments.delete.path, async (req, res) => {
+  app.delete(api.salaryPayments.delete.path, requireAdmin, async (req, res) => {
     await storage.deleteSalaryPayment(Number(req.params.id));
     res.status(204).send();
   });
@@ -256,7 +268,7 @@ export async function registerRoutes(
     res.json(foodPayments);
   });
 
-  app.post(api.foodPayments.create.path, async (req, res) => {
+  app.post(api.foodPayments.create.path, requireAdmin, async (req, res) => {
     try {
       const bodySchema = api.foodPayments.create.input.extend({
         studentId: z.coerce.number(),
@@ -282,7 +294,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.foodPayments.delete.path, async (req, res) => {
+  app.delete(api.foodPayments.delete.path, requireAdmin, async (req, res) => {
     await storage.deleteFoodPayment(Number(req.params.id));
     res.status(204).send();
   });
@@ -303,7 +315,7 @@ export async function registerRoutes(
     res.json(shareholders);
   });
 
-  app.post(api.shareholders.create.path, async (req, res) => {
+  app.post(api.shareholders.create.path, requireAdmin, async (req, res) => {
     try {
       const bodySchema = api.shareholders.create.input.extend({
         sharePercentage: z.coerce.number(),
@@ -322,7 +334,7 @@ export async function registerRoutes(
     }
   });
 
-  app.put(api.shareholders.update.path, async (req, res) => {
+  app.put(api.shareholders.update.path, requireAdmin, async (req, res) => {
     try {
       const bodySchema = api.shareholders.update.input.extend({
         sharePercentage: z.coerce.number().optional(),
@@ -342,13 +354,13 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.shareholders.delete.path, async (req, res) => {
+  app.delete(api.shareholders.delete.path, requireAdmin, async (req, res) => {
     await storage.deleteShareholder(Number(req.params.id));
     res.status(204).send();
   });
 
   // Users (Admin only for management)
-  app.get(api.users.list.path, async (req, res) => {
+  app.get(api.users.list.path, requireAdmin, async (req, res) => {
     const usersList = await storage.getUsers();
     res.json(usersList.map(u => ({
       id: u.id,
@@ -359,7 +371,7 @@ export async function registerRoutes(
     })));
   });
 
-  app.put(api.users.updateRole.path, async (req, res) => {
+  app.put(api.users.updateRole.path, requireAdmin, async (req, res) => {
     try {
       const { role } = api.users.updateRole.input.parse(req.body);
       const user = await storage.updateUserRole(req.params.id, role);

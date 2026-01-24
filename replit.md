@@ -36,6 +36,15 @@ The server uses a storage pattern (`server/storage.ts`) that abstracts all datab
 
 The auth system includes mandatory tables for sessions and users that should not be modified or dropped.
 
+### Role-Based Access Control
+- **Roles**: Two roles exist: `admin` (default) and `shareholder`
+- **Admin Role**: Full access to all pages and CRUD operations
+- **Shareholder Role**: Read-only access to financial summaries and profit/loss distribution
+  - Shareholders are automatically redirected to a dedicated dashboard page
+  - Can view and print financial data but cannot add, edit, or delete anything
+- **Server-Side Enforcement**: All mutating API endpoints are protected by `requireAdmin` middleware
+- **User Management**: Admins can change user roles from the Users management page (`/users`)
+
 ### Data Models
 Key entities managed by the system:
 - **School Settings**: Basic school configuration (name, email)
