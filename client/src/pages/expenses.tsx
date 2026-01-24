@@ -127,6 +127,7 @@ export default function ExpensesPage() {
                 <TableHead className="text-right">بڕ (د.ع)</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
                 <TableHead className="text-right">تێبینی</TableHead>
+                <TableHead className="text-right">ڕێکەوت و کات</TableHead>
                 <TableHead className="text-right w-[100px]">کردار</TableHead>
               </TableRow>
             </TableHeader>
@@ -140,6 +141,9 @@ export default function ExpensesPage() {
                     {format(new Date(item.date), "yyyy-MM-dd")}
                   </TableCell>
                   <TableCell className="text-slate-500">{item.description || "-"}</TableCell>
+                  <TableCell className="text-slate-500 text-xs font-mono">
+                    {new Date(item.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                  </TableCell>
                   <TableCell>
                     <DeleteExpenseButton id={item.id} />
                   </TableCell>
@@ -147,7 +151,7 @@ export default function ExpensesPage() {
               ))}
               {expenses?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                     هیچ خەرجییەک تۆمار نەکراوە
                   </TableCell>
                 </TableRow>
@@ -157,7 +161,7 @@ export default function ExpensesPage() {
                   <TableCell></TableCell>
                   <TableCell>کۆی گشتی</TableCell>
                   <TableCell className="font-mono text-red-700 dark:text-red-400">-{totalExpenses.toLocaleString()} د.ع</TableCell>
-                  <TableCell colSpan={3}></TableCell>
+                  <TableCell colSpan={4}></TableCell>
                 </TableRow>
               )}
             </TableBody>

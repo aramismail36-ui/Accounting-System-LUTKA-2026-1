@@ -148,13 +148,14 @@ export default function StudentsPage() {
                   <TableHead className="text-right font-bold">کرێی خوێندن</TableHead>
                   <TableHead className="text-right font-bold text-green-600">واصل کراو</TableHead>
                   <TableHead className="text-right font-bold text-red-600">ماوە</TableHead>
+                  <TableHead className="text-right font-bold">ڕێکەوت و کات</TableHead>
                   <TableHead className="text-right font-bold">کردارەکان</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredStudents?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                       هیچ قوتابیەک نەدۆزرایەوە
                     </TableCell>
                   </TableRow>
@@ -168,6 +169,9 @@ export default function StudentsPage() {
                       <TableCell className="font-mono text-slate-600">{Number(student.tuitionFee).toLocaleString()} د.ع</TableCell>
                       <TableCell className="font-mono text-green-600 font-medium">{Number(student.paidAmount).toLocaleString()} د.ع</TableCell>
                       <TableCell className="font-mono text-red-600 font-medium">{Number(student.remainingAmount).toLocaleString()} د.ع</TableCell>
+                      <TableCell className="text-slate-500 text-xs font-mono">
+                        {new Date(student.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button

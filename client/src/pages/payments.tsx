@@ -159,6 +159,7 @@ export default function PaymentsPage() {
                 <TableHead className="text-right">پۆل</TableHead>
                 <TableHead className="text-right">بڕی واصل (د.ع)</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
+                <TableHead className="text-right">ڕێکەوت و کات</TableHead>
                 <TableHead className="text-right w-[100px]">وەسڵ</TableHead>
               </TableRow>
             </TableHeader>
@@ -171,6 +172,9 @@ export default function PaymentsPage() {
                   <TableCell className="text-indigo-600 font-bold font-mono">{Number(payment.amount).toLocaleString()} د.ع</TableCell>
                   <TableCell className="text-slate-500 font-mono">
                     {format(new Date(payment.date), "yyyy-MM-dd")}
+                  </TableCell>
+                  <TableCell className="text-slate-500 text-xs font-mono">
+                    {new Date(payment.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                   </TableCell>
                   <TableCell>
                     <Button 
@@ -191,7 +195,7 @@ export default function PaymentsPage() {
               ))}
               {filteredPayments?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                     هیچ قیستێک وەرنەگیراوە
                   </TableCell>
                 </TableRow>

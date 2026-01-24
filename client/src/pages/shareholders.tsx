@@ -210,6 +210,7 @@ export default function ShareholdersPage() {
                 <TableHead className="text-right">ڕێژەی پشک</TableHead>
                 <TableHead className="text-right">بڕی {isProfitable ? 'قازانج' : 'زیان'}</TableHead>
                 <TableHead className="text-right">تێبینی</TableHead>
+                <TableHead className="text-right">ڕێکەوت و کات</TableHead>
                 <TableHead className="text-right">کردار</TableHead>
               </TableRow>
             </TableHeader>
@@ -230,6 +231,9 @@ export default function ShareholdersPage() {
                       {isProfitable ? '+' : '-'}{Math.abs(shareAmount).toLocaleString()} د.ع
                     </TableCell>
                     <TableCell className="text-muted-foreground">{shareholder.notes || '-'}</TableCell>
+                    <TableCell className="text-slate-500 text-xs font-mono">
+                      {new Date(shareholder.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
                         <Button
@@ -249,7 +253,7 @@ export default function ShareholdersPage() {
               })}
               {shareholders?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                     هیچ پشکدارێک تۆمار نەکراوە
                   </TableCell>
                 </TableRow>
@@ -263,6 +267,7 @@ export default function ShareholdersPage() {
                   <TableCell className={`font-mono ${isProfitable ? 'text-green-600' : 'text-red-600'}`}>
                     {isProfitable ? '+' : '-'}{Math.abs(netProfit).toLocaleString()} د.ع
                   </TableCell>
+                  <TableCell></TableCell>
                   <TableCell></TableCell>
                   <TableCell></TableCell>
                 </TableRow>

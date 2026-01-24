@@ -109,6 +109,7 @@ export default function StaffPage() {
                 <TableHead className="text-right">پلە / کار</TableHead>
                 <TableHead className="text-right">مۆبایل</TableHead>
                 <TableHead className="text-right">مووچە (د.ع)</TableHead>
+                <TableHead className="text-right">ڕێکەوت و کات</TableHead>
                 <TableHead className="text-right">کردار</TableHead>
               </TableRow>
             </TableHeader>
@@ -124,6 +125,9 @@ export default function StaffPage() {
                   </TableCell>
                   <TableCell>{person.mobile}</TableCell>
                   <TableCell className="font-mono font-bold">{Number(person.salary).toLocaleString()} د.ع</TableCell>
+                  <TableCell className="text-slate-500 text-xs font-mono">
+                    {new Date(person.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                  </TableCell>
                   <TableCell>
                     <DeleteStaffButton id={person.id} />
                   </TableCell>
@@ -131,7 +135,7 @@ export default function StaffPage() {
               ))}
               {staff?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                     هیچ کارمەندێک تۆمار نەکراوە
                   </TableCell>
                 </TableRow>
@@ -143,6 +147,7 @@ export default function StaffPage() {
                   <TableCell></TableCell>
                   <TableCell></TableCell>
                   <TableCell className="font-mono text-orange-700 dark:text-orange-400">{staff.reduce((sum, p) => sum + Number(p.salary), 0).toLocaleString()} د.ع</TableCell>
+                  <TableCell></TableCell>
                   <TableCell></TableCell>
                 </TableRow>
               )}

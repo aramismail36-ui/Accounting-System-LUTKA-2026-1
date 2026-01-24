@@ -16,6 +16,7 @@ type User = {
   firstName: string | null;
   lastName: string | null;
   role: string;
+  createdAt: string;
 };
 
 export default function UsersPage() {
@@ -94,6 +95,7 @@ export default function UsersPage() {
             <TableHead className="text-right">ناو</TableHead>
             <TableHead className="text-right">ئیمەیل</TableHead>
             <TableHead className="text-right">ڕۆڵی ئێستا</TableHead>
+            <TableHead className="text-right">ڕێکەوت و کات</TableHead>
             <TableHead className="text-right">گۆڕینی ڕۆڵ</TableHead>
           </TableRow>
         </TableHeader>
@@ -107,6 +109,9 @@ export default function UsersPage() {
               </TableCell>
               <TableCell>{user.email || '-'}</TableCell>
               <TableCell>{getRoleBadge(user.role)}</TableCell>
+              <TableCell className="text-slate-500 text-xs font-mono">
+                {new Date(user.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+              </TableCell>
               <TableCell>
                 <Select
                   value={user.role}
@@ -126,7 +131,7 @@ export default function UsersPage() {
           ))}
           {(!users || users.length === 0) && (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
                 هیچ بەکارهێنەرێک نییە
               </TableCell>
             </TableRow>

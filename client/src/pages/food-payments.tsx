@@ -170,6 +170,7 @@ export default function FoodPaymentsPage() {
                 <TableHead className="text-right">بڕ (د.ع)</TableHead>
                 <TableHead className="text-right">مانگ</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
+                <TableHead className="text-right">ڕێکەوت و کات</TableHead>
                 <TableHead className="text-right w-[80px]">سڕینەوە</TableHead>
               </TableRow>
             </TableHeader>
@@ -185,7 +186,7 @@ export default function FoodPaymentsPage() {
               ))}
               {filteredPayments?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                     هیچ پارەیەکی خواردن وەرنەگیراوە
                   </TableCell>
                 </TableRow>
@@ -196,7 +197,7 @@ export default function FoodPaymentsPage() {
                   <TableCell>کۆی گشتی</TableCell>
                   <TableCell></TableCell>
                   <TableCell className="font-mono text-orange-700 dark:text-orange-400">{totalPaid.toLocaleString()} د.ع</TableCell>
-                  <TableCell colSpan={3}></TableCell>
+                  <TableCell colSpan={4}></TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -231,6 +232,9 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
       <TableCell className="text-slate-500">{payment.month}</TableCell>
       <TableCell className="text-slate-500 font-mono">
         {format(new Date(payment.date), "yyyy-MM-dd")}
+      </TableCell>
+      <TableCell className="text-slate-500 text-xs font-mono">
+        {new Date(payment.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
       </TableCell>
       <TableCell>
         <Button 

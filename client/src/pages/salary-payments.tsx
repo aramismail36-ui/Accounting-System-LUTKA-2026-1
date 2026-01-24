@@ -139,6 +139,7 @@ export default function SalaryPaymentsPage() {
                 <TableHead className="text-right">بڕی مووچە (د.ع)</TableHead>
                 <TableHead className="text-right">مانگ</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
+                <TableHead className="text-right">ڕێکەوت و کات</TableHead>
                 <TableHead className="text-right w-[100px]">کردار</TableHead>
               </TableRow>
             </TableHeader>
@@ -153,6 +154,9 @@ export default function SalaryPaymentsPage() {
                   <TableCell className="text-slate-500">{payment.month}</TableCell>
                   <TableCell className="text-slate-500 font-mono">
                     {format(new Date(payment.date), "yyyy-MM-dd")}
+                  </TableCell>
+                  <TableCell className="text-slate-500 text-xs font-mono">
+                    {new Date(payment.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
@@ -180,7 +184,7 @@ export default function SalaryPaymentsPage() {
                   <TableCell></TableCell>
                   <TableCell>کۆی گشتی</TableCell>
                   <TableCell className="font-mono text-purple-700 dark:text-purple-400">{totalPaid.toLocaleString()} د.ع</TableCell>
-                  <TableCell colSpan={3}></TableCell>
+                  <TableCell colSpan={4}></TableCell>
                 </TableRow>
               )}
             </TableBody>
