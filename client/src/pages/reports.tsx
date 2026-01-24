@@ -1,14 +1,22 @@
+import { useState } from "react";
 import { useMonthlyReport } from "@/hooks/use-finance";
+import { useStudents } from "@/hooks/use-students";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, TrendingUp, TrendingDown, Banknote, Printer } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Loader2, TrendingUp, TrendingDown, Banknote, Printer, FileDown } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 export default function ReportsPage() {
   const { data: report, isLoading } = useMonthlyReport();
+  const { data: students, isLoading: studentsLoading } = useStudents();
+  const [paymentFilter, setPaymentFilter] = useState<string>("all");
 
-  if (isLoading) {
+  if (isLoading || studentsLoading) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -23,6 +31,72 @@ export default function ReportsPage() {
 
   const profit = report?.netProfit || 0;
   const isProfitable = profit >= 0;
+
+  // Filter students by payment status
+  const filteredStudents = students?.filter(student => {
+    const paid = Number(student.paidAmount);
+    const total = Number(student.tuitionFee);
+    const remaining = Number(student.remainingAmount);
+    
+    switch (paymentFilter) {
+      case "fully_paid":
+        return remaining === 0 && total > 0;
+      case "partially_paid":
+        return paid > 0 && remaining > 0;
+      case "not_paid":
+        return paid === 0;
+      default:
+        return true;
+    }
+  }) || [];
+
+  // Export to PDF function
+  const exportToPDF = () => {
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4"
+    });
+
+    // Add Kurdish font support (using built-in fonts for now)
+    doc.setFont("helvetica");
+    
+    // Title
+    doc.setFontSize(18);
+    doc.text("Lutka School - Student Payment Report", 148, 15, { align: "center" });
+    
+    // Filter info
+    doc.setFontSize(12);
+    const filterText = paymentFilter === "all" ? "All Students" :
+                       paymentFilter === "fully_paid" ? "Fully Paid" :
+                       paymentFilter === "partially_paid" ? "Partially Paid" : "Not Paid";
+    doc.text(`Filter: ${filterText} | Total: ${filteredStudents.length} students`, 148, 25, { align: "center" });
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 148, 32, { align: "center" });
+
+    // Table data
+    const tableData = filteredStudents.map(s => [
+      s.fullName,
+      s.grade || "-",
+      s.mobile,
+      `${Number(s.tuitionFee).toLocaleString()} IQD`,
+      `${Number(s.paidAmount).toLocaleString()} IQD`,
+      `${Number(s.remainingAmount).toLocaleString()} IQD`
+    ]);
+
+    // Add table
+    (doc as any).autoTable({
+      startY: 40,
+      head: [["Name", "Grade", "Mobile", "Tuition Fee", "Paid Amount", "Remaining"]],
+      body: tableData,
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [79, 70, 229], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      margin: { left: 14, right: 14 }
+    });
+
+    // Save the PDF
+    doc.save(`student-payments-${paymentFilter}-${new Date().toISOString().split('T')[0]}.pdf`);
+  };
 
   return (
     <div className="space-y-8">
@@ -173,6 +247,72 @@ export default function ReportsPage() {
             </p>
         </Card>
       </div>
+
+      {/* Student Payment Report Section */}
+      <Card className="shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <CardTitle>ڕاپۆرتی پارەدانی قوتابیان</CardTitle>
+          <div className="flex items-center gap-3">
+            <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+              <SelectTrigger className="w-[180px]" data-testid="select-payment-filter">
+                <SelectValue placeholder="هەموو قوتابیان" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">هەموو قوتابیان</SelectItem>
+                <SelectItem value="fully_paid">تەواو دراوە</SelectItem>
+                <SelectItem value="partially_paid">بەشێکی دراوە</SelectItem>
+                <SelectItem value="not_paid">هیچی نەدراوە</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={exportToPDF}
+              className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+              data-testid="button-export-pdf"
+            >
+              <FileDown className="h-4 w-4" />
+              داگرتنی PDF
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 text-sm text-muted-foreground">
+            کۆی قوتابیان: {filteredStudents.length}
+          </div>
+          <div className="rounded-lg border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50 dark:bg-slate-800">
+                  <TableHead className="text-right">ناوی سیانی</TableHead>
+                  <TableHead className="text-right">پۆل</TableHead>
+                  <TableHead className="text-right">مۆبایل</TableHead>
+                  <TableHead className="text-right">کرێی خوێندن (د.ع)</TableHead>
+                  <TableHead className="text-right">پارەی دراو (د.ع)</TableHead>
+                  <TableHead className="text-right">ماوە (د.ع)</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStudents.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell className="font-medium">{student.fullName}</TableCell>
+                    <TableCell>{student.grade || "-"}</TableCell>
+                    <TableCell>{student.mobile}</TableCell>
+                    <TableCell className="font-mono">{Number(student.tuitionFee).toLocaleString()}</TableCell>
+                    <TableCell className="font-mono text-green-600">{Number(student.paidAmount).toLocaleString()}</TableCell>
+                    <TableCell className="font-mono text-red-600">{Number(student.remainingAmount).toLocaleString()}</TableCell>
+                  </TableRow>
+                ))}
+                {filteredStudents.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      هیچ قوتابیەک نەدۆزرایەوە
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
