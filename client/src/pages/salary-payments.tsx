@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSalaryPayments, useCreateSalaryPayment, useDeleteSalaryPayment } from "@/hooks/use-salary-payments";
-import { useStaff } from "@/hooks/use-finance";
+import { useStaff } from "@/hooks/use-staff";
 import { insertSalaryPaymentSchema, type InsertSalaryPayment, type SalaryPayment, type Staff } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";

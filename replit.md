@@ -39,11 +39,17 @@ The auth system includes mandatory tables for sessions and users that should not
 ### Data Models
 Key entities managed by the system:
 - **School Settings**: Basic school configuration (name, email)
-- **Students**: Student records with tuition fee tracking (full name, mobile, fees, payments)
+- **Students**: Student records with tuition fee tracking (full name, mobile, grade, fees, payments)
 - **Income**: Revenue sources with categorization
 - **Expenses**: Expenditure tracking
 - **Payments**: Student payment records linked to students
 - **Staff**: Teacher and employee records with salary information
+- **Salary Payments**: Staff salary disbursements with automatic expense creation
+
+### Currency and Receipts
+- **Currency**: All monetary amounts displayed in Iraqi Dinar (د.ع)
+- **Receipts**: A5 printable receipts with amounts shown in both numbers and Kurdish words
+- **Number to Words**: Kurdish number-to-words conversion utility in `client/src/lib/number-to-kurdish.ts`
 
 ### Build System
 - **Development**: Vite dev server with HMR

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { usePayments, useCreatePayment } from "@/hooks/use-finance";
 import { useStudents } from "@/hooks/use-students";
-import { insertPaymentSchema, type InsertPayment } from "@shared/routes";
+import { insertPaymentSchema, type InsertPayment, type Payment, type Student } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,14 +15,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { format } from "date-fns";
+import { PaymentReceipt } from "@/components/payment-receipt";
 
 export default function PaymentsPage() {
   const { data: payments, isLoading } = usePayments();
   const { data: students } = useStudents();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [receiptData, setReceiptData] = useState<{ payment: Payment; student: Student } | null>(null);
 
   // Helper to get student name
   const getStudentName = (id: number) => students?.find(s => s.id === id)?.fullName || "نەزانراو";
+  const getStudent = (id: number) => students?.find(s => s.id === id);
 
   return (
     <div className="space-y-6">
@@ -65,7 +68,17 @@ export default function PaymentsPage() {
                     {format(new Date(payment.date), "yyyy-MM-dd")}
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => window.print()}>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => {
+                        const student = getStudent(payment.studentId);
+                        if (student) {
+                          setReceiptData({ payment, student });
+                        }
+                      }}
+                      data-testid={`button-print-${payment.id}`}
+                    >
                       <Printer className="h-4 w-4 text-slate-500" />
                     </Button>
                   </TableCell>
@@ -84,6 +97,14 @@ export default function PaymentsPage() {
       </div>
 
       <CreatePaymentDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} students={students || []} />
+      
+      {receiptData && (
+        <PaymentReceipt
+          payment={receiptData.payment}
+          student={receiptData.student}
+          onClose={() => setReceiptData(null)}
+        />
+      )}
     </div>
   );
 }
