@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, TrendingUp, TrendingDown, Banknote, Printer, FileDown, Users, Wallet, Receipt, CreditCard, BadgeDollarSign } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Banknote, Printer, FileDown, Users, Wallet, Receipt, CreditCard, BadgeDollarSign, BarChart3 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { format } from "date-fns";
 import jsPDF from "jspdf";
@@ -24,6 +24,7 @@ export default function ReportsPage() {
   const { data: staff, isLoading: staffLoading } = useStaff();
   const { data: salaryPayments, isLoading: salaryLoading } = useSalaryPayments();
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
+  const [expensePeriod, setExpensePeriod] = useState<string>("year");
 
   const allLoading = isLoading || studentsLoading || incomeLoading || expensesLoading || paymentsLoading || staffLoading || salaryLoading;
 
@@ -467,6 +468,10 @@ export default function ReportsPage() {
                 <BadgeDollarSign className="h-4 w-4" />
                 مووچەکان
               </TabsTrigger>
+              <TabsTrigger value="expense-categories" className="gap-2">
+                <BarChart3 className="h-4 w-4" />
+                خەرجی بەپێی بابەت
+              </TabsTrigger>
             </TabsList>
 
             {/* Income Tab */}
@@ -805,6 +810,129 @@ export default function ReportsPage() {
                   </TableBody>
                 </Table>
               </div>
+            </TabsContent>
+
+            {/* Expense Categories Tab */}
+            <TabsContent value="expense-categories">
+              {(() => {
+                const now = new Date();
+                let startDate: Date;
+                switch (expensePeriod) {
+                  case "month":
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                  case "3months":
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+                    break;
+                  case "6months":
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+                    break;
+                  case "year":
+                  default:
+                    startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                    break;
+                }
+                
+                const filteredExpenses = expenses?.filter(e => new Date(e.date) >= startDate) || [];
+                
+                const categoryTotals: { [key: string]: number } = {};
+                filteredExpenses.forEach(e => {
+                  const cat = e.category || "نادیار";
+                  categoryTotals[cat] = (categoryTotals[cat] || 0) + Number(e.amount);
+                });
+                
+                const categoryData = Object.entries(categoryTotals)
+                  .map(([category, amount]) => ({ category, amount }))
+                  .sort((a, b) => b.amount - a.amount);
+                
+                const grandTotal = categoryData.reduce((sum, c) => sum + c.amount, 0);
+
+                const periodLabels: { [key: string]: string } = {
+                  "month": "ئەم مانگە",
+                  "3months": "٣ مانگی ڕابردوو",
+                  "6months": "٦ مانگی ڕابردوو",
+                  "year": "١ ساڵی ڕابردوو",
+                };
+
+                return (
+                  <>
+                    <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground">ماوە:</span>
+                        <Select value={expensePeriod} onValueChange={setExpensePeriod}>
+                          <SelectTrigger className="w-[180px]" data-testid="select-expense-period">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="month">ئەم مانگە</SelectItem>
+                            <SelectItem value="3months">٣ مانگی ڕابردوو</SelectItem>
+                            <SelectItem value="6months">٦ مانگی ڕابردوو</SelectItem>
+                            <SelectItem value="year">١ ساڵی ڕابردوو</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => {
+                          const printWindow = window.open('', '_blank');
+                          if (!printWindow) return;
+                          printWindow.document.write(`
+                            <!DOCTYPE html><html dir="rtl" lang="ku"><head><meta charset="UTF-8"><title>خەرجی بەپێی بابەت</title>
+                            <style>body{font-family:'Vazirmatn',Arial,sans-serif;direction:rtl;padding:20px}h1{text-align:center;margin-bottom:10px}
+                            .period{text-align:center;margin-bottom:20px;color:#666}
+                            table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px;text-align:right}
+                            th{background:#ea580c;color:white}.total-row{background:#fed7aa;font-weight:bold}
+                            .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
+                            <body><h1>قوتابخانەی لوتکە - خەرجی بەپێی بابەت</h1>
+                            <div class="period">ماوە: ${periodLabels[expensePeriod]}</div>
+                            <table><thead><tr><th>بابەت / جۆر</th><th>کۆی خەرجی (د.ع)</th></tr></thead>
+                            <tbody>${categoryData.map(c => `<tr><td>${c.category}</td><td style="color:#ea580c">${c.amount.toLocaleString()}</td></tr>`).join('')}
+                            <tr class="total-row"><td>کۆی گشتی</td><td>${grandTotal.toLocaleString()} د.ع</td></tr></tbody></table>
+                            <div class="footer">چاپکرا لە ${new Date().toLocaleDateString()}</div>
+                            <script>window.onload=function(){window.print()}</script></body></html>
+                          `);
+                          printWindow.document.close();
+                        }}
+                        data-testid="button-print-categories"
+                      >
+                        <Printer className="h-4 w-4" />
+                        چاپکردن
+                      </Button>
+                    </div>
+                    <div className="rounded-lg border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-orange-50 dark:bg-orange-900/20">
+                            <TableHead className="text-right">بابەت / جۆر</TableHead>
+                            <TableHead className="text-right">کۆی خەرجی (د.ع)</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {categoryData.map((item, idx) => (
+                            <TableRow key={idx}>
+                              <TableCell className="font-medium">{item.category}</TableCell>
+                              <TableCell className="font-mono text-orange-600">{item.amount.toLocaleString()}</TableCell>
+                            </TableRow>
+                          ))}
+                          {categoryData.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">هیچ خەرجییەک لەم ماوەیەدا نییە</TableCell>
+                            </TableRow>
+                          )}
+                          {categoryData.length > 0 && (
+                            <TableRow className="bg-orange-100 dark:bg-orange-900/40 font-bold">
+                              <TableCell>کۆی گشتی</TableCell>
+                              <TableCell className="font-mono text-orange-700 dark:text-orange-400">{grandTotal.toLocaleString()} د.ع</TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </>
+                );
+              })()}
             </TabsContent>
           </Tabs>
         </CardContent>
