@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStudents, useCreateStudent, useUpdateStudent, useDeleteStudent } from "@/hooks/use-students";
 import { insertStudentSchema, type InsertStudent, type Student } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
@@ -192,24 +192,27 @@ function StudentDialog({ open, onOpenChange, student }: { open: boolean, onOpenC
   });
 
   // Reset form when dialog opens/closes or edit target changes
-  if (open && student && form.getValues("fullName") !== student.fullName) {
-    form.reset({
-      ...student,
-      grade: student.grade || "",
-      tuitionFee: Number(student.tuitionFee),
-      paidAmount: Number(student.paidAmount),
-      remainingAmount: Number(student.remainingAmount),
-    });
-  } else if (open && !student && form.getValues("fullName") !== "") {
-    form.reset({
-      fullName: "",
-      mobile: "",
-      grade: "",
-      tuitionFee: 0,
-      paidAmount: 0,
-      remainingAmount: 0,
-    });
-  }
+  useEffect(() => {
+    if (open && student) {
+      form.reset({
+        fullName: student.fullName,
+        mobile: student.mobile,
+        grade: student.grade || "",
+        tuitionFee: Number(student.tuitionFee),
+        paidAmount: Number(student.paidAmount),
+        remainingAmount: Number(student.remainingAmount),
+      });
+    } else if (open && !student) {
+      form.reset({
+        fullName: "",
+        mobile: "",
+        grade: "",
+        tuitionFee: 0,
+        paidAmount: 0,
+        remainingAmount: 0,
+      });
+    }
+  }, [open, student, form]);
 
   // Calculate remaining automatically
   const tuition = form.watch("tuitionFee");
@@ -221,7 +224,15 @@ function StudentDialog({ open, onOpenChange, student }: { open: boolean, onOpenC
   const remaining = Math.max(0, (tuition || 0) - (paid || 0));
 
   function onSubmit(data: InsertStudent) {
-    const payload = { ...data, remainingAmount: remaining };
+    // Convert numbers to strings for decimal fields (required by schema)
+    const payload = {
+      fullName: data.fullName,
+      mobile: data.mobile,
+      grade: data.grade || "",
+      tuitionFee: String(data.tuitionFee),
+      paidAmount: String(data.paidAmount),
+      remainingAmount: String(remaining),
+    };
 
     if (student) {
       update({ id: student.id, ...payload }, {
@@ -229,12 +240,18 @@ function StudentDialog({ open, onOpenChange, student }: { open: boolean, onOpenC
           toast({ title: "نوێکرایەوە", description: "زانیاری قوتابی نوێکرایەوە" });
           onOpenChange(false);
         },
+        onError: (err) => {
+          toast({ title: "هەڵە", description: err.message, variant: "destructive" });
+        },
       });
     } else {
-      create(payload, {
+      create(payload as any, {
         onSuccess: () => {
           toast({ title: "زیادکرا", description: "قوتابی نوێ زیادکرا" });
           onOpenChange(false);
+        },
+        onError: (err) => {
+          toast({ title: "هەڵە", description: err.message, variant: "destructive" });
         },
       });
     }

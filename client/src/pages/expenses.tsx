@@ -61,7 +61,7 @@ export default function ExpensesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="text-right">جۆر / بەش</TableHead>
-                <TableHead className="text-right">بڕ ($)</TableHead>
+                <TableHead className="text-right">بڕ (د.ع)</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
                 <TableHead className="text-right">تێبینی</TableHead>
                 <TableHead className="text-right w-[100px]">کردار</TableHead>
@@ -148,11 +148,18 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean, onOpenChan
   });
 
   function onSubmit(data: InsertExpense) {
-    mutate(data, {
+    const payload = {
+      ...data,
+      amount: String(data.amount),
+    };
+    mutate(payload as any, {
       onSuccess: () => {
         toast({ title: "تۆمارکرا", description: "خەرجی بە سەرکەوتوویی تۆمارکرا" });
         form.reset();
         onOpenChange(false);
+      },
+      onError: (err) => {
+        toast({ title: "هەڵە", description: err.message, variant: "destructive" });
       },
     });
   }
@@ -190,7 +197,7 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean, onOpenChan
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>بڕ ($)</FormLabel>
+                  <FormLabel>بڕ (د.ع)</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>

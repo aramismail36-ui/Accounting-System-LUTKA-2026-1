@@ -51,7 +51,7 @@ export default function PaymentsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="text-right">ناوی قوتابی</TableHead>
-                <TableHead className="text-right">بڕی واصل ($)</TableHead>
+                <TableHead className="text-right">بڕی واصل (د.ع)</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
                 <TableHead className="text-right w-[100px]">وەسڵ</TableHead>
               </TableRow>
@@ -108,11 +108,18 @@ function CreatePaymentDialog({ open, onOpenChange, students }: { open: boolean, 
   });
 
   function onSubmit(data: InsertPayment) {
-    mutate(data, {
+    const payload = {
+      ...data,
+      amount: String(data.amount),
+    };
+    mutate(payload as any, {
       onSuccess: () => {
         toast({ title: "سەرکەوتوو بوو", description: "قیستەکە وەرگیرا" });
         form.reset();
         onOpenChange(false);
+      },
+      onError: (err) => {
+        toast({ title: "هەڵە", description: err.message, variant: "destructive" });
       },
     });
   }
@@ -157,7 +164,7 @@ function CreatePaymentDialog({ open, onOpenChange, students }: { open: boolean, 
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>بڕی پارە ($)</FormLabel>
+                  <FormLabel>بڕی پارە (د.ع)</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>

@@ -47,7 +47,7 @@ export default function StaffPage() {
                 <TableHead className="text-right">ناوی سیانی</TableHead>
                 <TableHead className="text-right">پلە / کار</TableHead>
                 <TableHead className="text-right">مۆبایل</TableHead>
-                <TableHead className="text-right">مووچە ($)</TableHead>
+                <TableHead className="text-right">مووچە (د.ع)</TableHead>
                 <TableHead className="text-right">کردار</TableHead>
               </TableRow>
             </TableHeader>
@@ -126,11 +126,18 @@ function CreateStaffDialog({ open, onOpenChange }: { open: boolean, onOpenChange
   });
 
   function onSubmit(data: InsertStaff) {
-    mutate(data, {
+    const payload = {
+      ...data,
+      salary: String(data.salary),
+    };
+    mutate(payload as any, {
       onSuccess: () => {
         toast({ title: "زیادکرا", description: "کارمەندی نوێ زیادکرا" });
         form.reset();
         onOpenChange(false);
+      },
+      onError: (err) => {
+        toast({ title: "هەڵە", description: err.message, variant: "destructive" });
       },
     });
   }
@@ -196,7 +203,7 @@ function CreateStaffDialog({ open, onOpenChange }: { open: boolean, onOpenChange
               name="salary"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>مووچەی مانگانە ($)</FormLabel>
+                  <FormLabel>مووچەی مانگانە (د.ع)</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>

@@ -63,7 +63,7 @@ export default function IncomePage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="text-right">سەرچاوە</TableHead>
-                <TableHead className="text-right">بڕ ($)</TableHead>
+                <TableHead className="text-right">بڕ (د.ع)</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
                 <TableHead className="text-right">تێبینی</TableHead>
                 <TableHead className="text-right w-[100px]">کردار</TableHead>
@@ -150,11 +150,18 @@ function CreateIncomeDialog({ open, onOpenChange }: { open: boolean, onOpenChang
   });
 
   function onSubmit(data: InsertIncome) {
-    mutate(data, {
+    const payload = {
+      ...data,
+      amount: String(data.amount),
+    };
+    mutate(payload as any, {
       onSuccess: () => {
         toast({ title: "تۆمارکرا", description: "داهات بە سەرکەوتوویی تۆمارکرا" });
         form.reset();
         onOpenChange(false);
+      },
+      onError: (err) => {
+        toast({ title: "هەڵە", description: err.message, variant: "destructive" });
       },
     });
   }
@@ -192,7 +199,7 @@ function CreateIncomeDialog({ open, onOpenChange }: { open: boolean, onOpenChang
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>بڕ ($)</FormLabel>
+                  <FormLabel>بڕ (د.ع)</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
