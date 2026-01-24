@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, Search, Pencil, Trash2, Printer, Loader2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Printer, Loader2, MessageCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
@@ -176,6 +176,7 @@ export default function StudentsPage() {
                               setEditingStudent(student);
                               setIsDialogOpen(true);
                             }}
+                            data-testid={`button-edit-student-${student.id}`}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -184,9 +185,28 @@ export default function StudentsPage() {
                             size="icon"
                             className="text-slate-500 hover:text-purple-600 hover:bg-purple-50"
                             onClick={() => window.print()}
+                            data-testid={`button-print-student-${student.id}`}
                           >
                             <Printer className="h-4 w-4" />
                           </Button>
+                          {Number(student.remainingAmount) > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-slate-500 hover:text-green-600 hover:bg-green-50"
+                              onClick={() => {
+                                const phone = student.mobile.replace(/^0/, "964");
+                                const remaining = Number(student.remainingAmount).toLocaleString();
+                                const message = `سڵاو ${student.fullName}،\n\nئەمە بیرهێنانەوەیە لە قوتابخانەی لوتکە. تکایە ئاگادار بە کە بڕی ${remaining} د.ع لە کرێی خوێندنەکەت ماوە بۆ پێدان.\n\nسوپاس بۆ هاوکاریت.`;
+                                const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+                                window.open(url, "_blank");
+                              }}
+                              data-testid={`button-whatsapp-student-${student.id}`}
+                              title="ناردنی بیرهێنانەوە بە واتس ئەپ"
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                            </Button>
+                          )}
                           <DeleteStudentButton id={student.id} />
                         </div>
                       </TableCell>
