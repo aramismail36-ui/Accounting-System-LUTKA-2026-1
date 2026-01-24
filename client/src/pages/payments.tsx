@@ -22,10 +22,27 @@ export default function PaymentsPage() {
   const { data: students } = useStudents();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [receiptData, setReceiptData] = useState<{ payment: Payment; student: Student } | null>(null);
+  const [selectedGrade, setSelectedGrade] = useState<string>("all");
 
-  // Helper to get student name
+  // Get unique grades from students
+  const grades = Array.from(new Set(students?.map(s => s.grade).filter(Boolean) || []));
+
+  // Helper to get student info
   const getStudentName = (id: number) => students?.find(s => s.id === id)?.fullName || "نەزانراو";
+  const getStudentGrade = (id: number) => students?.find(s => s.id === id)?.grade || "";
   const getStudent = (id: number) => students?.find(s => s.id === id);
+
+  // Filter payments by grade
+  const filteredPayments = payments?.filter(payment => {
+    if (selectedGrade === "all") return true;
+    const student = getStudent(payment.studentId);
+    return student?.grade === selectedGrade;
+  });
+
+  // Filter students for dialog by grade
+  const filteredStudents = selectedGrade === "all" 
+    ? students || []
+    : students?.filter(s => s.grade === selectedGrade) || [];
 
   return (
     <div className="space-y-6">
@@ -37,12 +54,34 @@ export default function PaymentsPage() {
             size="lg"
             className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20"
             onClick={() => setIsDialogOpen(true)}
+            data-testid="button-add-payment"
           >
             <Plus className="h-5 w-5" />
             وەرگرتنی قیست
           </Button>
         }
       />
+
+      <div className="flex items-center gap-4">
+        <Select value={selectedGrade} onValueChange={setSelectedGrade}>
+          <SelectTrigger className="w-[200px]" data-testid="select-grade-filter">
+            <SelectValue placeholder="هەموو پۆلەکان" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">هەموو پۆلەکان</SelectItem>
+            {grades.map((grade) => (
+              <SelectItem key={grade} value={grade || ""}>
+                {grade}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {selectedGrade !== "all" && (
+          <span className="text-sm text-muted-foreground">
+            {filteredPayments?.length || 0} قیست لە {selectedGrade}
+          </span>
+        )}
+      </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
         {isLoading ? (
@@ -54,15 +93,17 @@ export default function PaymentsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="text-right">ناوی قوتابی</TableHead>
+                <TableHead className="text-right">پۆل</TableHead>
                 <TableHead className="text-right">بڕی واصل (د.ع)</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
                 <TableHead className="text-right w-[100px]">وەسڵ</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {payments?.map((payment) => (
+              {filteredPayments?.map((payment) => (
                 <TableRow key={payment.id}>
                   <TableCell className="font-medium">{getStudentName(payment.studentId)}</TableCell>
+                  <TableCell className="text-slate-500">{getStudentGrade(payment.studentId)}</TableCell>
                   <TableCell className="text-indigo-600 font-bold font-mono">{Number(payment.amount).toLocaleString()} د.ع</TableCell>
                   <TableCell className="text-slate-500 font-mono">
                     {format(new Date(payment.date), "yyyy-MM-dd")}
@@ -84,9 +125,9 @@ export default function PaymentsPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {payments?.length === 0 && (
+              {filteredPayments?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                     هیچ قیستێک وەرنەگیراوە
                   </TableCell>
                 </TableRow>
@@ -96,7 +137,7 @@ export default function PaymentsPage() {
         )}
       </div>
 
-      <CreatePaymentDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} students={students || []} />
+      <CreatePaymentDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} students={filteredStudents} selectedGrade={selectedGrade} />
       
       {receiptData && (
         <PaymentReceipt
@@ -115,7 +156,7 @@ interface PaymentFormData {
   date: string;
 }
 
-function CreatePaymentDialog({ open, onOpenChange, students }: { open: boolean, onOpenChange: (open: boolean) => void, students: any[] }) {
+function CreatePaymentDialog({ open, onOpenChange, students, selectedGrade }: { open: boolean, onOpenChange: (open: boolean) => void, students: any[], selectedGrade: string }) {
   const { mutate, isPending } = useCreatePayment();
   const { toast } = useToast();
 
