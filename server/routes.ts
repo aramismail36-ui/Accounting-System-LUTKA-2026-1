@@ -213,6 +213,34 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
+  // Salary Payments
+  app.get(api.salaryPayments.list.path, async (req, res) => {
+    const salaryPayments = await storage.getSalaryPayments();
+    res.json(salaryPayments);
+  });
+
+  app.post(api.salaryPayments.create.path, async (req, res) => {
+    try {
+      const bodySchema = api.salaryPayments.create.input.extend({
+        staffId: z.coerce.number(),
+        amount: z.coerce.number(),
+      });
+      const input = bodySchema.parse(req.body);
+      const payment = await storage.createSalaryPayment({ ...input, amount: String(input.amount) });
+      res.status(201).json(payment);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.delete(api.salaryPayments.delete.path, async (req, res) => {
+    await storage.deleteSalaryPayment(Number(req.params.id));
+    res.status(204).send();
+  });
+
   // Reports
   app.get(api.reports.monthly.path, async (req, res) => {
     const now = new Date();

@@ -1,13 +1,14 @@
 import { db } from "./db";
 import { eq, sql, and, gte, lte } from "drizzle-orm";
 import { 
-  schoolSettings, students, income, expenses, payments, staff,
+  schoolSettings, students, income, expenses, payments, staff, salaryPayments,
   type InsertSchoolSettings, type SchoolSettings,
   type InsertStudent, type Student,
   type InsertIncome, type Income,
   type InsertExpense, type Expense,
   type InsertPayment, type Payment,
-  type InsertStaff, type Staff
+  type InsertStaff, type Staff,
+  type InsertSalaryPayment, type SalaryPayment
 } from "@shared/schema";
 
 export interface IStorage {
@@ -40,6 +41,11 @@ export interface IStorage {
   getStaffList(): Promise<Staff[]>;
   createStaff(staff: InsertStaff): Promise<Staff>;
   deleteStaff(id: number): Promise<void>;
+
+  // Salary Payments
+  getSalaryPayments(): Promise<SalaryPayment[]>;
+  createSalaryPayment(payment: InsertSalaryPayment): Promise<SalaryPayment>;
+  deleteSalaryPayment(id: number): Promise<void>;
 
   // Reports
   getMonthlyReport(month: Date): Promise<{
@@ -178,6 +184,29 @@ export class DatabaseStorage implements IStorage {
 
   async deleteStaff(id: number): Promise<void> {
     await db.delete(staff).where(eq(staff.id, id));
+  }
+
+  // Salary Payments
+  async getSalaryPayments(): Promise<SalaryPayment[]> {
+    return await db.select().from(salaryPayments).orderBy(salaryPayments.date);
+  }
+
+  async createSalaryPayment(insertPayment: InsertSalaryPayment): Promise<SalaryPayment> {
+    const [payment] = await db.insert(salaryPayments).values(insertPayment).returning();
+    
+    // Also add to Expenses table as salary expense
+    await this.createExpense({
+      category: "مووچە",
+      amount: insertPayment.amount,
+      date: insertPayment.date,
+      description: `مووچەی مانگی ${insertPayment.month} - کارمەند ${insertPayment.staffId}`
+    });
+
+    return payment;
+  }
+
+  async deleteSalaryPayment(id: number): Promise<void> {
+    await db.delete(salaryPayments).where(eq(salaryPayments.id, id));
   }
 
   // Reports

@@ -6,12 +6,14 @@ import {
   insertExpenseSchema, 
   insertPaymentSchema, 
   insertStaffSchema,
+  insertSalaryPaymentSchema,
   schoolSettings,
   students,
   income,
   expenses,
   payments,
-  staff
+  staff,
+  salaryPayments
 } from './schema';
 
 // Export everything from schema so frontend can import from @shared/routes if it wants to
@@ -181,6 +183,31 @@ export const api = {
     delete: {
       method: 'DELETE' as const,
       path: '/api/staff/:id',
+      responses: {
+        204: z.void(),
+      },
+    },
+  },
+  salaryPayments: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/salary-payments',
+      responses: {
+        200: z.array(z.custom<typeof salaryPayments.$inferSelect>()),
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/salary-payments',
+      input: insertSalaryPaymentSchema,
+      responses: {
+        201: z.custom<typeof salaryPayments.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/salary-payments/:id',
       responses: {
         204: z.void(),
       },

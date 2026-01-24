@@ -90,6 +90,21 @@ export const insertStaffSchema = createInsertSchema(staff);
 export type InsertStaff = z.infer<typeof insertStaffSchema>;
 export type Staff = typeof staff.$inferSelect;
 
+// Salary Payments (Staff Salary Disbursement)
+export const salaryPayments = pgTable("salary_payments", {
+  id: serial("id").primaryKey(),
+  staffId: integer("staff_id").notNull(),
+  amount: decimal("amount", { precision: 12, scale: 0 }).notNull(),
+  month: text("month").notNull(), // e.g., "2026-01" for January 2026
+  date: date("date").defaultNow().notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSalaryPaymentSchema = createInsertSchema(salaryPayments);
+export type InsertSalaryPayment = z.infer<typeof insertSalaryPaymentSchema>;
+export type SalaryPayment = typeof salaryPayments.$inferSelect;
+
 // Financial Report Types (Page 7)
 export type FinancialReport = {
   totalIncome: number;
