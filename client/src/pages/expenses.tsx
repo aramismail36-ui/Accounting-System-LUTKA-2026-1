@@ -58,6 +58,7 @@ export default function ExpensesPage() {
                     <table>
                       <thead>
                         <tr>
+                          <th>ژ</th>
                           <th>جۆر / بەش</th>
                           <th>بڕ (د.ع)</th>
                           <th>بەروار</th>
@@ -65,8 +66,9 @@ export default function ExpensesPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        ${expenses?.map(item => `
+                        ${expenses?.map((item, i) => `
                           <tr>
+                            <td>${i + 1}</td>
                             <td>${item.category}</td>
                             <td style="color: #dc2626; font-weight: bold;">-${Number(item.amount).toLocaleString()}</td>
                             <td>${new Date(item.date).toLocaleDateString()}</td>

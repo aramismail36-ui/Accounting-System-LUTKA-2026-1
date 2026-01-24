@@ -80,6 +80,7 @@ export default function PaymentsPage() {
                     <table>
                       <thead>
                         <tr>
+                          <th>ژ</th>
                           <th>ناوی قوتابی</th>
                           <th>پۆل</th>
                           <th>بڕی واصل (د.ع)</th>
@@ -87,8 +88,9 @@ export default function PaymentsPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        ${filteredPayments?.map(payment => `
+                        ${filteredPayments?.map((payment, i) => `
                           <tr>
+                            <td>${i + 1}</td>
                             <td>${getStudentName(payment.studentId)}</td>
                             <td>${getStudentGrade(payment.studentId)}</td>
                             <td style="color: #4f46e5; font-weight: bold;">${Number(payment.amount).toLocaleString()}</td>

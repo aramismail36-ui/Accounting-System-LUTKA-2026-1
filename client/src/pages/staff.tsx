@@ -52,6 +52,7 @@ export default function StaffPage() {
                     <table>
                       <thead>
                         <tr>
+                          <th>ژ</th>
                           <th>ناوی سیانی</th>
                           <th>پلە / کار</th>
                           <th>مۆبایل</th>
@@ -59,8 +60,9 @@ export default function StaffPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        ${staff?.map(person => `
+                        ${staff?.map((person, i) => `
                           <tr>
+                            <td>${i + 1}</td>
                             <td>${person.fullName}</td>
                             <td>${person.role}</td>
                             <td>${person.mobile}</td>

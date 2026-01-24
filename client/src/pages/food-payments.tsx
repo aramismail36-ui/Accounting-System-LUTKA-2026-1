@@ -76,6 +76,7 @@ export default function FoodPaymentsPage() {
                     <table>
                       <thead>
                         <tr>
+                          <th>ژ</th>
                           <th>ناوی قوتابی</th>
                           <th>پۆل</th>
                           <th>بڕ (د.ع)</th>
@@ -84,8 +85,9 @@ export default function FoodPaymentsPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        ${filteredPayments?.map(payment => `
+                        ${filteredPayments?.map((payment, i) => `
                           <tr>
+                            <td>${i + 1}</td>
                             <td>${getStudentName(payment.studentId)}</td>
                             <td>${getStudentGrade(payment.studentId)}</td>
                             <td style="color: #ea580c; font-weight: bold;">${Number(payment.amount).toLocaleString()}</td>

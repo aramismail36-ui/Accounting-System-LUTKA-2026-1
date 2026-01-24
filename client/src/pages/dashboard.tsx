@@ -2,7 +2,8 @@ import { useStudents } from "@/hooks/use-students";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, GraduationCap, Wallet, TrendingUp, TrendingDown, PiggyBank } from "lucide-react";
+import { Users, GraduationCap, Wallet, TrendingUp, TrendingDown, PiggyBank, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from "recharts";
 import type { Staff, Income, Expense } from "@shared/schema";
 
@@ -56,11 +57,27 @@ export default function DashboardPage() {
     );
   }
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 print:space-y-4">
       <PageHeader
         title="داشبۆرد"
         description="پوختەی زانیاری قوتابخانە"
+        action={
+          <Button
+            variant="outline"
+            size="lg"
+            className="gap-2 print:hidden"
+            onClick={handlePrint}
+            data-testid="button-print-dashboard"
+          >
+            <Printer className="h-5 w-5" />
+            چاپکردن
+          </Button>
+        }
       />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

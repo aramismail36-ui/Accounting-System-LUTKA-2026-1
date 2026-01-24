@@ -58,6 +58,7 @@ export default function StudentsPage() {
                     <table>
                       <thead>
                         <tr>
+                          <th>ژ</th>
                           <th>ناوی سیانی</th>
                           <th>پۆل</th>
                           <th>مۆبایل</th>
@@ -67,8 +68,9 @@ export default function StudentsPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        ${filteredStudents?.map(s => `
+                        ${filteredStudents?.map((s, i) => `
                           <tr>
+                            <td>${i + 1}</td>
                             <td>${s.fullName}</td>
                             <td>${s.grade || '-'}</td>
                             <td>${s.mobile}</td>

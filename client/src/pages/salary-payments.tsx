@@ -91,6 +91,7 @@ export default function SalaryPaymentsPage() {
                   <table>
                     <thead>
                       <tr>
+                        <th>ژ</th>
                         <th>ناوی فەرمانبەر</th>
                         <th>بڕی مووچە (د.ع)</th>
                         <th>مانگ</th>
@@ -98,8 +99,9 @@ export default function SalaryPaymentsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      ${salaryPayments?.map(payment => `
+                      ${salaryPayments?.map((payment, i) => `
                         <tr>
+                          <td>${i + 1}</td>
                           <td>${getStaffName(payment.staffId)}</td>
                           <td style="color: #9333ea; font-weight: bold;">${Number(payment.amount).toLocaleString()}</td>
                           <td>${payment.month}</td>

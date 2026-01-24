@@ -138,10 +138,10 @@ export default function ReportsPage() {
         <div class="section">
           <div class="section-title income-title">داهاتەکان (${income?.length || 0} تۆمار)</div>
           <table>
-            <thead><tr><th>سەرچاوە</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
+            <thead><tr><th>ژ</th><th>سەرچاوە</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
             <tbody>
-              ${income?.map(i => `<tr><td>${i.source}</td><td class="amount-green">+${Number(i.amount).toLocaleString()}</td><td>${format(new Date(i.date), "yyyy-MM-dd")}</td><td>${i.description || '-'}</td></tr>`).join('') || ''}
-              <tr class="total-row"><td>کۆی گشتی</td><td class="amount-green">${totalIncome.toLocaleString()} د.ع</td><td colspan="2"></td></tr>
+              ${income?.map((i, idx) => `<tr><td>${idx + 1}</td><td>${i.source}</td><td class="amount-green">+${Number(i.amount).toLocaleString()}</td><td>${format(new Date(i.date), "yyyy-MM-dd")}</td><td>${i.description || '-'}</td></tr>`).join('') || ''}
+              <tr class="total-row"><td></td><td>کۆی گشتی</td><td class="amount-green">${totalIncome.toLocaleString()} د.ع</td><td colspan="2"></td></tr>
             </tbody>
           </table>
         </div>
@@ -149,10 +149,10 @@ export default function ReportsPage() {
         <div class="section">
           <div class="section-title expense-title">خەرجییەکان (${expenses?.length || 0} تۆمار)</div>
           <table>
-            <thead><tr><th>جۆر</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
+            <thead><tr><th>ژ</th><th>جۆر</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
             <tbody>
-              ${expenses?.map(e => `<tr><td>${e.category}</td><td class="amount-red">-${Number(e.amount).toLocaleString()}</td><td>${format(new Date(e.date), "yyyy-MM-dd")}</td><td>${e.description || '-'}</td></tr>`).join('') || ''}
-              <tr class="total-row"><td>کۆی گشتی</td><td class="amount-red">${totalExpenses.toLocaleString()} د.ع</td><td colspan="2"></td></tr>
+              ${expenses?.map((e, idx) => `<tr><td>${idx + 1}</td><td>${e.category}</td><td class="amount-red">-${Number(e.amount).toLocaleString()}</td><td>${format(new Date(e.date), "yyyy-MM-dd")}</td><td>${e.description || '-'}</td></tr>`).join('') || ''}
+              <tr class="total-row"><td></td><td>کۆی گشتی</td><td class="amount-red">${totalExpenses.toLocaleString()} د.ع</td><td colspan="2"></td></tr>
             </tbody>
           </table>
         </div>
@@ -550,8 +550,8 @@ export default function ReportsPage() {
                       th{background:#16a34a;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
                       .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
                       <body><h1>قوتابخانەی لوتکە - داهاتەکان</h1>
-                      <table><thead><tr><th>سەرچاوە</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
-                      <tbody>${income?.map(i => `<tr><td>${i.source}</td><td style="color:#16a34a">+${Number(i.amount).toLocaleString()}</td><td>${format(new Date(i.date), "yyyy-MM-dd")}</td><td>${i.description || "-"}</td></tr>`).join('') || ''}</tbody></table>
+                      <table><thead><tr><th>ژ</th><th>سەرچاوە</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
+                      <tbody>${income?.map((i, idx) => `<tr><td>${idx + 1}</td><td>${i.source}</td><td style="color:#16a34a">+${Number(i.amount).toLocaleString()}</td><td>${format(new Date(i.date), "yyyy-MM-dd")}</td><td>${i.description || "-"}</td></tr>`).join('') || ''}</tbody></table>
                       <div class="total">کۆی گشتی: ${totalIncome.toLocaleString()} د.ع</div>
                       <div class="footer">چاپکرا لە ${new Date().toLocaleDateString()}</div>
                       <script>window.onload=function(){window.print()}</script></body></html>
@@ -621,8 +621,8 @@ export default function ReportsPage() {
                       th{background:#dc2626;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
                       .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
                       <body><h1>قوتابخانەی لوتکە - خەرجییەکان</h1>
-                      <table><thead><tr><th>جۆر</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
-                      <tbody>${expenses?.map(e => `<tr><td>${e.category}</td><td style="color:#dc2626">-${Number(e.amount).toLocaleString()}</td><td>${format(new Date(e.date), "yyyy-MM-dd")}</td><td>${e.description || "-"}</td></tr>`).join('') || ''}</tbody></table>
+                      <table><thead><tr><th>ژ</th><th>جۆر</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
+                      <tbody>${expenses?.map((e, idx) => `<tr><td>${idx + 1}</td><td>${e.category}</td><td style="color:#dc2626">-${Number(e.amount).toLocaleString()}</td><td>${format(new Date(e.date), "yyyy-MM-dd")}</td><td>${e.description || "-"}</td></tr>`).join('') || ''}</tbody></table>
                       <div class="total">کۆی گشتی: ${totalExpenses.toLocaleString()} د.ع</div>
                       <div class="footer">چاپکرا لە ${new Date().toLocaleDateString()}</div>
                       <script>window.onload=function(){window.print()}</script></body></html>
@@ -692,8 +692,8 @@ export default function ReportsPage() {
                       th{background:#4f46e5;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
                       .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
                       <body><h1>قوتابخانەی لوتکە - قیستەکان</h1>
-                      <table><thead><tr><th>قوتابی</th><th>بڕ (د.ع)</th><th>بەروار</th></tr></thead>
-                      <tbody>${payments?.map(p => `<tr><td>${getStudentName(p.studentId)}</td><td style="color:#4f46e5">${Number(p.amount).toLocaleString()}</td><td>${format(new Date(p.date), "yyyy-MM-dd")}</td></tr>`).join('') || ''}</tbody></table>
+                      <table><thead><tr><th>ژ</th><th>قوتابی</th><th>بڕ (د.ع)</th><th>بەروار</th></tr></thead>
+                      <tbody>${payments?.map((p, idx) => `<tr><td>${idx + 1}</td><td>${getStudentName(p.studentId)}</td><td style="color:#4f46e5">${Number(p.amount).toLocaleString()}</td><td>${format(new Date(p.date), "yyyy-MM-dd")}</td></tr>`).join('') || ''}</tbody></table>
                       <div class="total">کۆی گشتی: ${totalPayments.toLocaleString()} د.ع</div>
                       <div class="footer">چاپکرا لە ${new Date().toLocaleDateString()}</div>
                       <script>window.onload=function(){window.print()}</script></body></html>
@@ -761,8 +761,8 @@ export default function ReportsPage() {
                       th{background:#ea580c;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
                       .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
                       <body><h1>قوتابخانەی لوتکە - کارمەندان</h1>
-                      <table><thead><tr><th>ناو</th><th>پلە</th><th>مۆبایل</th><th>مووچە (د.ع)</th></tr></thead>
-                      <tbody>${staff?.map(s => `<tr><td>${s.fullName}</td><td>${s.role}</td><td>${s.mobile}</td><td>${Number(s.salary).toLocaleString()}</td></tr>`).join('') || ''}</tbody></table>
+                      <table><thead><tr><th>ژ</th><th>ناو</th><th>پلە</th><th>مۆبایل</th><th>مووچە (د.ع)</th></tr></thead>
+                      <tbody>${staff?.map((s, idx) => `<tr><td>${idx + 1}</td><td>${s.fullName}</td><td>${s.role}</td><td>${s.mobile}</td><td>${Number(s.salary).toLocaleString()}</td></tr>`).join('') || ''}</tbody></table>
                       <div class="total">کۆی مووچەی مانگانە: ${totalStaffSalary.toLocaleString()} د.ع</div>
                       <div class="footer">چاپکرا لە ${new Date().toLocaleDateString()}</div>
                       <script>window.onload=function(){window.print()}</script></body></html>
@@ -832,8 +832,8 @@ export default function ReportsPage() {
                       th{background:#9333ea;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
                       .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
                       <body><h1>قوتابخانەی لوتکە - مووچەکان</h1>
-                      <table><thead><tr><th>کارمەند</th><th>بڕ (د.ع)</th><th>مانگ</th><th>بەروار</th></tr></thead>
-                      <tbody>${salaryPayments?.map(s => `<tr><td>${getStaffName(s.staffId)}</td><td style="color:#9333ea">${Number(s.amount).toLocaleString()}</td><td>${s.month}</td><td>${format(new Date(s.date), "yyyy-MM-dd")}</td></tr>`).join('') || ''}</tbody></table>
+                      <table><thead><tr><th>ژ</th><th>کارمەند</th><th>بڕ (د.ع)</th><th>مانگ</th><th>بەروار</th></tr></thead>
+                      <tbody>${salaryPayments?.map((s, idx) => `<tr><td>${idx + 1}</td><td>${getStaffName(s.staffId)}</td><td style="color:#9333ea">${Number(s.amount).toLocaleString()}</td><td>${s.month}</td><td>${format(new Date(s.date), "yyyy-MM-dd")}</td></tr>`).join('') || ''}</tbody></table>
                       <div class="total">کۆی گشتی: ${totalSalaries.toLocaleString()} د.ع</div>
                       <div class="footer">چاپکرا لە ${new Date().toLocaleDateString()}</div>
                       <script>window.onload=function(){window.print()}</script></body></html>

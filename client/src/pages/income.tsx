@@ -59,6 +59,7 @@ export default function IncomePage() {
                     <table>
                       <thead>
                         <tr>
+                          <th>ژ</th>
                           <th>سەرچاوە</th>
                           <th>بڕ (د.ع)</th>
                           <th>بەروار</th>
@@ -66,8 +67,9 @@ export default function IncomePage() {
                         </tr>
                       </thead>
                       <tbody>
-                        ${income?.map(item => `
+                        ${income?.map((item, i) => `
                           <tr>
+                            <td>${i + 1}</td>
                             <td>${item.source}</td>
                             <td style="color: #16a34a; font-weight: bold;">+${Number(item.amount).toLocaleString()}</td>
                             <td>${new Date(item.date).toLocaleDateString()}</td>
