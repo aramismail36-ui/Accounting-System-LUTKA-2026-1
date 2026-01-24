@@ -525,6 +525,13 @@ export default function ReportsPage() {
                         <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ تۆمارێک نییە</TableCell>
                       </TableRow>
                     )}
+                    {income && income.length > 0 && (
+                      <TableRow className="bg-green-100 dark:bg-green-900/40 font-bold">
+                        <TableCell>کۆی گشتی</TableCell>
+                        <TableCell className="font-mono text-green-700 dark:text-green-400">{totalIncome.toLocaleString()} د.ع</TableCell>
+                        <TableCell colSpan={2}></TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -586,6 +593,13 @@ export default function ReportsPage() {
                         <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ تۆمارێک نییە</TableCell>
                       </TableRow>
                     )}
+                    {expenses && expenses.length > 0 && (
+                      <TableRow className="bg-red-100 dark:bg-red-900/40 font-bold">
+                        <TableCell>کۆی گشتی</TableCell>
+                        <TableCell className="font-mono text-red-700 dark:text-red-400">{totalExpenses.toLocaleString()} د.ع</TableCell>
+                        <TableCell colSpan={2}></TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -643,6 +657,13 @@ export default function ReportsPage() {
                     {(!payments || payments.length === 0) && (
                       <TableRow>
                         <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">هیچ قیستێک نییە</TableCell>
+                      </TableRow>
+                    )}
+                    {payments && payments.length > 0 && (
+                      <TableRow className="bg-indigo-100 dark:bg-indigo-900/40 font-bold">
+                        <TableCell>کۆی گشتی</TableCell>
+                        <TableCell className="font-mono text-indigo-700 dark:text-indigo-400">{totalPayments.toLocaleString()} د.ع</TableCell>
+                        <TableCell></TableCell>
                       </TableRow>
                     )}
                   </TableBody>
@@ -706,6 +727,13 @@ export default function ReportsPage() {
                         <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ کارمەندێک نییە</TableCell>
                       </TableRow>
                     )}
+                    {staff && staff.length > 0 && (
+                      <TableRow className="bg-orange-100 dark:bg-orange-900/40 font-bold">
+                        <TableCell>کۆی مووچەی مانگانە</TableCell>
+                        <TableCell colSpan={2}></TableCell>
+                        <TableCell className="font-mono text-orange-700 dark:text-orange-400">{totalStaffSalary.toLocaleString()} د.ع</TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -765,6 +793,13 @@ export default function ReportsPage() {
                     {(!salaryPayments || salaryPayments.length === 0) && (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">هیچ مووچەیەک نییە</TableCell>
+                      </TableRow>
+                    )}
+                    {salaryPayments && salaryPayments.length > 0 && (
+                      <TableRow className="bg-purple-100 dark:bg-purple-900/40 font-bold">
+                        <TableCell>کۆی گشتی</TableCell>
+                        <TableCell className="font-mono text-purple-700 dark:text-purple-400">{totalSalaries.toLocaleString()} د.ع</TableCell>
+                        <TableCell colSpan={2}></TableCell>
                       </TableRow>
                     )}
                   </TableBody>
