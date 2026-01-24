@@ -473,6 +473,33 @@ export default function ReportsPage() {
             <TabsContent value="income">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-sm text-muted-foreground">کۆی: {income?.length || 0} تۆمار | {totalIncome.toLocaleString()} د.ع</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => {
+                    const printWindow = window.open('', '_blank');
+                    if (!printWindow) return;
+                    printWindow.document.write(`
+                      <!DOCTYPE html><html dir="rtl" lang="ku"><head><meta charset="UTF-8"><title>داهاتەکان</title>
+                      <style>body{font-family:'Vazirmatn',Arial,sans-serif;direction:rtl;padding:20px}h1{text-align:center;margin-bottom:20px}
+                      table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:10px;text-align:right}
+                      th{background:#16a34a;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
+                      .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
+                      <body><h1>قوتابخانەی لوتکە - داهاتەکان</h1>
+                      <table><thead><tr><th>سەرچاوە</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
+                      <tbody>${income?.map(i => `<tr><td>${i.source}</td><td style="color:#16a34a">+${Number(i.amount).toLocaleString()}</td><td>${format(new Date(i.date), "yyyy-MM-dd")}</td><td>${i.description || "-"}</td></tr>`).join('') || ''}</tbody></table>
+                      <div class="total">کۆی گشتی: ${totalIncome.toLocaleString()} د.ع</div>
+                      <div class="footer">چاپکرا لە ${new Date().toLocaleDateString()}</div>
+                      <script>window.onload=function(){window.print()}</script></body></html>
+                    `);
+                    printWindow.document.close();
+                  }}
+                  data-testid="button-print-income"
+                >
+                  <Printer className="h-4 w-4" />
+                  چاپکردن
+                </Button>
               </div>
               <div className="rounded-lg border overflow-hidden">
                 <Table>
@@ -507,6 +534,33 @@ export default function ReportsPage() {
             <TabsContent value="expenses">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-sm text-muted-foreground">کۆی: {expenses?.length || 0} تۆمار | {totalExpenses.toLocaleString()} د.ع</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => {
+                    const printWindow = window.open('', '_blank');
+                    if (!printWindow) return;
+                    printWindow.document.write(`
+                      <!DOCTYPE html><html dir="rtl" lang="ku"><head><meta charset="UTF-8"><title>خەرجییەکان</title>
+                      <style>body{font-family:'Vazirmatn',Arial,sans-serif;direction:rtl;padding:20px}h1{text-align:center;margin-bottom:20px}
+                      table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:10px;text-align:right}
+                      th{background:#dc2626;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
+                      .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
+                      <body><h1>قوتابخانەی لوتکە - خەرجییەکان</h1>
+                      <table><thead><tr><th>جۆر</th><th>بڕ (د.ع)</th><th>بەروار</th><th>تێبینی</th></tr></thead>
+                      <tbody>${expenses?.map(e => `<tr><td>${e.category}</td><td style="color:#dc2626">-${Number(e.amount).toLocaleString()}</td><td>${format(new Date(e.date), "yyyy-MM-dd")}</td><td>${e.description || "-"}</td></tr>`).join('') || ''}</tbody></table>
+                      <div class="total">کۆی گشتی: ${totalExpenses.toLocaleString()} د.ع</div>
+                      <div class="footer">چاپکرا لە ${new Date().toLocaleDateString()}</div>
+                      <script>window.onload=function(){window.print()}</script></body></html>
+                    `);
+                    printWindow.document.close();
+                  }}
+                  data-testid="button-print-expenses"
+                >
+                  <Printer className="h-4 w-4" />
+                  چاپکردن
+                </Button>
               </div>
               <div className="rounded-lg border overflow-hidden">
                 <Table>
@@ -541,6 +595,33 @@ export default function ReportsPage() {
             <TabsContent value="payments">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-sm text-muted-foreground">کۆی: {payments?.length || 0} قیست | {totalPayments.toLocaleString()} د.ع</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => {
+                    const printWindow = window.open('', '_blank');
+                    if (!printWindow) return;
+                    printWindow.document.write(`
+                      <!DOCTYPE html><html dir="rtl" lang="ku"><head><meta charset="UTF-8"><title>قیستەکان</title>
+                      <style>body{font-family:'Vazirmatn',Arial,sans-serif;direction:rtl;padding:20px}h1{text-align:center;margin-bottom:20px}
+                      table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:10px;text-align:right}
+                      th{background:#4f46e5;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
+                      .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
+                      <body><h1>قوتابخانەی لوتکە - قیستەکان</h1>
+                      <table><thead><tr><th>قوتابی</th><th>بڕ (د.ع)</th><th>بەروار</th></tr></thead>
+                      <tbody>${payments?.map(p => `<tr><td>${getStudentName(p.studentId)}</td><td style="color:#4f46e5">${Number(p.amount).toLocaleString()}</td><td>${format(new Date(p.date), "yyyy-MM-dd")}</td></tr>`).join('') || ''}</tbody></table>
+                      <div class="total">کۆی گشتی: ${totalPayments.toLocaleString()} د.ع</div>
+                      <div class="footer">چاپکرا لە ${new Date().toLocaleDateString()}</div>
+                      <script>window.onload=function(){window.print()}</script></body></html>
+                    `);
+                    printWindow.document.close();
+                  }}
+                  data-testid="button-print-payments"
+                >
+                  <Printer className="h-4 w-4" />
+                  چاپکردن
+                </Button>
               </div>
               <div className="rounded-lg border overflow-hidden">
                 <Table>
@@ -573,6 +654,33 @@ export default function ReportsPage() {
             <TabsContent value="staff">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-sm text-muted-foreground">کۆی: {staff?.length || 0} کارمەند | مووچەی مانگانە: {totalStaffSalary.toLocaleString()} د.ع</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => {
+                    const printWindow = window.open('', '_blank');
+                    if (!printWindow) return;
+                    printWindow.document.write(`
+                      <!DOCTYPE html><html dir="rtl" lang="ku"><head><meta charset="UTF-8"><title>کارمەندان</title>
+                      <style>body{font-family:'Vazirmatn',Arial,sans-serif;direction:rtl;padding:20px}h1{text-align:center;margin-bottom:20px}
+                      table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:10px;text-align:right}
+                      th{background:#ea580c;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
+                      .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
+                      <body><h1>قوتابخانەی لوتکە - کارمەندان</h1>
+                      <table><thead><tr><th>ناو</th><th>پلە</th><th>مۆبایل</th><th>مووچە (د.ع)</th></tr></thead>
+                      <tbody>${staff?.map(s => `<tr><td>${s.fullName}</td><td>${s.role}</td><td>${s.mobile}</td><td>${Number(s.salary).toLocaleString()}</td></tr>`).join('') || ''}</tbody></table>
+                      <div class="total">کۆی مووچەی مانگانە: ${totalStaffSalary.toLocaleString()} د.ع</div>
+                      <div class="footer">چاپکرا لە ${new Date().toLocaleDateString()}</div>
+                      <script>window.onload=function(){window.print()}</script></body></html>
+                    `);
+                    printWindow.document.close();
+                  }}
+                  data-testid="button-print-staff"
+                >
+                  <Printer className="h-4 w-4" />
+                  چاپکردن
+                </Button>
               </div>
               <div className="rounded-lg border overflow-hidden">
                 <Table>
@@ -607,6 +715,33 @@ export default function ReportsPage() {
             <TabsContent value="salaries">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-sm text-muted-foreground">کۆی: {salaryPayments?.length || 0} تۆمار | {totalSalaries.toLocaleString()} د.ع</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => {
+                    const printWindow = window.open('', '_blank');
+                    if (!printWindow) return;
+                    printWindow.document.write(`
+                      <!DOCTYPE html><html dir="rtl" lang="ku"><head><meta charset="UTF-8"><title>مووچەکان</title>
+                      <style>body{font-family:'Vazirmatn',Arial,sans-serif;direction:rtl;padding:20px}h1{text-align:center;margin-bottom:20px}
+                      table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:10px;text-align:right}
+                      th{background:#9333ea;color:white}.total{margin-top:20px;font-weight:bold;text-align:center}
+                      .footer{text-align:center;margin-top:30px;font-size:12px;color:#888}</style></head>
+                      <body><h1>قوتابخانەی لوتکە - مووچەکان</h1>
+                      <table><thead><tr><th>کارمەند</th><th>بڕ (د.ع)</th><th>مانگ</th><th>بەروار</th></tr></thead>
+                      <tbody>${salaryPayments?.map(s => `<tr><td>${getStaffName(s.staffId)}</td><td style="color:#9333ea">${Number(s.amount).toLocaleString()}</td><td>${s.month}</td><td>${format(new Date(s.date), "yyyy-MM-dd")}</td></tr>`).join('') || ''}</tbody></table>
+                      <div class="total">کۆی گشتی: ${totalSalaries.toLocaleString()} د.ع</div>
+                      <div class="footer">چاپکرا لە ${new Date().toLocaleDateString()}</div>
+                      <script>window.onload=function(){window.print()}</script></body></html>
+                    `);
+                    printWindow.document.close();
+                  }}
+                  data-testid="button-print-salaries"
+                >
+                  <Printer className="h-4 w-4" />
+                  چاپکردن
+                </Button>
               </div>
               <div className="rounded-lg border overflow-hidden">
                 <Table>
