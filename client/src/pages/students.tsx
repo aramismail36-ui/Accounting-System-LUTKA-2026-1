@@ -78,6 +78,7 @@ export default function StudentsPage() {
               <TableHeader className="bg-slate-50 dark:bg-slate-900">
                 <TableRow>
                   <TableHead className="text-right font-bold">ناوی سیانی</TableHead>
+                  <TableHead className="text-right font-bold">پۆل</TableHead>
                   <TableHead className="text-right font-bold">ژمارەی مۆبایل</TableHead>
                   <TableHead className="text-right font-bold">کرێی خوێندن</TableHead>
                   <TableHead className="text-right font-bold text-green-600">واصل کراو</TableHead>
@@ -88,7 +89,7 @@ export default function StudentsPage() {
               <TableBody>
                 {filteredStudents?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                       هیچ قوتابیەک نەدۆزرایەوە
                     </TableCell>
                   </TableRow>
@@ -96,10 +97,11 @@ export default function StudentsPage() {
                   filteredStudents?.map((student) => (
                     <TableRow key={student.id} className="group hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
                       <TableCell className="font-medium">{student.fullName}</TableCell>
+                      <TableCell>{student.grade}</TableCell>
                       <TableCell>{student.mobile}</TableCell>
-                      <TableCell className="font-mono text-slate-600">${Number(student.tuitionFee).toLocaleString()}</TableCell>
-                      <TableCell className="font-mono text-green-600 font-medium">${Number(student.paidAmount).toLocaleString()}</TableCell>
-                      <TableCell className="font-mono text-red-600 font-medium">${Number(student.remainingAmount).toLocaleString()}</TableCell>
+                      <TableCell className="font-mono text-slate-600">{Number(student.tuitionFee).toLocaleString()} د.ع</TableCell>
+                      <TableCell className="font-mono text-green-600 font-medium">{Number(student.paidAmount).toLocaleString()} د.ع</TableCell>
+                      <TableCell className="font-mono text-red-600 font-medium">{Number(student.remainingAmount).toLocaleString()} د.ع</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button
@@ -182,6 +184,7 @@ function StudentDialog({ open, onOpenChange, student }: { open: boolean, onOpenC
     defaultValues: {
       fullName: "",
       mobile: "",
+      grade: "",
       tuitionFee: 0,
       paidAmount: 0,
       remainingAmount: 0,
@@ -192,6 +195,7 @@ function StudentDialog({ open, onOpenChange, student }: { open: boolean, onOpenC
   if (open && student && form.getValues("fullName") !== student.fullName) {
     form.reset({
       ...student,
+      grade: student.grade || "",
       tuitionFee: Number(student.tuitionFee),
       paidAmount: Number(student.paidAmount),
       remainingAmount: Number(student.remainingAmount),
@@ -200,6 +204,7 @@ function StudentDialog({ open, onOpenChange, student }: { open: boolean, onOpenC
     form.reset({
       fullName: "",
       mobile: "",
+      grade: "",
       tuitionFee: 0,
       paidAmount: 0,
       remainingAmount: 0,
@@ -269,15 +274,28 @@ function StudentDialog({ open, onOpenChange, student }: { open: boolean, onOpenC
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="grade"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>پۆل</FormLabel>
+                  <FormControl>
+                    <Input placeholder="پۆلی یەکەم، دووەم..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="tuitionFee"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>کرێی خوێندن ($)</FormLabel>
+                    <FormLabel>کرێی خوێندن (د.ع)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" placeholder="1500000" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -288,9 +306,9 @@ function StudentDialog({ open, onOpenChange, student }: { open: boolean, onOpenC
                 name="paidAmount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>بڕی واصل ($)</FormLabel>
+                    <FormLabel>بڕی واصل (د.ع)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" placeholder="0" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -300,7 +318,7 @@ function StudentDialog({ open, onOpenChange, student }: { open: boolean, onOpenC
             
             <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg flex justify-between items-center">
               <span className="text-sm font-medium text-muted-foreground">بڕی ماوە:</span>
-              <span className="text-xl font-bold text-red-600 font-mono">${remaining}</span>
+              <span className="text-xl font-bold text-red-600 font-mono">{remaining.toLocaleString()} د.ع</span>
             </div>
 
             <div className="flex justify-end pt-2">

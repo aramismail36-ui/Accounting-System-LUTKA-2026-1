@@ -239,6 +239,7 @@ export async function registerRoutes(
     const student1 = await storage.createStudent({
       fullName: "محەمەد ئەحمەد کەریم",
       mobile: "07701234567",
+      grade: "پۆلی شەشەم",
       tuitionFee: "1500000",
       paidAmount: "500000",
       remainingAmount: "1000000"
@@ -247,6 +248,7 @@ export async function registerRoutes(
     await storage.createStudent({
       fullName: "سارە عەلی حەسەن",
       mobile: "07501234567",
+      grade: "پۆلی حەوتەم",
       tuitionFee: "1500000",
       paidAmount: "1500000",
       remainingAmount: "0"

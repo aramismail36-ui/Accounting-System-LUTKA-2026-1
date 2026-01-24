@@ -24,9 +24,10 @@ export const students = pgTable("students", {
   id: serial("id").primaryKey(),
   fullName: text("full_name").notNull(),
   mobile: text("mobile").notNull(),
-  tuitionFee: decimal("tuition_fee", { precision: 10, scale: 2 }).notNull(),
-  paidAmount: decimal("paid_amount", { precision: 10, scale: 2 }).default("0").notNull(),
-  remainingAmount: decimal("remaining_amount", { precision: 10, scale: 2 }).default("0").notNull(),
+  grade: text("grade").default("").notNull(), // پۆل - Class/Grade
+  tuitionFee: decimal("tuition_fee", { precision: 12, scale: 0 }).notNull(), // IQD - no decimals
+  paidAmount: decimal("paid_amount", { precision: 12, scale: 0 }).default("0").notNull(),
+  remainingAmount: decimal("remaining_amount", { precision: 12, scale: 0 }).default("0").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
