@@ -22,7 +22,10 @@ export function useCreateSalaryPayment() {
         body: JSON.stringify(data),
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to create salary payment");
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to create salary payment");
+      }
       return api.salaryPayments.create.responses[201].parse(await res.json());
     },
     onSuccess: () => {
