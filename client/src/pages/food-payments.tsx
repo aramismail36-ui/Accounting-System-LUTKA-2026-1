@@ -262,43 +262,86 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
             font-size: 11px;
           }
           .receipt {
-            border: 1.5px solid #333;
-            padding: 10px;
+            border: 2px solid #1e40af;
+            border-radius: 8px;
+            padding: 12px;
             height: 100%;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f0f7ff 0%, #e0efff 100%);
+          }
+          .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.08;
+            z-index: 0;
+            pointer-events: none;
+          }
+          .watermark img {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+          }
+          .content-wrapper {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
           }
           .header {
             text-align: center;
-            border-bottom: 1.5px solid #333;
+            border-bottom: 2px solid #1e40af;
             padding-bottom: 8px;
             margin-bottom: 8px;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            margin: -12px -12px 10px -12px;
+            padding: 10px;
+            border-radius: 6px 6px 0 0;
+          }
+          .header-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            margin-bottom: 4px;
+            border-radius: 50%;
+            background: white;
+            padding: 4px;
           }
           .header h1 {
             font-size: 14px;
             margin-bottom: 2px;
+            color: white;
           }
           .header p {
             font-size: 9px;
-            color: #666;
+            color: #bfdbfe;
           }
           .receipt-title {
             text-align: center;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
             margin: 6px 0;
-            padding: 5px;
-            background: #fff7ed;
-            border-radius: 3px;
-            color: #ea580c;
+            padding: 6px;
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+            border-radius: 6px;
+            color: white;
+            letter-spacing: 1px;
           }
           .receipt-number {
             text-align: center;
             font-size: 10px;
-            margin-bottom: 6px;
-            background: #e8f4f8;
-            padding: 4px;
-            border-radius: 3px;
+            margin-bottom: 8px;
+            background: #dbeafe;
+            padding: 5px;
+            border-radius: 4px;
+            color: #1e40af;
+            font-weight: bold;
+            border: 1px solid #93c5fd;
           }
           .content {
             flex: 1;
@@ -306,42 +349,53 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
           .row {
             display: flex;
             justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 1px dashed #ccc;
+            padding: 5px 8px;
+            border-bottom: 1px dashed #93c5fd;
             font-size: 10px;
+            background: rgba(255,255,255,0.7);
+            margin-bottom: 2px;
+            border-radius: 3px;
           }
           .row:last-child {
             border-bottom: none;
           }
           .label {
             font-weight: bold;
-            color: #555;
+            color: #1e40af;
           }
           .value {
             font-weight: bold;
+            color: #1e3a8a;
           }
           .amount-box {
-            background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%);
             color: white;
-            padding: 12px;
-            border-radius: 6px;
-            margin: 8px 0;
+            padding: 14px;
+            border-radius: 10px;
+            margin: 10px 0;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+            border: 2px solid #60a5fa;
           }
           .amount-number {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             margin-bottom: 4px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
           }
           .amount-words {
             font-size: 10px;
-            opacity: 0.9;
+            opacity: 0.95;
+            background: rgba(255,255,255,0.15);
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: inline-block;
           }
           .signature-section {
             display: flex;
             justify-content: space-between;
             margin-top: auto;
-            padding-top: 10px;
+            padding-top: 8px;
           }
           .signature-box {
             width: 45%;
@@ -349,70 +403,83 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
             font-size: 9px;
           }
           .signature-line {
-            border-top: 1px solid #333;
-            margin-top: 20px;
+            border-top: 1.5px solid #1e40af;
+            margin-top: 18px;
             padding-top: 5px;
+            color: #1e40af;
+            font-weight: bold;
           }
           .footer {
             text-align: center;
             font-size: 8px;
-            color: #888;
-            margin-top: 8px;
+            color: #3b82f6;
+            margin-top: 6px;
             padding-top: 5px;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid #93c5fd;
           }
         </style>
       </head>
       <body>
         <div class="receipt">
-          <div class="header">
-            ${logoHtml}
-            <h1>${schoolName}</h1>
-            <p>سیستەمی ژمێریاری قوتابخانە</p>
-          </div>
-          
-          <div class="receipt-title">وەسڵی پارەی خواردن</div>
-          <div class="receipt-number">
-            <span style="font-weight: bold;">ژمارەی وەسڵ:</span> F-${String(payment.id).padStart(6, '0')}
-          </div>
-          
-          <div class="content">
-            <div class="row">
-              <span class="label">ناوی قوتابی:</span>
-              <span class="value">${studentName}</span>
-            </div>
-            <div class="row">
-              <span class="label">پۆل:</span>
-              <span class="value">${studentGrade || "نەدیاریکراو"}</span>
-            </div>
-            <div class="row">
-              <span class="label">مانگ:</span>
-              <span class="value">${payment.month}</span>
-            </div>
-            <div class="row">
-              <span class="label">بەرواری وەرگرتن:</span>
-              <span class="value">${format(new Date(payment.date), "yyyy-MM-dd")}</span>
+          ${logoUrl ? `<div class="watermark"><img src="${logoUrl}" alt="لۆگۆ" /></div>` : ''}
+          <div class="content-wrapper">
+            <div class="header">
+              ${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" class="header-logo" />` : ''}
+              <h1>${schoolName}</h1>
+              <p>سیستەمی ژمێریاری قوتابخانە</p>
             </div>
             
-            <div class="amount-box">
-              <div class="amount-number">${amountInfo.number}</div>
-              <div class="amount-words">${amountInfo.words}</div>
+            <div class="receipt-title">وەسڵی پارەی خواردن</div>
+            <div class="receipt-number">
+              ژمارەی وەسڵ: F-${String(payment.id).padStart(6, '0')}
             </div>
-          </div>
-          
-          <div class="signature-section">
-            <div class="signature-box">
-              <div class="signature-line">واژووی بەخێوکار</div>
+            
+            <div class="content">
+              <div class="row">
+                <span class="label">ناوی قوتابی:</span>
+                <span class="value">${studentName}</span>
+              </div>
+              <div class="row">
+                <span class="label">پۆل:</span>
+                <span class="value">${studentGrade || "نەدیاریکراو"}</span>
+              </div>
+              <div class="row">
+                <span class="label">مانگ:</span>
+                <span class="value">${payment.month}</span>
+              </div>
+              <div class="row">
+                <span class="label">بەرواری وەرگرتن:</span>
+                <span class="value">${format(new Date(payment.date), "yyyy-MM-dd")}</span>
+              </div>
+              
+              <div class="amount-box">
+                <div class="amount-number">${amountInfo.number}</div>
+                <div class="amount-words">${amountInfo.words}</div>
+              </div>
             </div>
-            <div class="signature-box">
-              <div class="signature-line">واژووی ژمێریار</div>
+            
+            <div class="signature-section">
+              <div class="signature-box">
+                <div class="signature-line">واژووی بەخێوکار</div>
+              </div>
+              <div class="signature-box">
+                <div class="signature-line">واژووی ژمێریار</div>
+              </div>
             </div>
-          </div>
-          
-          <div class="footer">
-            <p>بەروار: ${new Date().toLocaleDateString('ku-Arab')}</p>
+            
+            <div class="footer">
+              بەروار: ${new Date().toLocaleDateString('ku-Arab')}
+            </div>
           </div>
         </div>
+        <script>
+          window.onload = function() {
+            window.print();
+            window.onafterprint = function() {
+              window.close();
+            }
+          }
+        </script>
       </body>
       </html>
     `);
