@@ -219,6 +219,8 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
   const { data: currentFiscalYear } = useCurrentFiscalYear();
   const { toast } = useToast();
   const fiscalYearLabel = currentFiscalYear?.year || "";
+  const schoolAddress = settings?.address || "";
+  const schoolPhone = settings?.phone || "";
 
   const handleDelete = () => {
     if (confirm("ئایا دڵنیایت لە سڕینەوەی ئەم تۆمارە؟")) {
@@ -429,7 +431,8 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
             <div class="header">
               ${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" class="header-logo" />` : ''}
               <h1>${schoolName}</h1>
-              <p>سیستەمی ژمێریاری قوتابخانە</p>
+              ${schoolAddress ? `<p style="font-size: 8px; color: #bfdbfe; margin-top: 2px;">${schoolAddress}</p>` : ''}
+              ${schoolPhone ? `<p style="font-size: 8px; color: #bfdbfe;">تەلەفۆن: ${schoolPhone}</p>` : ''}
               ${fiscalYearLabel ? `<p style="margin-top: 2px; font-size: 10px; color: #93c5fd;">ساڵی خوێندن: ${fiscalYearLabel}</p>` : ''}
             </div>
             

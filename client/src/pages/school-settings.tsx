@@ -27,6 +27,8 @@ export default function SchoolSettingsPage() {
       email: "",
       password: "",
       logoUrl: "",
+      address: "",
+      phone: "",
     },
   });
 
@@ -199,7 +201,21 @@ export default function SchoolSettingsPage() {
                     <FormItem>
                       <FormLabel>ناوی قوتابخانە</FormLabel>
                       <FormControl>
-                        <Input placeholder="ناوەندی لوتکەی ناحکومی" {...field} className="h-12" />
+                        <Input placeholder="ناوەندی لوتکەی ناحکومی" {...field} className="h-12" data-testid="input-school-name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ناونیشانی قوتابخانە</FormLabel>
+                      <FormControl>
+                        <Input placeholder="سلێمانی - گەڕەکی..." {...field} value={field.value || ""} className="h-12" data-testid="input-address" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -209,12 +225,12 @@ export default function SchoolSettingsPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="email"
+                    name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>ئیمەیڵ</FormLabel>
+                        <FormLabel>ژمارەی مۆبایل</FormLabel>
                         <FormControl>
-                          <Input placeholder="info@lutka.edu.iq" {...field} className="h-12" />
+                          <Input placeholder="0770 123 4567" {...field} value={field.value || ""} className="h-12" data-testid="input-phone" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -223,24 +239,39 @@ export default function SchoolSettingsPage() {
 
                   <FormField
                     control={form.control}
-                    name="password"
+                    name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>وشەی نهێنی (بۆ ئەرشیف)</FormLabel>
+                        <FormLabel>ئیمەیڵ</FormLabel>
                         <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="••••••••"
-                            {...field}
-                            value={field.value || ""}
-                            className="h-12"
-                          />
+                          <Input placeholder="info@lutka.edu.iq" {...field} className="h-12" data-testid="input-email" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>وشەی نهێنی (بۆ ئەرشیف)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="••••••••"
+                          {...field}
+                          value={field.value || ""}
+                          className="h-12"
+                          data-testid="input-password"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="flex justify-end pt-4">
                   <Button

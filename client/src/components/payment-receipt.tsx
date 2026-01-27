@@ -18,6 +18,8 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
   const { data: currentFiscalYear } = useCurrentFiscalYear();
   const schoolName = settings?.schoolName || "قوتابخانەی لوتکەی ناحکومی";
   const logoUrl = settings?.logoUrl || "";
+  const schoolAddress = settings?.address || "";
+  const schoolPhone = settings?.phone || "";
   const fiscalYearLabel = currentFiscalYear?.year || "";
 
   const handlePrint = () => {
@@ -239,7 +241,8 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
             <div class="header">
               ${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" class="header-logo" />` : ''}
               <h1>${schoolName}</h1>
-              <p>سیستەمی ژمێریاری قوتابخانە</p>
+              ${schoolAddress ? `<p style="font-size: 8px; color: #bfdbfe; margin-top: 2px;">${schoolAddress}</p>` : ''}
+              ${schoolPhone ? `<p style="font-size: 8px; color: #bfdbfe;">تەلەفۆن: ${schoolPhone}</p>` : ''}
               ${fiscalYearLabel ? `<p style="margin-top: 2px; font-size: 10px; color: #93c5fd;">ساڵی خوێندن: ${fiscalYearLabel}</p>` : ''}
             </div>
             
@@ -353,7 +356,8 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
                 <img src={logoUrl} alt="لۆگۆ" className="w-10 h-10 object-contain mx-auto mb-1 bg-white rounded-full p-0.5" />
               )}
               <h1 className="text-base font-bold">{schoolName}</h1>
-              <p className="text-blue-200 text-xs">سیستەمی ژمێریاری قوتابخانە</p>
+              {schoolAddress && <p className="text-blue-200 text-[10px]">{schoolAddress}</p>}
+              {schoolPhone && <p className="text-blue-200 text-[10px]">تەلەفۆن: {schoolPhone}</p>}
               {fiscalYearLabel && (
                 <p className="text-blue-200 text-xs mt-0.5">ساڵی خوێندن: {fiscalYearLabel}</p>
               )}

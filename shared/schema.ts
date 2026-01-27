@@ -13,6 +13,8 @@ export const schoolSettings = pgTable("school_settings", {
   email: text("email").notNull(),
   password: text("password"), // Just storing it as requested, though Replit Auth handles actual login
   logoUrl: text("logo_url"), // School logo URL
+  address: text("address"), // ناونیشان - School address
+  phone: text("phone"), // ژمارەی مۆبایل - School phone number
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
