@@ -323,12 +323,12 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">پێشبینینی وەسڵ</h2>
+      <DialogContent className="sm:max-w-[420px] p-4">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-base font-bold">پێشبینینی وەسڵ</h2>
           <div className="flex gap-2">
-            <Button onClick={handlePrint} data-testid="button-print-receipt">
-              <Printer className="h-4 w-4 ml-2" /> چاپکردن
+            <Button size="sm" onClick={handlePrint} data-testid="button-print-receipt">
+              <Printer className="h-4 w-4 ml-1" /> چاپ
             </Button>
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="h-4 w-4" />
@@ -336,55 +336,55 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
           </div>
         </div>
 
-        <div className="border-2 border-blue-700 rounded-lg p-6 bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden">
+        <div className="border-2 border-blue-700 rounded-lg p-3 bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden text-sm">
           {logoUrl && (
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-[0.08] pointer-events-none">
-              <img src={logoUrl} alt="واتەرمارک" className="w-48 h-48 object-contain" />
+              <img src={logoUrl} alt="واتەرمارک" className="w-32 h-32 object-contain" />
             </div>
           )}
           
           <div className="relative z-10">
-            <div className="text-center bg-gradient-to-r from-blue-800 to-blue-600 text-white py-4 px-4 rounded-lg mb-4 -mx-2 -mt-2">
+            <div className="text-center bg-gradient-to-r from-blue-800 to-blue-600 text-white py-2 px-3 rounded-md mb-2 -mx-1 -mt-1">
               {logoUrl && (
-                <img src={logoUrl} alt="لۆگۆ" className="w-14 h-14 object-contain mx-auto mb-2 bg-white rounded-full p-1" />
+                <img src={logoUrl} alt="لۆگۆ" className="w-10 h-10 object-contain mx-auto mb-1 bg-white rounded-full p-0.5" />
               )}
-              <h1 className="text-xl font-bold">{schoolName}</h1>
-              <p className="text-blue-200 text-sm">سیستەمی ژمێریاری قوتابخانە</p>
+              <h1 className="text-base font-bold">{schoolName}</h1>
+              <p className="text-blue-200 text-xs">سیستەمی ژمێریاری قوتابخانە</p>
             </div>
 
-            <div className="text-center bg-gradient-to-r from-blue-700 to-blue-600 text-white py-3 rounded-lg mb-3">
-              <span className="text-lg font-bold">وەسڵی وەرگرتنی قیست</span>
+            <div className="text-center bg-gradient-to-r from-blue-700 to-blue-600 text-white py-1.5 rounded-md mb-2">
+              <span className="text-sm font-bold">وەسڵی وەرگرتنی قیست</span>
             </div>
 
-            <div className="text-center bg-blue-100 border border-blue-300 py-2 rounded-lg mb-4">
-              <span className="text-sm font-bold text-blue-700">ژمارەی وەسڵ: P-{String(payment.id).padStart(6, '0')}</span>
+            <div className="text-center bg-blue-100 border border-blue-300 py-1 rounded-md mb-2">
+              <span className="text-xs font-bold text-blue-700">ژمارەی وەسڵ: P-{String(payment.id).padStart(6, '0')}</span>
             </div>
 
-            <div className="space-y-3 mb-4">
-              <div className="flex justify-between border-b border-dashed border-blue-300 pb-2 bg-white/70 px-3 py-1 rounded">
+            <div className="space-y-1 mb-2">
+              <div className="flex justify-between border-b border-dashed border-blue-300 pb-1 bg-white/70 px-2 py-0.5 rounded text-xs">
                 <span className="text-blue-700 font-medium">ناوی قوتابی:</span>
                 <span className="font-bold text-blue-900">{student.fullName}</span>
               </div>
-              <div className="flex justify-between border-b border-dashed border-blue-300 pb-2 bg-white/70 px-3 py-1 rounded">
+              <div className="flex justify-between border-b border-dashed border-blue-300 pb-1 bg-white/70 px-2 py-0.5 rounded text-xs">
                 <span className="text-blue-700 font-medium">پۆل:</span>
                 <span className="font-bold text-blue-900">{student.grade || "نەدیاریکراو"}</span>
               </div>
-              <div className="flex justify-between border-b border-dashed border-blue-300 pb-2 bg-white/70 px-3 py-1 rounded">
+              <div className="flex justify-between border-b border-dashed border-blue-300 pb-1 bg-white/70 px-2 py-0.5 rounded text-xs">
                 <span className="text-blue-700 font-medium">ژمارەی مۆبایل:</span>
                 <span className="font-bold text-blue-900">{student.mobile}</span>
               </div>
-              <div className="flex justify-between border-b border-dashed border-blue-300 pb-2 bg-white/70 px-3 py-1 rounded">
+              <div className="flex justify-between border-b border-dashed border-blue-300 pb-1 bg-white/70 px-2 py-0.5 rounded text-xs">
                 <span className="text-blue-700 font-medium">بەرواری وەرگرتن:</span>
                 <span className="font-bold text-blue-900">{format(new Date(payment.date), "yyyy-MM-dd")}</span>
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-800 text-white p-5 rounded-xl text-center mb-4 shadow-lg border-2 border-blue-400">
-              <div className="text-3xl font-bold mb-2">{amountInfo.number}</div>
-              <div className="bg-white/20 inline-block px-4 py-1 rounded-full text-blue-100">{amountInfo.words}</div>
+            <div className="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-800 text-white p-3 rounded-lg text-center mb-2 shadow-md border-2 border-blue-400">
+              <div className="text-xl font-bold mb-1">{amountInfo.number}</div>
+              <div className="bg-white/20 inline-block px-3 py-0.5 rounded-full text-blue-100 text-xs">{amountInfo.words}</div>
             </div>
 
-            <div className="space-y-2 mb-4 bg-white/80 p-4 rounded-lg border border-blue-200">
+            <div className="space-y-1 mb-2 bg-white/80 p-2 rounded-md border border-blue-200 text-xs">
               <div className="flex justify-between">
                 <span className="text-blue-700">کۆی مەبلەغی خوێندن:</span>
                 <span className="font-bold text-blue-900">{Number(student.tuitionFee).toLocaleString()} د.ع</span>
@@ -398,19 +398,19 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
                 <span className="font-bold text-red-600">{Number(student.remainingAmount).toLocaleString()} د.ع</span>
               </div>
               {Number(student.previousYearDebt || 0) > 0 && (
-                <div className="flex justify-between bg-amber-100 p-2 rounded mt-2 border border-amber-300">
+                <div className="flex justify-between bg-amber-100 p-1.5 rounded mt-1 border border-amber-300">
                   <span className="text-amber-700 font-medium">قەرزی ساڵی پێشوو:</span>
                   <span className="font-bold text-amber-700">{Number(student.previousYearDebt).toLocaleString()} د.ع</span>
                 </div>
               )}
             </div>
 
-            <div className="flex justify-between mt-6 pt-4">
+            <div className="flex justify-between pt-2">
               <div className="text-center w-[45%]">
-                <div className="border-t-2 border-blue-700 mt-10 pt-2 text-blue-700 font-medium">واژووی بەخێوکار</div>
+                <div className="border-t-2 border-blue-700 mt-6 pt-1 text-blue-700 font-medium text-xs">واژووی بەخێوکار</div>
               </div>
               <div className="text-center w-[45%]">
-                <div className="border-t-2 border-blue-700 mt-10 pt-2 text-blue-700 font-medium">واژووی ژمێریار</div>
+                <div className="border-t-2 border-blue-700 mt-6 pt-1 text-blue-700 font-medium text-xs">واژووی ژمێریار</div>
               </div>
             </div>
           </div>
