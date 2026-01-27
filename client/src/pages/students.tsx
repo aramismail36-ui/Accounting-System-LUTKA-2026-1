@@ -54,6 +54,200 @@ export default function StudentsPage() {
     student.fullName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const printStudentReceipt = (student: Student) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    const logoUrl = settings?.logoUrl || "";
+    const schoolName = settings?.schoolName || "قوتابخانەی لوتکەی ناحکومی";
+    const logoHtml = logoUrl 
+      ? `<img src="${logoUrl}" alt="لۆگۆ" style="width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px;" />`
+      : '';
+    
+    const previousYearDebt = Number(student.previousYearDebt || 0);
+    const totalDebt = Number(student.remainingAmount) + previousYearDebt;
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html dir="rtl" lang="ku">
+      <head>
+        <meta charset="UTF-8">
+        <title>زانیاری قوتابی - ${student.fullName}</title>
+        <style>
+          @page {
+            size: A5 portrait;
+            margin: 10mm;
+          }
+          * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+          }
+          body {
+            font-family: 'Vazirmatn', 'Nrt', Arial, sans-serif;
+            direction: rtl;
+            padding: 10mm;
+            font-size: 12px;
+          }
+          .receipt {
+            border: 2px solid #333;
+            padding: 15px;
+            border-radius: 8px;
+          }
+          .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+          }
+          .header h1 {
+            font-size: 18px;
+            margin-bottom: 4px;
+          }
+          .header p {
+            font-size: 10px;
+            color: #666;
+          }
+          .receipt-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 12px 0;
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 6px;
+          }
+          .content {
+            margin-bottom: 15px;
+          }
+          .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ccc;
+            font-size: 11px;
+          }
+          .row:last-child {
+            border-bottom: none;
+          }
+          .label {
+            font-weight: bold;
+            color: #555;
+          }
+          .value {
+            font-weight: bold;
+          }
+          .financial-section {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+          }
+          .financial-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 11px;
+          }
+          .paid {
+            color: #28a745;
+          }
+          .remaining {
+            color: #dc3545;
+          }
+          .previous-debt {
+            color: #fd7e14;
+            background: #fff3cd;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+          }
+          .total-debt {
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+            padding: 10px;
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+            border-radius: 6px;
+          }
+          .footer {
+            text-align: center;
+            font-size: 9px;
+            color: #888;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="receipt">
+          <div class="header">
+            ${logoHtml}
+            <h1>${schoolName}</h1>
+            <p>سیستەمی ژمێریاری قوتابخانە</p>
+          </div>
+          
+          <div class="receipt-title">زانیاری قوتابی</div>
+          
+          <div class="content">
+            <div class="row">
+              <span class="label">ناوی سیانی:</span>
+              <span class="value">${student.fullName}</span>
+            </div>
+            <div class="row">
+              <span class="label">پۆل:</span>
+              <span class="value">${student.grade || "نەدیاریکراو"}</span>
+            </div>
+            <div class="row">
+              <span class="label">ژمارەی مۆبایل:</span>
+              <span class="value">${student.mobile}</span>
+            </div>
+            <div class="row">
+              <span class="label">بەرواری تۆمارکردن:</span>
+              <span class="value">${new Date(student.createdAt).toLocaleDateString('ku-Arab')}</span>
+            </div>
+          </div>
+          
+          <div class="financial-section">
+            <div class="financial-row">
+              <span class="label">کرێی خوێندن:</span>
+              <span class="value">${Number(student.tuitionFee).toLocaleString()} د.ع</span>
+            </div>
+            <div class="financial-row paid">
+              <span class="label">پارەی دراو:</span>
+              <span class="value">${Number(student.paidAmount).toLocaleString()} د.ع</span>
+            </div>
+            <div class="financial-row remaining">
+              <span class="label">ماوەی ئەم ساڵ:</span>
+              <span class="value">${Number(student.remainingAmount).toLocaleString()} د.ع</span>
+            </div>
+            ${previousYearDebt > 0 ? `
+            <div class="financial-row previous-debt">
+              <span class="label">قەرزی ساڵی پێشوو:</span>
+              <span class="value">${previousYearDebt.toLocaleString()} د.ع</span>
+            </div>
+            ` : ''}
+          </div>
+          
+          ${totalDebt > 0 ? `
+          <div class="total-debt">
+            کۆی گشتی قەرز: ${totalDebt.toLocaleString()} د.ع
+          </div>
+          ` : ''}
+          
+          <div class="footer">
+            <p>بەروار: ${new Date().toLocaleDateString('ku-Arab')}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -230,8 +424,7 @@ export default function StudentsPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-slate-500 hover:text-purple-600 hover:bg-purple-50"
-                            onClick={() => window.print()}
+                            onClick={() => printStudentReceipt(student)}
                             data-testid={`button-print-student-${student.id}`}
                           >
                             <Printer className="h-4 w-4" />
