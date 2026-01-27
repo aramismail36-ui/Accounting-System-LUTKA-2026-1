@@ -84,6 +84,7 @@ export interface IStorage {
   createFiscalYear(fiscalYear: InsertFiscalYear): Promise<FiscalYear>;
   setCurrentFiscalYear(id: number): Promise<FiscalYear>;
   closeFiscalYear(id: number): Promise<{ promotedStudents: number; newYear: string }>;
+  reopenFiscalYear(id: number): Promise<FiscalYear>;
   deleteFiscalYear(id: number): Promise<void>;
 }
 
@@ -572,6 +573,27 @@ export class DatabaseStorage implements IStorage {
     }
 
     return { promotedStudents, newYear: nextYearStr };
+  }
+
+  async reopenFiscalYear(id: number): Promise<FiscalYear> {
+    const [year] = await db.select().from(fiscalYears).where(eq(fiscalYears.id, id));
+    if (!year) {
+      throw new Error("NOT_FOUND:ساڵی دارایی نەدۆزرایەوە");
+    }
+    if (!year.isClosed) {
+      throw new Error("VALIDATION:ئەم ساڵە پێشتر داخراو نییە");
+    }
+
+    // Reopen the fiscal year
+    const [reopened] = await db.update(fiscalYears)
+      .set({ 
+        isClosed: false,
+        closedAt: null
+      })
+      .where(eq(fiscalYears.id, id))
+      .returning();
+
+    return reopened;
   }
 
   async deleteFiscalYear(id: number): Promise<void> {

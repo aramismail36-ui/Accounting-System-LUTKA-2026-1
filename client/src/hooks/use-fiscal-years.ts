@@ -91,6 +91,28 @@ export function useCloseFiscalYear() {
   });
 }
 
+export function useReopenFiscalYear() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const url = buildUrl(api.fiscalYears.reopen.path, { id });
+      const res = await fetch(url, {
+        method: api.fiscalYears.reopen.method,
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to reopen fiscal year");
+      }
+      return res.json() as Promise<FiscalYear>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.fiscalYears.list.path] });
+      queryClient.invalidateQueries({ queryKey: [api.fiscalYears.current.path] });
+    },
+  });
+}
+
 export function useDeleteFiscalYear() {
   const queryClient = useQueryClient();
   return useMutation({

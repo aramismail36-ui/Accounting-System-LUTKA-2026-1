@@ -388,6 +388,15 @@ export const api = {
         404: errorSchemas.notFound,
       },
     },
+    reopen: {
+      method: 'POST' as const,
+      path: '/api/fiscal-years/:id/reopen',
+      responses: {
+        200: z.custom<typeof fiscalYears.$inferSelect>(),
+        400: errorSchemas.validation,
+        404: errorSchemas.notFound,
+      },
+    },
     delete: {
       method: 'DELETE' as const,
       path: '/api/fiscal-years/:id',
