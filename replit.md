@@ -56,6 +56,15 @@ Key entities managed by the system:
 - **Salary Payments**: Staff salary disbursements with automatic expense creation
 - **Shareholders**: School owners/investors with share percentages for profit/loss distribution
 
+### Grade Promotion System
+- **Bulk Grade Promotion**: At the end of the school year, admins can promote all students to the next grade level with one click
+- **Supported Formats**: Handles multiple grade formats:
+  - ASCII numerals (1, 2, 3...)
+  - Arabic-Indic numerals (١, ٢, ٣...)
+  - Kurdish ordinal words (یەکەم, دووەم, سێیەم...)
+- **Access Control**: Grade promotion is admin-only (requireAdmin middleware)
+- **API Endpoint**: POST `/api/students/promote-grades` returns count of promoted students
+
 ### Currency and Receipts
 - **Currency**: All monetary amounts displayed in Iraqi Dinar (د.ع)
 - **Receipts**: A5 printable receipts with amounts shown in both numbers and Kurdish words
