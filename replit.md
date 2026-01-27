@@ -65,6 +65,13 @@ Key entities managed by the system:
 - **Access Control**: Grade promotion is admin-only (requireAdmin middleware)
 - **API Endpoint**: POST `/api/students/promote-grades` returns count of promoted students
 
+### Expense Analysis
+- **Category Breakdown**: View expenses grouped by category with totals sorted by highest spending
+- **Time Period Filtering**: Filter expenses by "all time", "this month", or "this year"
+- **Category Details**: Click on a category to see detailed expense list for that category
+- **Print Support**: Print analysis results with school logo, filtered by current selection
+- **Constants**: EXPENSE_CATEGORIES defined in `client/src/pages/expenses.tsx` for consistent categorization
+
 ### Currency and Receipts
 - **Currency**: All monetary amounts displayed in Iraqi Dinar (د.ع)
 - **Receipts**: A5 printable receipts with amounts shown in both numbers and Kurdish words

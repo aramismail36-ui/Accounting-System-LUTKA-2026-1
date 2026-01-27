@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useExpenses, useCreateExpense } from "@/hooks/use-finance";
 import { useSchoolSettings } from "@/hooks/use-school-settings";
 import { insertExpenseSchema, type InsertExpense } from "@shared/routes";
@@ -8,22 +8,84 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, Receipt, Loader2, Trash2, Printer } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Receipt, Loader2, Trash2, Printer, TrendingDown, BarChart3 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { z } from "zod";
-import { format } from "date-fns";
+import { format, startOfMonth, startOfYear, isAfter, isEqual } from "date-fns";
 import { generatePrintHtml, printDocument } from "@/lib/print-utils";
+
+const EXPENSE_CATEGORIES = ["مووچە", "ئاو", "کارەبا", "ئینتەرنێت", "چاککردنەوە", "پاککردنەوە", "سووتەمەنی", "تر"];
+
+type TimePeriod = "all" | "this_month" | "this_year";
 
 export default function ExpensesPage() {
   const { data: expenses, isLoading } = useExpenses();
   const { data: settings } = useSchoolSettings();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [analysisPeriod, setAnalysisPeriod] = useState<TimePeriod>("all");
+  const [analysisCategory, setAnalysisCategory] = useState<string>("all");
 
   const totalExpenses = expenses?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
+
+  // Filter expenses by time period
+  const filteredExpensesByPeriod = useMemo(() => {
+    if (!expenses) return [];
+    
+    const now = new Date();
+    const monthStart = startOfMonth(now);
+    const yearStart = startOfYear(now);
+    
+    return expenses.filter(exp => {
+      const expDate = new Date(exp.date);
+      switch (analysisPeriod) {
+        case "this_month":
+          return isAfter(expDate, monthStart) || isEqual(expDate, monthStart);
+        case "this_year":
+          return isAfter(expDate, yearStart) || isEqual(expDate, yearStart);
+        default:
+          return true;
+      }
+    });
+  }, [expenses, analysisPeriod]);
+
+  // Get unique categories from expenses
+  const uniqueCategories = useMemo(() => {
+    if (!expenses) return EXPENSE_CATEGORIES;
+    const cats = new Set(expenses.map(e => e.category));
+    return Array.from(cats);
+  }, [expenses]);
+
+  // Calculate expense totals by category for filtered period
+  const categoryTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    filteredExpensesByPeriod.forEach(exp => {
+      const cat = exp.category;
+      totals[cat] = (totals[cat] || 0) + Number(exp.amount);
+    });
+    return Object.entries(totals)
+      .map(([category, amount]) => ({ category, amount }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [filteredExpensesByPeriod]);
+
+  // Filter by specific category if selected
+  const categoryFilteredExpenses = useMemo(() => {
+    if (analysisCategory === "all") return filteredExpensesByPeriod;
+    return filteredExpensesByPeriod.filter(e => e.category === analysisCategory);
+  }, [filteredExpensesByPeriod, analysisCategory]);
+
+  const categoryFilteredTotal = categoryFilteredExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
+
+  const periodLabels: Record<TimePeriod, string> = {
+    all: "هەموو کات",
+    this_month: "ئەم مانگە",
+    this_year: "ئەم ساڵە",
+  };
 
   return (
     <div className="space-y-6">
@@ -31,7 +93,7 @@ export default function ExpensesPage() {
         title="خەرجییەکان"
         description="تۆمارکردنی خەرجییەکانی ڕۆژانە و مانگانە"
         action={
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant="outline"
               size="lg"
@@ -59,8 +121,10 @@ export default function ExpensesPage() {
             </Button>
             <Button
               size="lg"
-              className="gap-2 bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20"
+              variant="destructive"
+              className="gap-2"
               onClick={() => setIsDialogOpen(true)}
+              data-testid="button-add-expense"
             >
               <Plus className="h-5 w-5" />
               زیادکردنی خەرجی
@@ -69,7 +133,7 @@ export default function ExpensesPage() {
         }
       />
 
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <p className="text-sm font-medium text-slate-500">کۆی گشتی خەرجییەکان</p>
           <h2 className="text-4xl font-bold text-slate-900 dark:text-white mt-2">
@@ -80,6 +144,162 @@ export default function ExpensesPage() {
           <Receipt className="h-8 w-8 text-red-600" />
         </div>
       </div>
+
+      {/* Expense Analysis Section */}
+      <Card className="shadow-lg border-orange-200 dark:border-orange-900/50">
+        <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
+          <CardTitle className="flex items-center gap-2 flex-wrap">
+            <BarChart3 className="h-5 w-5 text-orange-600" />
+            شیکاری خەرجی بەپێی بابەت
+          </CardTitle>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Select value={analysisPeriod} onValueChange={(v) => setAnalysisPeriod(v as TimePeriod)}>
+              <SelectTrigger className="w-[160px]" data-testid="select-analysis-period">
+                <SelectValue placeholder="هەڵبژاردنی ماوە" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">هەموو کات</SelectItem>
+                <SelectItem value="this_month">ئەم مانگە</SelectItem>
+                <SelectItem value="this_year">ئەم ساڵە</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={analysisCategory} onValueChange={setAnalysisCategory}>
+              <SelectTrigger className="w-[160px]" data-testid="select-analysis-category">
+                <SelectValue placeholder="هەڵبژاردنی بابەت" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">هەموو بابەتەکان</SelectItem>
+                {uniqueCategories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                const html = generatePrintHtml({
+                  title: `شیکاری خەرجی - ${periodLabels[analysisPeriod]}`,
+                  settings,
+                  filterText: analysisCategory !== "all" 
+                    ? `بابەت: ${analysisCategory} | کۆ: ${categoryFilteredTotal.toLocaleString()} د.ع`
+                    : `کۆی گشتی: ${categoryFilteredTotal.toLocaleString()} د.ع`,
+                  tableHeaders: analysisCategory === "all" 
+                    ? ["ژ", "بابەت", "کۆی خەرجی (د.ع)"]
+                    : ["ژ", "بابەت", "بڕ (د.ع)", "بەروار", "تێبینی"],
+                  tableRows: analysisCategory === "all"
+                    ? categoryTotals.map((c, i) => [
+                        String(i + 1),
+                        c.category,
+                        c.amount.toLocaleString()
+                      ])
+                    : categoryFilteredExpenses.map((e, i) => [
+                        String(i + 1),
+                        e.category,
+                        Number(e.amount).toLocaleString(),
+                        format(new Date(e.date), "yyyy-MM-dd"),
+                        e.description || '-'
+                      ])
+                });
+                printDocument(html);
+              }}
+              data-testid="button-print-analysis"
+            >
+              <Printer className="h-4 w-4" />
+              چاپکردن
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Summary by category */}
+          {analysisCategory === "all" ? (
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground mb-4">
+                ماوە: <span className="font-medium text-foreground">{periodLabels[analysisPeriod]}</span>
+                {" | "}
+                کۆی خەرجی: <span className="font-bold text-red-600">{categoryFilteredTotal.toLocaleString()} د.ع</span>
+              </div>
+              {categoryTotals.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">هیچ خەرجییەک لەم ماوەیەدا نییە</div>
+              ) : (
+                <div className="grid gap-3">
+                  {categoryTotals.map((item, idx) => (
+                    <div
+                      key={item.category}
+                      className="flex items-center justify-between gap-4 flex-wrap p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover-elevate active-elevate-2 cursor-pointer"
+                      onClick={() => setAnalysisCategory(item.category)}
+                      data-testid={`button-category-${idx}`}
+                    >
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center text-sm font-bold text-orange-600">
+                          {idx + 1}
+                        </div>
+                        <span className="font-medium">{item.category}</span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-red-600 font-mono">{item.amount.toLocaleString()} د.ع</span>
+                        <TrendingDown className="h-4 w-4 text-red-500" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+                <div className="text-sm text-muted-foreground">
+                  بابەت: <span className="font-medium text-foreground">{analysisCategory}</span>
+                  {" | "}
+                  ماوە: <span className="font-medium text-foreground">{periodLabels[analysisPeriod]}</span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setAnalysisCategory("all")}
+                  data-testid="button-back-to-all"
+                >
+                  گەڕانەوە بۆ هەموو بابەتەکان
+                </Button>
+              </div>
+              <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg flex items-center justify-between gap-4 flex-wrap mb-4">
+                <span className="font-medium">کۆی خەرجی بۆ "{analysisCategory}"</span>
+                <span className="text-2xl font-bold text-red-600">{categoryFilteredTotal.toLocaleString()} د.ع</span>
+              </div>
+              {categoryFilteredExpenses.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">هیچ خەرجییەک لەم بابەتەدا نییە</div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right w-[50px]">ژ</TableHead>
+                      <TableHead className="text-right">بڕ (د.ع)</TableHead>
+                      <TableHead className="text-right">بەروار</TableHead>
+                      <TableHead className="text-right">تێبینی</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {categoryFilteredExpenses.map((exp, idx) => (
+                      <TableRow key={exp.id}>
+                        <TableCell className="font-mono text-muted-foreground">{idx + 1}</TableCell>
+                        <TableCell className="font-mono text-red-600 font-bold">{Number(exp.amount).toLocaleString()}</TableCell>
+                        <TableCell className="font-mono">{format(new Date(exp.date), "yyyy-MM-dd")}</TableCell>
+                        <TableCell className="text-muted-foreground">{exp.description || "-"}</TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="bg-orange-100 dark:bg-orange-900/30 font-bold">
+                      <TableCell></TableCell>
+                      <TableCell className="text-red-700 dark:text-red-400 font-mono">{categoryFilteredTotal.toLocaleString()} د.ع</TableCell>
+                      <TableCell colSpan={2}>کۆی گشتی</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
         {isLoading ? (
@@ -161,11 +381,12 @@ function DeleteExpenseButton({ id }: { id: number }) {
     <Button
       variant="ghost"
       size="icon"
-      className="text-slate-400 hover:text-red-500"
+      className="text-destructive"
       disabled={isPending}
       onClick={() => {
         if(confirm("دڵنیای لە سڕینەوە؟")) mutate(id);
       }}
+      data-testid={`button-delete-expense-${id}`}
     >
       <Trash2 className="h-4 w-4" />
     </Button>
@@ -208,8 +429,6 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean, onOpenChan
     });
   }
 
-  const categories = ["مووچە", "ئاو", "کارەبا", "ئینتەرنێت", "چاککردنەوە", "پاککردنەوە", "سووتەمەنی", "تر"];
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -228,7 +447,7 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean, onOpenChan
                     <div className="relative">
                       <Input placeholder="نم: کارەبا..." {...field} list="expense-categories" />
                       <datalist id="expense-categories">
-                        {categories.map(c => <option key={c} value={c} />)}
+                        {EXPENSE_CATEGORIES.map(c => <option key={c} value={c} />)}
                       </datalist>
                     </div>
                   </FormControl>
@@ -275,7 +494,7 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean, onOpenChan
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full bg-red-600 hover:bg-red-700" disabled={isPending}>
+            <Button type="submit" variant="destructive" className="w-full" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
               تۆمارکردن
             </Button>
