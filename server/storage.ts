@@ -1,7 +1,7 @@
 import { db } from "./db";
-import { eq, sql, and, gte, lte } from "drizzle-orm";
+import { eq, sql, and, gte, lte, desc, ne } from "drizzle-orm";
 import { 
-  schoolSettings, students, income, expenses, payments, staff, salaryPayments, foodPayments, shareholders, users,
+  schoolSettings, students, income, expenses, payments, staff, salaryPayments, foodPayments, shareholders, users, fiscalYears,
   type InsertSchoolSettings, type SchoolSettings,
   type InsertStudent, type Student,
   type InsertIncome, type Income,
@@ -11,6 +11,7 @@ import {
   type InsertSalaryPayment, type SalaryPayment,
   type InsertFoodPayment, type FoodPayment,
   type InsertShareholder, type Shareholder,
+  type InsertFiscalYear, type FiscalYear,
   type User
 } from "@shared/schema";
 
@@ -76,6 +77,14 @@ export interface IStorage {
     totalExpenses: number;
     netProfit: number;
   }>;
+
+  // Fiscal Years
+  getFiscalYears(): Promise<FiscalYear[]>;
+  getCurrentFiscalYear(): Promise<FiscalYear | undefined>;
+  createFiscalYear(fiscalYear: InsertFiscalYear): Promise<FiscalYear>;
+  setCurrentFiscalYear(id: number): Promise<FiscalYear>;
+  closeFiscalYear(id: number): Promise<{ promotedStudents: number; newYear: string }>;
+  deleteFiscalYear(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -419,6 +428,113 @@ export class DatabaseStorage implements IStorage {
   async deleteUser(id: string): Promise<boolean> {
     const result = await db.delete(users).where(eq(users.id, id)).returning();
     return result.length > 0;
+  }
+
+  // Fiscal Years
+  async getFiscalYears(): Promise<FiscalYear[]> {
+    return await db.select().from(fiscalYears).orderBy(desc(fiscalYears.createdAt));
+  }
+
+  async getCurrentFiscalYear(): Promise<FiscalYear | undefined> {
+    const [current] = await db.select().from(fiscalYears).where(eq(fiscalYears.isCurrent, true)).limit(1);
+    return current;
+  }
+
+  async createFiscalYear(fiscalYear: InsertFiscalYear): Promise<FiscalYear> {
+    // If this is set as current, unset any existing current year
+    if (fiscalYear.isCurrent) {
+      await db.update(fiscalYears).set({ isCurrent: false }).where(eq(fiscalYears.isCurrent, true));
+    }
+    const [newYear] = await db.insert(fiscalYears).values(fiscalYear).returning();
+    return newYear;
+  }
+
+  async setCurrentFiscalYear(id: number): Promise<FiscalYear> {
+    // Check if the fiscal year exists
+    const [year] = await db.select().from(fiscalYears).where(eq(fiscalYears.id, id));
+    if (!year) {
+      throw new Error("NOT_FOUND:ساڵی دارایی نەدۆزرایەوە");
+    }
+    if (year.isClosed) {
+      throw new Error("VALIDATION:ناتوانرێت ساڵێکی داخراو وەک ساڵی ئێستا دابنرێت");
+    }
+    // Unset any existing current year
+    await db.update(fiscalYears).set({ isCurrent: false }).where(eq(fiscalYears.isCurrent, true));
+    // Set the new current year
+    const [updated] = await db.update(fiscalYears).set({ isCurrent: true }).where(eq(fiscalYears.id, id)).returning();
+    return updated;
+  }
+
+  async closeFiscalYear(id: number): Promise<{ promotedStudents: number; newYear: string }> {
+    // Get the fiscal year
+    const [year] = await db.select().from(fiscalYears).where(eq(fiscalYears.id, id));
+    if (!year) {
+      throw new Error("NOT_FOUND:Fiscal year not found");
+    }
+
+    if (year.isClosed) {
+      throw new Error("VALIDATION:This fiscal year is already closed");
+    }
+
+    // Archive all financial records (income, expenses, payments, salary, food) to this fiscal year
+    // This marks them as belonging to the closing year for historical record
+    await db.update(income).set({ fiscalYear: year.year }).where(sql`${income.fiscalYear} IS NULL OR ${income.fiscalYear} = ''`);
+    await db.update(expenses).set({ fiscalYear: year.year }).where(sql`${expenses.fiscalYear} IS NULL OR ${expenses.fiscalYear} = ''`);
+    await db.update(payments).set({ fiscalYear: year.year }).where(sql`${payments.fiscalYear} IS NULL OR ${payments.fiscalYear} = ''`);
+    await db.update(salaryPayments).set({ fiscalYear: year.year }).where(sql`${salaryPayments.fiscalYear} IS NULL OR ${salaryPayments.fiscalYear} = ''`);
+    await db.update(foodPayments).set({ fiscalYear: year.year }).where(sql`${foodPayments.fiscalYear} IS NULL OR ${foodPayments.fiscalYear} = ''`);
+    
+    // Archive student records to this fiscal year
+    await db.update(students).set({ fiscalYear: year.year }).where(sql`${students.fiscalYear} IS NULL OR ${students.fiscalYear} = ''`);
+
+    // Promote all students - this handles:
+    // 1. Moving remainingAmount to previousYearDebt
+    // 2. Resetting paidAmount to 0
+    // 3. Setting remainingAmount to full tuitionFee
+    // 4. Incrementing the grade
+    const promotedStudents = await this.promoteAllGrades();
+
+    // Mark the year as closed
+    await db.update(fiscalYears).set({ 
+      isClosed: true, 
+      isCurrent: false,
+      closedAt: new Date() 
+    }).where(eq(fiscalYears.id, id));
+
+    // Calculate and auto-create the next fiscal year
+    const [startYear, endYear] = year.year.split('-').map(y => parseInt(y, 10));
+    const nextYearStr = `${endYear}-${endYear + 1}`;
+    const nextStartDate = `${endYear}-09-01`;
+    const nextEndDate = `${endYear + 1}-08-31`;
+
+    // Check if next year already exists
+    const [existingNextYear] = await db.select().from(fiscalYears).where(eq(fiscalYears.year, nextYearStr));
+    if (!existingNextYear) {
+      // Create new fiscal year and set as current
+      await db.insert(fiscalYears).values({
+        year: nextYearStr,
+        startDate: nextStartDate,
+        endDate: nextEndDate,
+        isCurrent: true,
+        isClosed: false,
+      });
+    } else if (!existingNextYear.isCurrent) {
+      // Set existing next year as current
+      await db.update(fiscalYears).set({ isCurrent: true }).where(eq(fiscalYears.id, existingNextYear.id));
+    }
+
+    return { promotedStudents, newYear: nextYearStr };
+  }
+
+  async deleteFiscalYear(id: number): Promise<void> {
+    const [year] = await db.select().from(fiscalYears).where(eq(fiscalYears.id, id));
+    if (!year) {
+      throw new Error("NOT_FOUND:ساڵی دارایی نەدۆزرایەوە");
+    }
+    if (year.isClosed) {
+      throw new Error("VALIDATION:ناتوانرێت ساڵێکی داخراو بسڕدرێتەوە");
+    }
+    await db.delete(fiscalYears).where(eq(fiscalYears.id, id));
   }
 }
 

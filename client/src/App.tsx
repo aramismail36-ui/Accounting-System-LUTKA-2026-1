@@ -19,6 +19,7 @@ import FoodPaymentsPage from "@/pages/food-payments";
 import ShareholdersPage from "@/pages/shareholders";
 import ReportsPage from "@/pages/reports";
 import UsersPage from "@/pages/users";
+import FiscalYearsPage from "@/pages/fiscal-years";
 import LoginPage from "@/pages/login";
 import ShareholderDashboardPage from "@/pages/shareholder-dashboard";
 import NotFound from "@/pages/not-found";
@@ -68,6 +69,7 @@ function Router() {
       <Route path="/shareholders" component={() => <ProtectedRoute component={ShareholdersPage} />} />
       <Route path="/reports" component={() => <ProtectedRoute component={ReportsPage} />} />
       <Route path="/users" component={() => <ProtectedRoute component={UsersPage} adminOnly />} />
+      <Route path="/fiscal-years" component={() => <ProtectedRoute component={FiscalYearsPage} adminOnly />} />
       <Route path="/login" component={LoginPage} />
       <Route component={NotFound} />
     </Switch>

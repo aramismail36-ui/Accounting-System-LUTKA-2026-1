@@ -14,7 +14,8 @@ import {
   Banknote,
   UtensilsCrossed,
   CircleDollarSign,
-  UserCog
+  UserCog,
+  CalendarClock
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     { name: "خاوەن پشکەکان", href: "/shareholders", icon: CircleDollarSign },
     { name: "ڕاپۆرتەکان", href: "/reports", icon: PieChart },
     { name: "بەکارهێنەران", href: "/users", icon: UserCog },
+    { name: "ساڵی دارایی", href: "/fiscal-years", icon: CalendarClock },
     { name: "ڕێکخستنەکان", href: "/school-settings", icon: Settings },
   ];
 

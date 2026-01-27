@@ -9,6 +9,7 @@ import {
   insertSalaryPaymentSchema,
   insertFoodPaymentSchema,
   insertShareholderSchema,
+  insertFiscalYearSchema,
   schoolSettings,
   students,
   income,
@@ -17,7 +18,8 @@ import {
   staff,
   salaryPayments,
   foodPayments,
-  shareholders
+  shareholders,
+  fiscalYears
 } from './schema';
 
 // Export everything from schema so frontend can import from @shared/routes if it wants to
@@ -333,6 +335,62 @@ export const api = {
     delete: {
       method: 'DELETE' as const,
       path: '/api/users/:id',
+      responses: {
+        200: z.object({ success: z.boolean() }),
+        400: z.object({ message: z.string() }),
+        404: errorSchemas.notFound,
+      },
+    },
+  },
+  fiscalYears: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/fiscal-years',
+      responses: {
+        200: z.array(z.custom<typeof fiscalYears.$inferSelect>()),
+      },
+    },
+    current: {
+      method: 'GET' as const,
+      path: '/api/fiscal-years/current',
+      responses: {
+        200: z.custom<typeof fiscalYears.$inferSelect>().nullable(),
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/fiscal-years',
+      input: insertFiscalYearSchema,
+      responses: {
+        201: z.custom<typeof fiscalYears.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    setCurrent: {
+      method: 'PUT' as const,
+      path: '/api/fiscal-years/:id/set-current',
+      responses: {
+        200: z.custom<typeof fiscalYears.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
+    closeYear: {
+      method: 'POST' as const,
+      path: '/api/fiscal-years/:id/close',
+      responses: {
+        200: z.object({ 
+          success: z.boolean(),
+          message: z.string(),
+          promotedStudents: z.number(),
+          newYear: z.string(),
+        }),
+        400: errorSchemas.validation,
+        404: errorSchemas.notFound,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/fiscal-years/:id',
       responses: {
         200: z.object({ success: z.boolean() }),
         400: z.object({ message: z.string() }),

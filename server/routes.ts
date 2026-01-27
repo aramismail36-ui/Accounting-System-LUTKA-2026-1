@@ -477,6 +477,77 @@ export async function registerRoutes(
     res.json({ success: true });
   });
 
+  // Fiscal Years
+  app.get(api.fiscalYears.list.path, async (req, res) => {
+    const years = await storage.getFiscalYears();
+    res.json(years);
+  });
+
+  app.get(api.fiscalYears.current.path, async (req, res) => {
+    const currentYear = await storage.getCurrentFiscalYear();
+    res.json(currentYear || null);
+  });
+
+  app.post(api.fiscalYears.create.path, requireAdmin, async (req, res) => {
+    try {
+      const data = api.fiscalYears.create.input.parse(req.body);
+      const newYear = await storage.createFiscalYear(data);
+      res.status(201).json(newYear);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.put(api.fiscalYears.setCurrent.path, requireAdmin, async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const year = await storage.setCurrentFiscalYear(id);
+      res.json(year);
+    } catch (err: any) {
+      const message = err.message || "هەڵەیەک ڕوویدا";
+      if (message.startsWith("NOT_FOUND:")) {
+        return res.status(404).json({ message: message.replace("NOT_FOUND:", "") });
+      }
+      res.status(400).json({ message: message.replace("VALIDATION:", "") });
+    }
+  });
+
+  app.post(api.fiscalYears.closeYear.path, requireAdmin, async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const result = await storage.closeFiscalYear(id);
+      res.json({ 
+        success: true, 
+        message: `ساڵی دارایی بە سەرکەوتوویی داخرا. ${result.promotedStudents} قوتابی بەرزکرانەوە. ساڵی نوێ: ${result.newYear}`,
+        promotedStudents: result.promotedStudents,
+        newYear: result.newYear
+      });
+    } catch (err: any) {
+      const message = err.message || "هەڵەیەک ڕوویدا";
+      if (message.startsWith("NOT_FOUND:")) {
+        return res.status(404).json({ message: message.replace("NOT_FOUND:", "") });
+      }
+      res.status(400).json({ message: message.replace("VALIDATION:", "") });
+    }
+  });
+
+  app.delete(api.fiscalYears.delete.path, requireAdmin, async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      await storage.deleteFiscalYear(id);
+      res.json({ success: true });
+    } catch (err: any) {
+      const message = err.message || "هەڵەیەک ڕوویدا";
+      if (message.startsWith("NOT_FOUND:")) {
+        return res.status(404).json({ message: message.replace("NOT_FOUND:", "") });
+      }
+      res.status(400).json({ message: message.replace("VALIDATION:", "") });
+    }
+  });
+
   // SEED DATA
   const existingStudents = await storage.getStudents();
   if (existingStudents.length === 0) {

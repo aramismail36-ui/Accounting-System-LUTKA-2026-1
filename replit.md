@@ -91,6 +91,30 @@ Key entities managed by the system:
 - **Print Utilities**: Centralized print HTML generation in `client/src/lib/print-utils.ts`
 - **Logo Integration**: All printed lists and receipts display the school logo and name from settings
 
+### Fiscal Year Management
+- **Year Format**: Fiscal years are stored as "YYYY-YYYY" format (e.g., "2024-2025")
+- **Date Range**: Each fiscal year has start and end dates (typically Sept 1 to Aug 31)
+- **Current Year**: One fiscal year is marked as current at any time - new data is linked to the current year
+- **Close Year Feature**: When closing a fiscal year:
+  - All financial records (income, expenses, payments, salaries, food payments) are tagged with the closing year
+  - All students are promoted to the next grade level
+  - Outstanding payment amounts are transferred to "previous year debt"
+  - The year is marked as closed and cannot be modified
+  - A new fiscal year is automatically created and set as current
+- **Data Model**: Uses a "living record" model where:
+  - Students are ongoing entities that progress through grades each year
+  - Financial records (income, expenses, payments) are tagged with fiscalYear for historical access
+  - The fiscalYear field allows filtering data by year in reports
+- **Access Control**: Fiscal year management is admin-only (requireAdmin middleware)
+- **Location**: Available at `/fiscal-years` page
+- **API Endpoints**:
+  - GET `/api/fiscal-years` - List all fiscal years
+  - GET `/api/fiscal-years/current` - Get current fiscal year
+  - POST `/api/fiscal-years` - Create new fiscal year
+  - PUT `/api/fiscal-years/:id/set-current` - Set year as current
+  - POST `/api/fiscal-years/:id/close` - Close fiscal year and create next year
+  - DELETE `/api/fiscal-years/:id` - Delete fiscal year (cannot delete closed years)
+
 ### Build System
 - **Development**: Vite dev server with HMR
 - **Production Build**: esbuild for server bundling, Vite for client

@@ -30,6 +30,7 @@ export const students = pgTable("students", {
   paidAmount: decimal("paid_amount", { precision: 12, scale: 0 }).default("0").notNull(),
   remainingAmount: decimal("remaining_amount", { precision: 12, scale: 0 }).default("0").notNull(),
   previousYearDebt: decimal("previous_year_debt", { precision: 12, scale: 0 }).default("0").notNull(), // قەرزی ساڵی پێشتر
+  fiscalYear: text("fiscal_year"), // e.g., "2024-2025"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -44,6 +45,7 @@ export const income = pgTable("income", {
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   date: date("date").defaultNow().notNull(),
   description: text("description"),
+  fiscalYear: text("fiscal_year"), // e.g., "2024-2025"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -58,6 +60,7 @@ export const expenses = pgTable("expenses", {
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   date: date("date").defaultNow().notNull(),
   description: text("description"),
+  fiscalYear: text("fiscal_year"), // e.g., "2024-2025"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -71,6 +74,7 @@ export const payments = pgTable("payments", {
   studentId: integer("student_id").notNull(), // Foreign key to students handled in app logic or DB
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   date: date("date").defaultNow().notNull(),
+  fiscalYear: text("fiscal_year"), // e.g., "2024-2025"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -100,6 +104,7 @@ export const salaryPayments = pgTable("salary_payments", {
   month: text("month").notNull(), // e.g., "2026-01" for January 2026
   date: date("date").defaultNow().notNull(),
   notes: text("notes"),
+  fiscalYear: text("fiscal_year"), // e.g., "2024-2025"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -115,6 +120,7 @@ export const foodPayments = pgTable("food_payments", {
   month: text("month").notNull(), // e.g., "2026-01" for January 2026
   date: date("date").defaultNow().notNull(),
   notes: text("notes"),
+  fiscalYear: text("fiscal_year"), // e.g., "2024-2025"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -135,6 +141,22 @@ export const shareholders = pgTable("shareholders", {
 export const insertShareholderSchema = createInsertSchema(shareholders).omit({ id: true, createdAt: true });
 export type InsertShareholder = z.infer<typeof insertShareholderSchema>;
 export type Shareholder = typeof shareholders.$inferSelect;
+
+// Fiscal Years (ساڵی دارایی)
+export const fiscalYears = pgTable("fiscal_years", {
+  id: serial("id").primaryKey(),
+  year: text("year").notNull().unique(), // e.g., "2024-2025"
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  isCurrent: boolean("is_current").default(false).notNull(),
+  isClosed: boolean("is_closed").default(false).notNull(),
+  closedAt: timestamp("closed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertFiscalYearSchema = createInsertSchema(fiscalYears).omit({ id: true, createdAt: true });
+export type InsertFiscalYear = z.infer<typeof insertFiscalYearSchema>;
+export type FiscalYear = typeof fiscalYears.$inferSelect;
 
 // Financial Report Types (Page 7)
 export type FinancialReport = {
