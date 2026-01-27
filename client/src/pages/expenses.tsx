@@ -22,37 +22,46 @@ import { generatePrintHtml, printDocument } from "@/lib/print-utils";
 
 const EXPENSE_CATEGORIES = ["مووچە", "ئاو", "کارەبا", "ئینتەرنێت", "چاککردنەوە", "پاککردنەوە", "سووتەمەنی", "تر"];
 
-type TimePeriod = "all" | "this_month" | "this_year";
-
 export default function ExpensesPage() {
   const { data: expenses, isLoading } = useExpenses();
   const { data: settings } = useSchoolSettings();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [analysisPeriod, setAnalysisPeriod] = useState<TimePeriod>("all");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [analysisCategory, setAnalysisCategory] = useState<string>("all");
 
   const totalExpenses = expenses?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
 
-  // Filter expenses by time period
+  // Filter expenses by date range
   const filteredExpensesByPeriod = useMemo(() => {
     if (!expenses) return [];
     
-    const now = new Date();
-    const monthStart = startOfMonth(now);
-    const yearStart = startOfYear(now);
-    
     return expenses.filter(exp => {
       const expDate = new Date(exp.date);
-      switch (analysisPeriod) {
-        case "this_month":
-          return isAfter(expDate, monthStart) || isEqual(expDate, monthStart);
-        case "this_year":
-          return isAfter(expDate, yearStart) || isEqual(expDate, yearStart);
-        default:
-          return true;
+      
+      if (startDate) {
+        const start = new Date(startDate);
+        if (expDate < start) return false;
       }
+      
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (expDate > end) return false;
+      }
+      
+      return true;
     });
-  }, [expenses, analysisPeriod]);
+  }, [expenses, startDate, endDate]);
+  
+  // Format date range for display
+  const dateRangeLabel = useMemo(() => {
+    if (!startDate && !endDate) return "هەموو کات";
+    if (startDate && endDate) return `${startDate} تا ${endDate}`;
+    if (startDate) return `لە ${startDate}`;
+    if (endDate) return `تا ${endDate}`;
+    return "هەموو کات";
+  }, [startDate, endDate]);
 
   // Get unique categories from expenses
   const uniqueCategories = useMemo(() => {
@@ -80,12 +89,6 @@ export default function ExpensesPage() {
   }, [filteredExpensesByPeriod, analysisCategory]);
 
   const categoryFilteredTotal = categoryFilteredExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
-
-  const periodLabels: Record<TimePeriod, string> = {
-    all: "هەموو کات",
-    this_month: "ئەم مانگە",
-    this_year: "ئەم ساڵە",
-  };
 
   return (
     <div className="space-y-6">
@@ -153,16 +156,34 @@ export default function ExpensesPage() {
             شیکاری خەرجی بەپێی بابەت
           </CardTitle>
           <div className="flex items-center gap-3 flex-wrap">
-            <Select value={analysisPeriod} onValueChange={(v) => setAnalysisPeriod(v as TimePeriod)}>
-              <SelectTrigger className="w-[160px]" data-testid="select-analysis-period">
-                <SelectValue placeholder="هەڵبژاردنی ماوە" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">هەموو کات</SelectItem>
-                <SelectItem value="this_month">ئەم مانگە</SelectItem>
-                <SelectItem value="this_year">ئەم ساڵە</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-muted-foreground">لە:</span>
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-[140px]"
+                data-testid="input-start-date"
+              />
+              <span className="text-sm text-muted-foreground">تا:</span>
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-[140px]"
+                data-testid="input-end-date"
+              />
+              {(startDate || endDate) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { setStartDate(""); setEndDate(""); }}
+                  data-testid="button-clear-dates"
+                >
+                  پاککردنەوە
+                </Button>
+              )}
+            </div>
             <Select value={analysisCategory} onValueChange={setAnalysisCategory}>
               <SelectTrigger className="w-[160px]" data-testid="select-analysis-category">
                 <SelectValue placeholder="هەڵبژاردنی بابەت" />
@@ -180,7 +201,7 @@ export default function ExpensesPage() {
               className="gap-2"
               onClick={() => {
                 const html = generatePrintHtml({
-                  title: `شیکاری خەرجی - ${periodLabels[analysisPeriod]}`,
+                  title: `شیکاری خەرجی - ${dateRangeLabel}`,
                   settings,
                   filterText: analysisCategory !== "all" 
                     ? `بابەت: ${analysisCategory} | کۆ: ${categoryFilteredTotal.toLocaleString()} د.ع`
@@ -216,7 +237,7 @@ export default function ExpensesPage() {
           {analysisCategory === "all" ? (
             <div className="space-y-4">
               <div className="text-sm text-muted-foreground mb-4">
-                ماوە: <span className="font-medium text-foreground">{periodLabels[analysisPeriod]}</span>
+                ماوە: <span className="font-medium text-foreground">{dateRangeLabel}</span>
                 {" | "}
                 کۆی خەرجی: <span className="font-bold text-red-600">{categoryFilteredTotal.toLocaleString()} د.ع</span>
               </div>
@@ -252,7 +273,7 @@ export default function ExpensesPage() {
                 <div className="text-sm text-muted-foreground">
                   بابەت: <span className="font-medium text-foreground">{analysisCategory}</span>
                   {" | "}
-                  ماوە: <span className="font-medium text-foreground">{periodLabels[analysisPeriod]}</span>
+                  ماوە: <span className="font-medium text-foreground">{dateRangeLabel}</span>
                 </div>
                 <Button 
                   variant="ghost" 
