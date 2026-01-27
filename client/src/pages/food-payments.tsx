@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useFoodPayments, useCreateFoodPayment, useDeleteFoodPayment } from "@/hooks/use-food-payments";
 import { useStudents } from "@/hooks/use-students";
+import { useSchoolSettings } from "@/hooks/use-school-settings";
 import { insertFoodPaymentSchema, type InsertFoodPayment, type FoodPayment, type Student } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { format } from "date-fns";
+import { formatAmountWithWords } from "@/lib/number-to-kurdish";
 
 export default function FoodPaymentsPage() {
   const { data: foodPayments, isLoading } = useFoodPayments();
@@ -171,7 +173,7 @@ export default function FoodPaymentsPage() {
                 <TableHead className="text-right">مانگ</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
                 <TableHead className="text-right">ڕێکەوت و کات</TableHead>
-                <TableHead className="text-right w-[80px]">سڕینەوە</TableHead>
+                <TableHead className="text-right">کردارەکان</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -212,6 +214,7 @@ export default function FoodPaymentsPage() {
 
 function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { payment: FoodPayment; studentName: string; studentGrade: string; rowNumber: number }) {
   const { mutate: deletePayment } = useDeleteFoodPayment();
+  const { data: settings } = useSchoolSettings();
   const { toast } = useToast();
 
   const handleDelete = () => {
@@ -221,6 +224,199 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
         onError: () => toast({ title: "هەڵە", description: "سڕینەوە سەرنەکەوت", variant: "destructive" }),
       });
     }
+  };
+
+  const printReceipt = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const schoolName = settings?.schoolName || "قوتابخانەی لوتکەی ناحکومی";
+    const logoUrl = settings?.logoUrl || "";
+    const logoHtml = logoUrl 
+      ? `<img src="${logoUrl}" alt="لۆگۆ" style="width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px;" />`
+      : '';
+    const amountInfo = formatAmountWithWords(Number(payment.amount));
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html dir="rtl" lang="ku">
+      <head>
+        <meta charset="UTF-8">
+        <title>وەسڵی پارەی خواردن</title>
+        <style>
+          @page {
+            size: A6 landscape;
+            margin: 5mm;
+          }
+          * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+          }
+          body {
+            font-family: 'Vazirmatn', 'Nrt', Arial, sans-serif;
+            direction: rtl;
+            padding: 8mm;
+            width: 148mm;
+            height: 105mm;
+            font-size: 11px;
+          }
+          .receipt {
+            border: 1.5px solid #333;
+            padding: 10px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+          }
+          .header {
+            text-align: center;
+            border-bottom: 1.5px solid #333;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+          }
+          .header h1 {
+            font-size: 14px;
+            margin-bottom: 2px;
+          }
+          .header p {
+            font-size: 9px;
+            color: #666;
+          }
+          .receipt-title {
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 6px 0;
+            padding: 5px;
+            background: #fff7ed;
+            border-radius: 3px;
+            color: #ea580c;
+          }
+          .receipt-number {
+            text-align: center;
+            font-size: 10px;
+            margin-bottom: 6px;
+            background: #e8f4f8;
+            padding: 4px;
+            border-radius: 3px;
+          }
+          .content {
+            flex: 1;
+          }
+          .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px dashed #ccc;
+            font-size: 10px;
+          }
+          .row:last-child {
+            border-bottom: none;
+          }
+          .label {
+            font-weight: bold;
+            color: #555;
+          }
+          .value {
+            font-weight: bold;
+          }
+          .amount-box {
+            background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            text-align: center;
+          }
+          .amount-number {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
+          }
+          .amount-words {
+            font-size: 10px;
+            opacity: 0.9;
+          }
+          .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 10px;
+          }
+          .signature-box {
+            width: 45%;
+            text-align: center;
+            font-size: 9px;
+          }
+          .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 20px;
+            padding-top: 5px;
+          }
+          .footer {
+            text-align: center;
+            font-size: 8px;
+            color: #888;
+            margin-top: 8px;
+            padding-top: 5px;
+            border-top: 1px solid #ddd;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="receipt">
+          <div class="header">
+            ${logoHtml}
+            <h1>${schoolName}</h1>
+            <p>سیستەمی ژمێریاری قوتابخانە</p>
+          </div>
+          
+          <div class="receipt-title">وەسڵی پارەی خواردن</div>
+          <div class="receipt-number">
+            <span style="font-weight: bold;">ژمارەی وەسڵ:</span> F-${String(payment.id).padStart(6, '0')}
+          </div>
+          
+          <div class="content">
+            <div class="row">
+              <span class="label">ناوی قوتابی:</span>
+              <span class="value">${studentName}</span>
+            </div>
+            <div class="row">
+              <span class="label">پۆل:</span>
+              <span class="value">${studentGrade || "نەدیاریکراو"}</span>
+            </div>
+            <div class="row">
+              <span class="label">مانگ:</span>
+              <span class="value">${payment.month}</span>
+            </div>
+            <div class="row">
+              <span class="label">بەرواری وەرگرتن:</span>
+              <span class="value">${format(new Date(payment.date), "yyyy-MM-dd")}</span>
+            </div>
+            
+            <div class="amount-box">
+              <div class="amount-number">${amountInfo.number}</div>
+              <div class="amount-words">${amountInfo.words}</div>
+            </div>
+          </div>
+          
+          <div class="signature-section">
+            <div class="signature-box">
+              <div class="signature-line">واژووی بەخێوکار</div>
+            </div>
+            <div class="signature-box">
+              <div class="signature-line">واژووی ژمێریار</div>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>بەروار: ${new Date().toLocaleDateString('ku-Arab')}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   return (
@@ -237,14 +433,24 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
         {new Date(payment.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
       </TableCell>
       <TableCell>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={handleDelete}
-          data-testid={`button-delete-${payment.id}`}
-        >
-          <Trash2 className="h-4 w-4 text-red-500" />
-        </Button>
+        <div className="flex gap-1">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={printReceipt}
+            data-testid={`button-print-food-${payment.id}`}
+          >
+            <Printer className="h-4 w-4 text-orange-500" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleDelete}
+            data-testid={`button-delete-food-${payment.id}`}
+          >
+            <Trash2 className="h-4 w-4 text-red-500" />
+          </Button>
+        </div>
       </TableCell>
     </TableRow>
   );
