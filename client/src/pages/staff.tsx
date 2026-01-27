@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, UserPlus, Trash2, Loader2, Printer } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -188,8 +187,6 @@ function CreateStaffDialog({ open, onOpenChange }: { open: boolean, onOpenChange
     });
   }
 
-  const roles = ["مامۆستا", "سەرپەرشتیار", "بەڕێوەبەر", "ژمێریار", "خاوێنکەرەوە", "چێشتلێنەر", "پرسگە"];
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -217,16 +214,9 @@ function CreateStaffDialog({ open, onOpenChange }: { open: boolean, onOpenChange
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>پلە / کار</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="هەڵبژێرە..." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {roles.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Input placeholder="مامۆستا، بەڕێوەبەر، سەرپەرشتیار..." {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
