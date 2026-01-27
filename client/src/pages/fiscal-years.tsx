@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useFiscalYears, useCurrentFiscalYear, useCreateFiscalYear, useSetCurrentFiscalYear, useCloseFiscalYear, useDeleteFiscalYear } from "@/hooks/use-fiscal-years";
-import { type FiscalYear } from "@shared/routes";
+import { type FiscalYear, type Income, type Expense, type Payment, type SalaryPayment, type FoodPayment } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,11 +11,278 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Loader2, Calendar, CheckCircle, XCircle, Lock, Unlock, ArrowRight } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Trash2, Loader2, Calendar, CheckCircle, XCircle, Lock, Unlock, ArrowRight, Archive, Eye } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+
+function formatCurrency(amount: string | number): string {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat('en-US').format(num) + ' د.ع';
+}
+
+function ArchiveViewerDialog({ 
+  fiscalYear, 
+  isOpen, 
+  onClose 
+}: { 
+  fiscalYear: FiscalYear | null; 
+  isOpen: boolean; 
+  onClose: () => void;
+}) {
+  const { data: archivedIncome, isLoading: loadingIncome } = useQuery<Income[]>({
+    queryKey: ['/api/archive', fiscalYear?.year, 'income'],
+    queryFn: async () => {
+      const res = await fetch(`/api/archive/${fiscalYear?.year}/income`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      return res.json();
+    },
+    enabled: isOpen && !!fiscalYear?.year,
+  });
+
+  const { data: archivedExpenses, isLoading: loadingExpenses } = useQuery<Expense[]>({
+    queryKey: ['/api/archive', fiscalYear?.year, 'expenses'],
+    queryFn: async () => {
+      const res = await fetch(`/api/archive/${fiscalYear?.year}/expenses`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      return res.json();
+    },
+    enabled: isOpen && !!fiscalYear?.year,
+  });
+
+  const { data: archivedPayments, isLoading: loadingPayments } = useQuery<Payment[]>({
+    queryKey: ['/api/archive', fiscalYear?.year, 'payments'],
+    queryFn: async () => {
+      const res = await fetch(`/api/archive/${fiscalYear?.year}/payments`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      return res.json();
+    },
+    enabled: isOpen && !!fiscalYear?.year,
+  });
+
+  const { data: archivedSalaries, isLoading: loadingSalaries } = useQuery<SalaryPayment[]>({
+    queryKey: ['/api/archive', fiscalYear?.year, 'salary-payments'],
+    queryFn: async () => {
+      const res = await fetch(`/api/archive/${fiscalYear?.year}/salary-payments`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      return res.json();
+    },
+    enabled: isOpen && !!fiscalYear?.year,
+  });
+
+  const { data: archivedFoodPayments, isLoading: loadingFood } = useQuery<FoodPayment[]>({
+    queryKey: ['/api/archive', fiscalYear?.year, 'food-payments'],
+    queryFn: async () => {
+      const res = await fetch(`/api/archive/${fiscalYear?.year}/food-payments`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      return res.json();
+    },
+    enabled: isOpen && !!fiscalYear?.year,
+  });
+
+  const totalIncome = archivedIncome?.reduce((sum, i) => sum + Number(i.amount), 0) || 0;
+  const totalExpenses = archivedExpenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+  const totalPayments = archivedPayments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+  const totalSalaries = archivedSalaries?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+  const totalFoodPayments = archivedFoodPayments?.reduce((sum, f) => sum + Number(f.amount), 0) || 0;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Archive className="h-5 w-5" />
+            ئەرشیفی ساڵی {fiscalYear?.year}
+          </DialogTitle>
+          <DialogDescription>
+            داتای ئەرشیفکراوی ساڵی دارایی {fiscalYear?.year}
+          </DialogDescription>
+        </DialogHeader>
+        
+        <Tabs defaultValue="income" className="w-full" dir="rtl">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="income">داهات</TabsTrigger>
+            <TabsTrigger value="expenses">خەرجی</TabsTrigger>
+            <TabsTrigger value="payments">پارەدان</TabsTrigger>
+            <TabsTrigger value="salaries">مووچە</TabsTrigger>
+            <TabsTrigger value="food">خواردن</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="income" className="mt-4">
+            <div className="rounded-lg border p-4 mb-4">
+              <p className="text-sm text-muted-foreground">کۆی داهات:</p>
+              <p className="text-xl font-bold text-green-600">{formatCurrency(totalIncome)}</p>
+            </div>
+            {loadingIncome ? (
+              <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
+            ) : archivedIncome && archivedIncome.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-right">#</TableHead>
+                    <TableHead className="text-right">سەرچاوە</TableHead>
+                    <TableHead className="text-right">بڕ</TableHead>
+                    <TableHead className="text-right">بەروار</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {archivedIncome.map((item, idx) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{idx + 1}</TableCell>
+                      <TableCell>{item.source}</TableCell>
+                      <TableCell>{formatCurrency(item.amount)}</TableCell>
+                      <TableCell>{item.date}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-center text-muted-foreground py-4">هیچ داهاتێک نییە</p>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="expenses" className="mt-4">
+            <div className="rounded-lg border p-4 mb-4">
+              <p className="text-sm text-muted-foreground">کۆی خەرجی:</p>
+              <p className="text-xl font-bold text-red-600">{formatCurrency(totalExpenses)}</p>
+            </div>
+            {loadingExpenses ? (
+              <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
+            ) : archivedExpenses && archivedExpenses.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-right">#</TableHead>
+                    <TableHead className="text-right">جۆر</TableHead>
+                    <TableHead className="text-right">بڕ</TableHead>
+                    <TableHead className="text-right">بەروار</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {archivedExpenses.map((item, idx) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{idx + 1}</TableCell>
+                      <TableCell>{item.category}</TableCell>
+                      <TableCell>{formatCurrency(item.amount)}</TableCell>
+                      <TableCell>{item.date}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-center text-muted-foreground py-4">هیچ خەرجییەک نییە</p>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="payments" className="mt-4">
+            <div className="rounded-lg border p-4 mb-4">
+              <p className="text-sm text-muted-foreground">کۆی پارەدان:</p>
+              <p className="text-xl font-bold text-blue-600">{formatCurrency(totalPayments)}</p>
+            </div>
+            {loadingPayments ? (
+              <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
+            ) : archivedPayments && archivedPayments.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-right">#</TableHead>
+                    <TableHead className="text-right">ناسنامەی قوتابی</TableHead>
+                    <TableHead className="text-right">بڕ</TableHead>
+                    <TableHead className="text-right">بەروار</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {archivedPayments.map((item, idx) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{idx + 1}</TableCell>
+                      <TableCell>{item.studentId}</TableCell>
+                      <TableCell>{formatCurrency(item.amount)}</TableCell>
+                      <TableCell>{item.date}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-center text-muted-foreground py-4">هیچ پارەدانێک نییە</p>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="salaries" className="mt-4">
+            <div className="rounded-lg border p-4 mb-4">
+              <p className="text-sm text-muted-foreground">کۆی مووچە:</p>
+              <p className="text-xl font-bold text-purple-600">{formatCurrency(totalSalaries)}</p>
+            </div>
+            {loadingSalaries ? (
+              <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
+            ) : archivedSalaries && archivedSalaries.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-right">#</TableHead>
+                    <TableHead className="text-right">مانگ</TableHead>
+                    <TableHead className="text-right">بڕ</TableHead>
+                    <TableHead className="text-right">بەروار</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {archivedSalaries.map((item, idx) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{idx + 1}</TableCell>
+                      <TableCell>{item.month}</TableCell>
+                      <TableCell>{formatCurrency(item.amount)}</TableCell>
+                      <TableCell>{item.date}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-center text-muted-foreground py-4">هیچ مووچەیەک نییە</p>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="food" className="mt-4">
+            <div className="rounded-lg border p-4 mb-4">
+              <p className="text-sm text-muted-foreground">کۆی پارەی خواردن:</p>
+              <p className="text-xl font-bold text-orange-600">{formatCurrency(totalFoodPayments)}</p>
+            </div>
+            {loadingFood ? (
+              <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
+            ) : archivedFoodPayments && archivedFoodPayments.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-right">#</TableHead>
+                    <TableHead className="text-right">مانگ</TableHead>
+                    <TableHead className="text-right">بڕ</TableHead>
+                    <TableHead className="text-right">بەروار</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {archivedFoodPayments.map((item, idx) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{idx + 1}</TableCell>
+                      <TableCell>{item.month}</TableCell>
+                      <TableCell>{formatCurrency(item.amount)}</TableCell>
+                      <TableCell>{item.date}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-center text-muted-foreground py-4">هیچ پارەی خواردنێک نییە</p>
+            )}
+          </TabsContent>
+        </Tabs>
+        
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>داخستن</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const fiscalYearFormSchema = z.object({
   year: z.string().min(1, "ساڵ پێویستە").regex(/^\d{4}-\d{4}$/, "فۆرماتی ساڵ دەبێت وەک 2024-2025 بێت"),
@@ -147,6 +415,7 @@ export default function FiscalYearsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [yearToClose, setYearToClose] = useState<FiscalYear | null>(null);
   const [yearToDelete, setYearToDelete] = useState<FiscalYear | null>(null);
+  const [yearToViewArchive, setYearToViewArchive] = useState<FiscalYear | null>(null);
   const { toast } = useToast();
   
   const setCurrentMutation = useSetCurrentFiscalYear();
@@ -283,6 +552,17 @@ export default function FiscalYearsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
+                      {year.isClosed && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setYearToViewArchive(year)}
+                          data-testid={`button-view-archive-${year.id}`}
+                        >
+                          <Eye className="h-4 w-4 ml-1" />
+                          ئەرشیف
+                        </Button>
+                      )}
                       {!year.isCurrent && !year.isClosed && (
                         <Button 
                           variant="outline" 
@@ -379,6 +659,12 @@ export default function FiscalYearsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ArchiveViewerDialog 
+        fiscalYear={yearToViewArchive}
+        isOpen={!!yearToViewArchive}
+        onClose={() => setYearToViewArchive(null)}
+      />
     </div>
   );
 }

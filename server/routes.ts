@@ -446,7 +446,7 @@ export async function registerRoutes(
   app.put(api.users.updateRole.path, requireAdmin, async (req, res) => {
     try {
       const { role } = api.users.updateRole.input.parse(req.body);
-      const user = await storage.updateUserRole(req.params.id, role);
+      const user = await storage.updateUserRole(req.params.id as string, role);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -467,10 +467,11 @@ export async function registerRoutes(
 
   app.delete(api.users.delete.path, requireAdmin, async (req, res) => {
     const currentUser = (req as any).dbUser;
-    if (currentUser.id === req.params.id) {
+    const userId = req.params.id as string;
+    if (currentUser.id === userId) {
       return res.status(400).json({ message: "ناتوانیت خۆت بسڕیتەوە" });
     }
-    const deleted = await storage.deleteUser(req.params.id);
+    const deleted = await storage.deleteUser(userId);
     if (!deleted) {
       return res.status(404).json({ message: "بەکارهێنەر نەدۆزرایەوە" });
     }
@@ -545,6 +546,52 @@ export async function registerRoutes(
         return res.status(404).json({ message: message.replace("NOT_FOUND:", "") });
       }
       res.status(400).json({ message: message.replace("VALIDATION:", "") });
+    }
+  });
+
+  // Archive data endpoints - view historical data by fiscal year
+  app.get("/api/archive/:fiscalYear/income", async (req, res) => {
+    try {
+      const data = await storage.getIncomesByFiscalYear(req.params.fiscalYear);
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ message: "هەڵەیەک ڕوویدا" });
+    }
+  });
+
+  app.get("/api/archive/:fiscalYear/expenses", async (req, res) => {
+    try {
+      const data = await storage.getExpensesByFiscalYear(req.params.fiscalYear);
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ message: "هەڵەیەک ڕوویدا" });
+    }
+  });
+
+  app.get("/api/archive/:fiscalYear/payments", async (req, res) => {
+    try {
+      const data = await storage.getPaymentsByFiscalYear(req.params.fiscalYear);
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ message: "هەڵەیەک ڕوویدا" });
+    }
+  });
+
+  app.get("/api/archive/:fiscalYear/salary-payments", async (req, res) => {
+    try {
+      const data = await storage.getSalaryPaymentsByFiscalYear(req.params.fiscalYear);
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ message: "هەڵەیەک ڕوویدا" });
+    }
+  });
+
+  app.get("/api/archive/:fiscalYear/food-payments", async (req, res) => {
+    try {
+      const data = await storage.getFoodPaymentsByFiscalYear(req.params.fiscalYear);
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ message: "هەڵەیەک ڕوویدا" });
     }
   });
 

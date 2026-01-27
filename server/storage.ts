@@ -228,9 +228,17 @@ export class DatabaseStorage implements IStorage {
     return promotedCount;
   }
 
-  // Income
+  // Income - only show current year (records without fiscalYear tag)
   async getIncomes(): Promise<Income[]> {
-    return await db.select().from(income).orderBy(income.date);
+    return await db.select().from(income)
+      .where(sql`${income.fiscalYear} IS NULL OR ${income.fiscalYear} = ''`)
+      .orderBy(income.date);
+  }
+
+  async getIncomesByFiscalYear(fiscalYear: string): Promise<Income[]> {
+    return await db.select().from(income)
+      .where(eq(income.fiscalYear, fiscalYear))
+      .orderBy(income.date);
   }
 
   async createIncome(insertIncome: InsertIncome): Promise<Income> {
@@ -242,9 +250,17 @@ export class DatabaseStorage implements IStorage {
     await db.delete(income).where(eq(income.id, id));
   }
 
-  // Expenses
+  // Expenses - only show current year (records without fiscalYear tag)
   async getExpenses(): Promise<Expense[]> {
-    return await db.select().from(expenses).orderBy(expenses.date);
+    return await db.select().from(expenses)
+      .where(sql`${expenses.fiscalYear} IS NULL OR ${expenses.fiscalYear} = ''`)
+      .orderBy(expenses.date);
+  }
+
+  async getExpensesByFiscalYear(fiscalYear: string): Promise<Expense[]> {
+    return await db.select().from(expenses)
+      .where(eq(expenses.fiscalYear, fiscalYear))
+      .orderBy(expenses.date);
   }
 
   async createExpense(insertExpense: InsertExpense): Promise<Expense> {
@@ -256,9 +272,17 @@ export class DatabaseStorage implements IStorage {
     await db.delete(expenses).where(eq(expenses.id, id));
   }
 
-  // Payments
+  // Payments - only show current year (records without fiscalYear tag)
   async getPayments(): Promise<Payment[]> {
-    return await db.select().from(payments).orderBy(payments.date);
+    return await db.select().from(payments)
+      .where(sql`${payments.fiscalYear} IS NULL OR ${payments.fiscalYear} = ''`)
+      .orderBy(payments.date);
+  }
+
+  async getPaymentsByFiscalYear(fiscalYear: string): Promise<Payment[]> {
+    return await db.select().from(payments)
+      .where(eq(payments.fiscalYear, fiscalYear))
+      .orderBy(payments.date);
   }
 
   async createPayment(insertPayment: InsertPayment): Promise<Payment> {
@@ -305,14 +329,26 @@ export class DatabaseStorage implements IStorage {
     await db.delete(staff).where(eq(staff.id, id));
   }
 
-  // Salary Payments
+  // Salary Payments - only show current year (records without fiscalYear tag)
   async getSalaryPayments(): Promise<SalaryPayment[]> {
-    return await db.select().from(salaryPayments).orderBy(salaryPayments.date);
+    return await db.select().from(salaryPayments)
+      .where(sql`${salaryPayments.fiscalYear} IS NULL OR ${salaryPayments.fiscalYear} = ''`)
+      .orderBy(salaryPayments.date);
+  }
+
+  async getSalaryPaymentsByFiscalYear(fiscalYear: string): Promise<SalaryPayment[]> {
+    return await db.select().from(salaryPayments)
+      .where(eq(salaryPayments.fiscalYear, fiscalYear))
+      .orderBy(salaryPayments.date);
   }
 
   async getSalaryPaymentByStaffAndMonth(staffId: number, month: string): Promise<SalaryPayment | undefined> {
     const [payment] = await db.select().from(salaryPayments)
-      .where(and(eq(salaryPayments.staffId, staffId), eq(salaryPayments.month, month)));
+      .where(and(
+        eq(salaryPayments.staffId, staffId), 
+        eq(salaryPayments.month, month),
+        sql`${salaryPayments.fiscalYear} IS NULL OR ${salaryPayments.fiscalYear} = ''`
+      ));
     return payment;
   }
 
@@ -334,14 +370,26 @@ export class DatabaseStorage implements IStorage {
     await db.delete(salaryPayments).where(eq(salaryPayments.id, id));
   }
 
-  // Food Payments
+  // Food Payments - only show current year (records without fiscalYear tag)
   async getFoodPayments(): Promise<FoodPayment[]> {
-    return await db.select().from(foodPayments).orderBy(foodPayments.date);
+    return await db.select().from(foodPayments)
+      .where(sql`${foodPayments.fiscalYear} IS NULL OR ${foodPayments.fiscalYear} = ''`)
+      .orderBy(foodPayments.date);
+  }
+
+  async getFoodPaymentsByFiscalYear(fiscalYear: string): Promise<FoodPayment[]> {
+    return await db.select().from(foodPayments)
+      .where(eq(foodPayments.fiscalYear, fiscalYear))
+      .orderBy(foodPayments.date);
   }
 
   async getFoodPaymentByStudentAndMonth(studentId: number, month: string): Promise<FoodPayment | undefined> {
     const [payment] = await db.select().from(foodPayments)
-      .where(and(eq(foodPayments.studentId, studentId), eq(foodPayments.month, month)));
+      .where(and(
+        eq(foodPayments.studentId, studentId), 
+        eq(foodPayments.month, month),
+        sql`${foodPayments.fiscalYear} IS NULL OR ${foodPayments.fiscalYear} = ''`
+      ));
     return payment;
   }
 
