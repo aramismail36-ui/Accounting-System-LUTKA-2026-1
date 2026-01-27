@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useFiscalYears, useCurrentFiscalYear, useCreateFiscalYear, useSetCurrentFiscalYear, useCloseFiscalYear, useReopenFiscalYear, useDeleteFiscalYear } from "@/hooks/use-fiscal-years";
+import { useFiscalYears, useCurrentFiscalYear, useCreateFiscalYear, useSetCurrentFiscalYear, useCloseFiscalYear, useDeleteFiscalYear } from "@/hooks/use-fiscal-years";
 import { type FiscalYear, type Income, type Expense, type Payment, type SalaryPayment, type FoodPayment } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -414,14 +414,12 @@ export default function FiscalYearsPage() {
   const { data: currentYear } = useCurrentFiscalYear();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [yearToClose, setYearToClose] = useState<FiscalYear | null>(null);
-  const [yearToReopen, setYearToReopen] = useState<FiscalYear | null>(null);
   const [yearToDelete, setYearToDelete] = useState<FiscalYear | null>(null);
   const [yearToViewArchive, setYearToViewArchive] = useState<FiscalYear | null>(null);
   const { toast } = useToast();
   
   const setCurrentMutation = useSetCurrentFiscalYear();
   const closeMutation = useCloseFiscalYear();
-  const reopenMutation = useReopenFiscalYear();
   const deleteMutation = useDeleteFiscalYear();
 
   const handleSetCurrent = async (year: FiscalYear) => {
@@ -442,20 +440,6 @@ export default function FiscalYearsPage() {
         description: result.message 
       });
       setYearToClose(null);
-    } catch (err: any) {
-      toast({ title: "هەڵە", description: err.message, variant: "destructive" });
-    }
-  };
-
-  const handleReopenYear = async () => {
-    if (!yearToReopen) return;
-    try {
-      await reopenMutation.mutateAsync(yearToReopen.id);
-      toast({ 
-        title: "ساڵی دارایی کرایەوە", 
-        description: `ساڵی ${yearToReopen.year} سەرکەوتووانە کرایەوە` 
-      });
-      setYearToReopen(null);
     } catch (err: any) {
       toast({ title: "هەڵە", description: err.message, variant: "destructive" });
     }
@@ -569,26 +553,15 @@ export default function FiscalYearsPage() {
                   <TableCell>
                     <div className="flex gap-2">
                       {year.isClosed && (
-                        <>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setYearToViewArchive(year)}
-                            data-testid={`button-view-archive-${year.id}`}
-                          >
-                            <Eye className="h-4 w-4 ml-1" />
-                            ئەرشیف
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setYearToReopen(year)}
-                            data-testid={`button-reopen-year-${year.id}`}
-                          >
-                            <Unlock className="h-4 w-4 ml-1" />
-                            کردنەوە
-                          </Button>
-                        </>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setYearToViewArchive(year)}
+                          data-testid={`button-view-archive-${year.id}`}
+                        >
+                          <Eye className="h-4 w-4 ml-1" />
+                          ئەرشیف
+                        </Button>
                       )}
                       {!year.isCurrent && !year.isClosed && (
                         <Button 
@@ -660,29 +633,6 @@ export default function FiscalYearsPage() {
             >
               {closeMutation.isPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
               بەڵێ، داخستن
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={!!yearToReopen} onOpenChange={(open) => !open && setYearToReopen(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>کردنەوەی ساڵی دارایی {yearToReopen?.year}</AlertDialogTitle>
-            <AlertDialogDescription>
-              ئایا دڵنیایت لە کردنەوەی ئەم ساڵی داراییە؟ 
-              <br />
-              دوای کردنەوە، دەتوانیت گۆڕانکاری لە داتاکانی ئەم ساڵەدا بکەیت.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel>هەڵوەشاندنەوە</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleReopenYear}
-              disabled={reopenMutation.isPending}
-            >
-              {reopenMutation.isPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
-              بەڵێ، کردنەوە
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

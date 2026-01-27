@@ -535,20 +535,6 @@ export async function registerRoutes(
     }
   });
 
-  app.post(api.fiscalYears.reopen.path, requireAdmin, async (req, res) => {
-    try {
-      const id = Number(req.params.id);
-      const result = await storage.reopenFiscalYear(id);
-      res.json(result);
-    } catch (err: any) {
-      const message = err.message || "هەڵەیەک ڕوویدا";
-      if (message.startsWith("NOT_FOUND:")) {
-        return res.status(404).json({ message: message.replace("NOT_FOUND:", "") });
-      }
-      res.status(400).json({ message: message.replace("VALIDATION:", "") });
-    }
-  });
-
   app.delete(api.fiscalYears.delete.path, requireAdmin, async (req, res) => {
     try {
       const id = Number(req.params.id);
