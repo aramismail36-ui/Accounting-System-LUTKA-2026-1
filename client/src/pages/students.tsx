@@ -191,6 +191,9 @@ export default function StudentsPage() {
           </div>
           
           <div class="receipt-title">زانیاری قوتابی</div>
+          <div style="text-align: center; font-size: 10px; margin-bottom: 8px; background: #e8f4f8; padding: 4px; border-radius: 4px;">
+            <span style="font-weight: bold;">ژمارەی وەسڵ:</span> STU-${String(student.id).padStart(6, '0')}
+          </div>
           
           <div class="content">
             <div class="row">

@@ -152,6 +152,9 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
           </div>
           
           <div class="receipt-title">وەسڵی وەرگرتنی قیست</div>
+          <div style="text-align: center; font-size: 10px; margin-bottom: 6px; background: #e8f4f8; padding: 4px; border-radius: 3px;">
+            <span style="font-weight: bold;">ژمارەی وەسڵ:</span> P-${String(payment.id).padStart(6, '0')}
+          </div>
           
           <div class="content">
             <div class="row">
@@ -247,6 +250,10 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
             )}
             <h1 className="text-2xl font-bold text-slate-800">{schoolName}</h1>
             <p className="text-slate-500">سیستەمی ژمێریاری قوتابخانە</p>
+          </div>
+
+          <div className="text-center bg-cyan-50 py-2 rounded-lg mb-2">
+            <span className="text-sm font-bold text-cyan-700">ژمارەی وەسڵ: P-{String(payment.id).padStart(6, '0')}</span>
           </div>
 
           <div className="text-center bg-slate-100 py-3 rounded-lg mb-4">
