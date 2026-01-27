@@ -25,6 +25,7 @@ export interface IStorage {
   createStudent(student: InsertStudent): Promise<Student>;
   updateStudent(id: number, student: Partial<InsertStudent>): Promise<Student>;
   deleteStudent(id: number): Promise<void>;
+  promoteAllGrades(): Promise<number>;
 
   // Income
   getIncomes(): Promise<Income[]>;
@@ -129,6 +130,80 @@ export class DatabaseStorage implements IStorage {
 
   async deleteStudent(id: number): Promise<void> {
     await db.delete(students).where(eq(students.id, id));
+  }
+
+  async promoteAllGrades(): Promise<number> {
+    // Convert Arabic-Indic/Kurdish numerals to ASCII
+    const normalizeDigits = (str: string): string => {
+      const arabicIndicMap: Record<string, string> = {
+        '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+        '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+        '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+        '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9',
+      };
+      return str.replace(/[٠-٩۰-۹]/g, (char) => arabicIndicMap[char] || char);
+    };
+
+    // Convert ASCII digit back to Arabic-Indic
+    const toArabicIndic = (num: number): string => {
+      const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+      return String(num).split('').map(d => arabicNumerals[parseInt(d, 10)]).join('');
+    };
+
+    // Get all students
+    const allStudents = await db.select().from(students);
+    let promotedCount = 0;
+
+    for (const student of allStudents) {
+      const currentGrade = student.grade || "";
+      let newGrade = currentGrade;
+
+      // Check for Arabic-Indic numerals (١, ٢, ٣, etc.)
+      const arabicIndicMatch = currentGrade.match(/[٠-٩۰-۹]+/);
+      if (arabicIndicMatch) {
+        const normalizedNum = normalizeDigits(arabicIndicMatch[0]);
+        const currentNum = parseInt(normalizedNum, 10);
+        const nextNum = currentNum + 1;
+        newGrade = currentGrade.replace(/[٠-٩۰-۹]+/, toArabicIndic(nextNum));
+      } else {
+        // Try to extract and increment ASCII numeric grade
+        const numericMatch = currentGrade.match(/(\d+)/);
+        if (numericMatch) {
+          const currentNum = parseInt(numericMatch[1], 10);
+          const nextNum = currentNum + 1;
+          newGrade = currentGrade.replace(/\d+/, String(nextNum));
+        } else {
+          // Handle Kurdish ordinal grades (پۆلی یەکەم, پۆلی دووەم, etc.)
+          const kurdishOrdinals: Record<string, string> = {
+            'یەکەم': 'دووەم',
+            'دووەم': 'سێیەم',
+            'سێیەم': 'چوارەم',
+            'چوارەم': 'پێنجەم',
+            'پێنجەم': 'شەشەم',
+            'شەشەم': 'حەوتەم',
+            'حەوتەم': 'هەشتەم',
+            'هەشتەم': 'نۆیەم',
+            'نۆیەم': 'دەیەم',
+            'دەیەم': 'یازدەیەم',
+            'یازدەیەم': 'دوازدەیەم',
+          };
+
+          for (const [current, next] of Object.entries(kurdishOrdinals)) {
+            if (currentGrade.includes(current)) {
+              newGrade = currentGrade.replace(current, next);
+              break;
+            }
+          }
+        }
+      }
+
+      if (newGrade !== currentGrade) {
+        await db.update(students).set({ grade: newGrade }).where(eq(students.id, student.id));
+        promotedCount++;
+      }
+    }
+
+    return promotedCount;
   }
 
   // Income

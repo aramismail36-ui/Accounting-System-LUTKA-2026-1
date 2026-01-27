@@ -98,6 +98,14 @@ export const api = {
         404: errorSchemas.notFound,
       },
     },
+    promoteGrades: {
+      method: 'POST' as const,
+      path: '/api/students/promote-grades',
+      responses: {
+        200: z.object({ promotedCount: z.number() }),
+        400: errorSchemas.validation,
+      },
+    },
   },
   income: {
     list: {

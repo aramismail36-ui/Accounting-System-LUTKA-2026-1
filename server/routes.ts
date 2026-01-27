@@ -171,6 +171,16 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
+  // Promote all students to next grade
+  app.post(api.students.promoteGrades.path, requireAdmin, async (req, res) => {
+    try {
+      const promotedCount = await storage.promoteAllGrades();
+      res.json({ promotedCount });
+    } catch (err) {
+      res.status(400).json({ message: "Failed to promote grades" });
+    }
+  });
+
   // Income
   app.get(api.income.list.path, async (req, res) => {
     const incomes = await storage.getIncomes();

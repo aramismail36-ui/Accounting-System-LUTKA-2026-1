@@ -1,27 +1,54 @@
 import { useState, useEffect } from "react";
 import { useStudents, useCreateStudent, useUpdateStudent, useDeleteStudent } from "@/hooks/use-students";
 import { useSchoolSettings } from "@/hooks/use-school-settings";
-import { insertStudentSchema, type InsertStudent, type Student } from "@shared/routes";
+import { insertStudentSchema, type InsertStudent, type Student, api } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, Search, Pencil, Trash2, Printer, Loader2, MessageCircle } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Printer, Loader2, MessageCircle, GraduationCap } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { z } from "zod";
 import { generatePrintHtml, printDocument } from "@/lib/print-utils";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function StudentsPage() {
   const { data: students, isLoading } = useStudents();
   const { data: settings } = useSchoolSettings();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [isPromoteDialogOpen, setIsPromoteDialogOpen] = useState(false);
+
+  const promoteGradesMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", api.students.promoteGrades.path);
+      return res.json();
+    },
+    onSuccess: (data: { promotedCount: number }) => {
+      queryClient.invalidateQueries({ queryKey: [api.students.list.path] });
+      toast({
+        title: "پۆلەکان نوێکرانەوە",
+        description: `${data.promotedCount} قوتابی گواستنەوە بۆ پۆلی داهاتوو`,
+      });
+      setIsPromoteDialogOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "هەڵە",
+        description: "گواستنەوەی پۆل سەرکەوتوو نەبوو",
+        variant: "destructive",
+      });
+    },
+  });
 
   const filteredStudents = students?.filter(student =>
     student.fullName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -60,6 +87,45 @@ export default function StudentsPage() {
               <Printer className="h-5 w-5" />
               چاپکردن
             </Button>
+            <AlertDialog open={isPromoteDialogOpen} onOpenChange={setIsPromoteDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="gap-2 border-orange-500 text-orange-600"
+                  data-testid="button-promote-grades"
+                >
+                  <GraduationCap className="h-5 w-5" />
+                  گواستنەوەی پۆل
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>گواستنەوەی پۆلی قوتابیان</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    ئایا دڵنیایت دەتەوێت گشت قوتابیان بگوازیتەوە بۆ پۆلی داهاتوو؟
+                    <br /><br />
+                    نموونە: پۆلی ١ دەبێتە پۆلی ٢، پۆلی ٢ دەبێتە پۆلی ٣، و هتد.
+                    <br /><br />
+                    <strong className="text-orange-600">ئەم کارە ناگەڕێتەوە!</strong>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="gap-2">
+                  <AlertDialogCancel data-testid="button-cancel-promote">پاشگەزبوونەوە</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => promoteGradesMutation.mutate()}
+                    disabled={promoteGradesMutation.isPending}
+                    className="bg-orange-600"
+                    data-testid="button-confirm-promote"
+                  >
+                    {promoteGradesMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                    ) : null}
+                    بەڵێ، گواستنەوە بکە
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <Button
               size="lg"
               className="gap-2 bg-primary shadow-lg shadow-primary/25 hover:shadow-xl transition-all"
