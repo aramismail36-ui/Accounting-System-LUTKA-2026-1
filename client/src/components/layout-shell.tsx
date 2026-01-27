@@ -15,7 +15,8 @@ import {
   UtensilsCrossed,
   CircleDollarSign,
   UserCog,
-  CalendarClock
+  CalendarClock,
+  Archive
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     { name: "ڕاپۆرتەکان", href: "/reports", icon: PieChart },
     { name: "بەکارهێنەران", href: "/users", icon: UserCog },
     { name: "ساڵی دارایی", href: "/fiscal-years", icon: CalendarClock },
+    { name: "ئەرشیف", href: "/archive", icon: Archive },
     { name: "ڕێکخستنەکان", href: "/school-settings", icon: Settings },
   ];
 
@@ -78,7 +80,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       <div className="p-4 border-t border-slate-800">
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-800/50 mb-3">
           <Avatar className="h-9 w-9 border border-slate-600">
-            <AvatarImage src={user?.profileImageUrl} />
+            <AvatarImage src={user?.profileImageUrl || undefined} />
             <AvatarFallback className="bg-slate-700 text-slate-300">
               {user?.firstName?.[0] || "U"}
             </AvatarFallback>
