@@ -60,6 +60,7 @@ export const expenses = pgTable("expenses", {
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   date: date("date").defaultNow().notNull(),
   description: text("description"),
+  attachment: text("attachment"), // File path for receipt/document attachment (image or PDF)
   fiscalYear: text("fiscal_year"), // e.g., "2024-2025"
   createdAt: timestamp("created_at").defaultNow(),
 });

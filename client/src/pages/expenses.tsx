@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Receipt, Loader2, Trash2, Printer, TrendingDown, BarChart3 } from "lucide-react";
+import { Plus, Receipt, Loader2, Trash2, Printer, TrendingDown, BarChart3, Paperclip, FileText, Image, X, Eye } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
@@ -336,6 +336,7 @@ export default function ExpensesPage() {
                 <TableHead className="text-right">بڕ (د.ع)</TableHead>
                 <TableHead className="text-right">بەروار</TableHead>
                 <TableHead className="text-right">تێبینی</TableHead>
+                <TableHead className="text-right">هاوپێچ</TableHead>
                 <TableHead className="text-right">ڕێکەوت و کات</TableHead>
                 <TableHead className="text-right w-[100px]">کردار</TableHead>
               </TableRow>
@@ -350,8 +351,28 @@ export default function ExpensesPage() {
                     {format(new Date(item.date), "yyyy-MM-dd")}
                   </TableCell>
                   <TableCell className="text-slate-500">{item.description || "-"}</TableCell>
+                  <TableCell>
+                    {item.attachment ? (
+                      <a
+                        href={item.attachment}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-primary hover:underline"
+                        data-testid={`link-attachment-${item.id}`}
+                      >
+                        {item.attachment.endsWith('.pdf') ? (
+                          <FileText className="h-4 w-4" />
+                        ) : (
+                          <Image className="h-4 w-4" />
+                        )}
+                        <Eye className="h-3 w-3" />
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-slate-500 text-xs font-mono">
-                    {new Date(item.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    {item.createdAt ? new Date(item.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}
                   </TableCell>
                   <TableCell>
                     <DeleteExpenseButton id={item.id} />
@@ -360,7 +381,7 @@ export default function ExpensesPage() {
               ))}
               {expenses?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                     هیچ خەرجییەک تۆمار نەکراوە
                   </TableCell>
                 </TableRow>
@@ -370,7 +391,7 @@ export default function ExpensesPage() {
                   <TableCell></TableCell>
                   <TableCell>کۆی گشتی</TableCell>
                   <TableCell className="font-mono text-red-700 dark:text-red-400">-{totalExpenses.toLocaleString()} د.ع</TableCell>
-                  <TableCell colSpan={4}></TableCell>
+                  <TableCell colSpan={5}></TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -417,13 +438,17 @@ function DeleteExpenseButton({ id }: { id: number }) {
 function CreateExpenseDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
   const { mutate, isPending } = useCreateExpense();
   const { toast } = useToast();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const formSchema = insertExpenseSchema.extend({
     amount: z.coerce.number(),
     date: z.coerce.string(),
   });
+  
+  type FormData = z.infer<typeof formSchema>;
 
-  const form = useForm<InsertExpense>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       category: "",
@@ -433,15 +458,83 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean, onOpenChan
     },
   });
 
-  function onSubmit(data: InsertExpense) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({ 
+          title: "جۆری فایل ڕێگەپێنەدراوە", 
+          description: "تەنها وێنە (JPEG, PNG, GIF, WebP) یان PDF ڕێگەپێدراوە",
+          variant: "destructive"
+        });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ 
+          title: "فایل زۆر گەورەیە", 
+          description: "قەبارەی فایل نابێت لە 10MB زیاتر بێت",
+          variant: "destructive"
+        });
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const uploadFile = async (): Promise<string | null> => {
+    if (!selectedFile) return null;
+    
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('attachment', selectedFile);
+      
+      const response = await fetch('/api/upload-attachment', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'هەڵە لە بارکردنی فایل');
+      }
+      
+      const data = await response.json();
+      return data.attachmentUrl;
+    } catch (err: any) {
+      toast({ 
+        title: "هەڵە لە بارکردن", 
+        description: err.message,
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  async function onSubmit(data: FormData) {
+    let attachmentUrl: string | null = null;
+    
+    if (selectedFile) {
+      attachmentUrl = await uploadFile();
+      if (!attachmentUrl && selectedFile) {
+        return; // Upload failed, don't create expense
+      }
+    }
+    
     const payload = {
       ...data,
       amount: String(data.amount),
+      attachment: attachmentUrl,
     };
     mutate(payload as any, {
       onSuccess: () => {
         toast({ title: "تۆمارکرا", description: "خەرجی بە سەرکەوتوویی تۆمارکرا" });
         form.reset();
+        setSelectedFile(null);
         onOpenChange(false);
       },
       onError: (err) => {
@@ -515,9 +608,53 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean, onOpenChan
                 </FormItem>
               )}
             />
-            <Button type="submit" variant="destructive" className="w-full" disabled={isPending}>
-              {isPending && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-              تۆمارکردن
+            
+            <div className="space-y-2">
+              <FormLabel>هاوپێچ / وەسڵ (ئارەزوومەندانە)</FormLabel>
+              <div className="flex items-center gap-2">
+                <label 
+                  className="flex items-center justify-center gap-2 px-4 py-2 border rounded-md cursor-pointer hover:bg-accent transition-colors flex-1"
+                  data-testid="input-attachment-label"
+                >
+                  <Paperclip className="h-4 w-4" />
+                  <span className="text-sm">
+                    {selectedFile ? selectedFile.name : "هەڵبژاردنی فایل (وێنە یان PDF)"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    data-testid="input-attachment"
+                  />
+                </label>
+                {selectedFile && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSelectedFile(null)}
+                    data-testid="button-remove-attachment"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              {selectedFile && (
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  {selectedFile.type === 'application/pdf' ? (
+                    <FileText className="h-3 w-3" />
+                  ) : (
+                    <Image className="h-3 w-3" />
+                  )}
+                  <span>{(selectedFile.size / 1024).toFixed(1)} KB</span>
+                </div>
+              )}
+            </div>
+            
+            <Button type="submit" variant="destructive" className="w-full" disabled={isPending || isUploading}>
+              {(isPending || isUploading) && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+              {isUploading ? "بارکردنی فایل..." : "تۆمارکردن"}
             </Button>
           </form>
         </Form>

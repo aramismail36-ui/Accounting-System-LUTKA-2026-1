@@ -24,6 +24,34 @@ const logoStorage = multer.diskStorage({
   },
 });
 
+// Configure multer for expense attachments (images and PDFs)
+const attachmentStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = "./uploads/attachments";
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `expense-${Date.now()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  },
+});
+
+const uploadAttachment = multer({
+  storage: attachmentStorage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for attachments
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("تەنها فایلی وێنە (JPEG, PNG, GIF, WebP) یان PDF ڕێگەپێدراوە"));
+    }
+  },
+});
+
 const uploadLogo = multer({
   storage: logoStorage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
@@ -84,6 +112,19 @@ export async function registerRoutes(
       res.json({ logoUrl });
     } catch (err: any) {
       res.status(400).json({ message: err.message || "هەڵە لە بارکردنی وێنە" });
+    }
+  });
+
+  // Expense attachment upload endpoint
+  app.post('/api/upload-attachment', requireAdmin, uploadAttachment.single('attachment'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "هیچ فایلێک هەڵنەگیرا" });
+      }
+      const attachmentUrl = `/uploads/attachments/${req.file.filename}`;
+      res.json({ attachmentUrl });
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "هەڵە لە بارکردنی فایل" });
     }
   });
 
