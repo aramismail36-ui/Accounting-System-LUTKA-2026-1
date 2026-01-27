@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer, Loader2, DollarSign, Receipt, Users, Utensils, Wallet } from "lucide-react";
+import { Printer, Loader2, DollarSign, Receipt, Users, Utensils, Wallet, PieChart } from "lucide-react";
 import { useSchoolSettings } from "@/hooks/use-school-settings";
 
 function formatCurrency(amount: string | number): string {
@@ -153,6 +153,33 @@ export default function ArchivePage() {
     queryKey: ['/api/archive', selectedYear, 'food-payments'],
     queryFn: async () => {
       const res = await fetch(`/api/archive/${selectedYear}/food-payments`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      return res.json();
+    },
+    enabled: !!selectedYear,
+  });
+
+  interface ShareholderDistribution {
+    id: number;
+    fullName: string;
+    mobile: string;
+    sharePercentage: number;
+    shareAmount: number;
+    notes: string | null;
+  }
+
+  interface DistributionData {
+    fiscalYear: string;
+    totalIncome: number;
+    totalExpenses: number;
+    netProfit: number;
+    distribution: ShareholderDistribution[];
+  }
+
+  const { data: shareholderDistribution, isLoading: loadingDistribution } = useQuery<DistributionData>({
+    queryKey: ['/api/archive', selectedYear, 'shareholder-distribution'],
+    queryFn: async () => {
+      const res = await fetch(`/api/archive/${selectedYear}/shareholder-distribution`);
       if (!res.ok) throw new Error('Failed to fetch');
       return res.json();
     },
@@ -347,6 +374,53 @@ export default function ArchivePage() {
     printArchiveSection(`پارەی خواردن - ساڵی ${selectedYear}`, content, settings?.schoolName, settings?.logoUrl);
   };
 
+  const handlePrintShareholderDistribution = () => {
+    if (!shareholderDistribution) return;
+    const { totalIncome, totalExpenses, netProfit, distribution } = shareholderDistribution;
+    const isProfit = netProfit >= 0;
+    
+    const rows = distribution.map((item, idx) => `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${item.fullName}</td>
+        <td>${item.mobile}</td>
+        <td>${item.sharePercentage}%</td>
+        <td style="color: ${item.shareAmount >= 0 ? '#16a34a' : '#dc2626'}; font-weight: bold;">
+          ${formatCurrency(Math.abs(item.shareAmount))} ${item.shareAmount >= 0 ? '(قازانج)' : '(زیان)'}
+        </td>
+        <td>${item.notes || '-'}</td>
+      </tr>
+    `).join('');
+    
+    const content = `
+      <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <span><strong>کۆی داهات:</strong> ${formatCurrency(totalIncome)}</span>
+          <span><strong>کۆی خەرجی:</strong> ${formatCurrency(totalExpenses)}</span>
+          <span style="color: ${isProfit ? '#16a34a' : '#dc2626'}; font-weight: bold;">
+            <strong>${isProfit ? 'قازانجی تەواو:' : 'زیانی تەواو:'}</strong> ${formatCurrency(Math.abs(netProfit))}
+          </span>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ناوی خاوەن پشک</th>
+            <th>ژ. مۆبایل</th>
+            <th>ڕێژەی پشک</th>
+            <th>بڕی قازانج/زیان</th>
+            <th>تێبینی</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `;
+    printArchiveSection(`دابەشکردنی قازانج و زیان - ساڵی ${selectedYear}`, content, settings?.schoolName, settings?.logoUrl);
+  };
+
   if (loadingYears) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -391,7 +465,7 @@ export default function ArchivePage() {
         <Card>
           <CardContent className="pt-6">
             <Tabs defaultValue="income" className="w-full" dir="rtl">
-              <TabsList className="grid w-full grid-cols-5 mb-6">
+              <TabsList className="grid w-full grid-cols-6 mb-6">
                 <TabsTrigger value="income" className="flex items-center gap-1">
                   <DollarSign className="h-4 w-4" />
                   داهات
@@ -411,6 +485,10 @@ export default function ArchivePage() {
                 <TabsTrigger value="food" className="flex items-center gap-1">
                   <Utensils className="h-4 w-4" />
                   خواردن
+                </TabsTrigger>
+                <TabsTrigger value="shareholders" className="flex items-center gap-1">
+                  <PieChart className="h-4 w-4" />
+                  پشکەکان
                 </TabsTrigger>
               </TabsList>
               
@@ -618,6 +696,65 @@ export default function ArchivePage() {
                   </Table>
                 ) : (
                   <p className="text-center text-muted-foreground py-8">هیچ پارەی خواردنێک نییە</p>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="shareholders" className="space-y-4">
+                {shareholderDistribution && (
+                  <div className="flex justify-between items-center flex-wrap gap-4">
+                    <div className="flex gap-4 flex-wrap">
+                      <div className="rounded-lg border p-4 bg-green-50 dark:bg-green-950">
+                        <p className="text-sm text-muted-foreground">کۆی داهات:</p>
+                        <p className="text-xl font-bold text-green-600">{formatCurrency(shareholderDistribution.totalIncome)}</p>
+                      </div>
+                      <div className="rounded-lg border p-4 bg-red-50 dark:bg-red-950">
+                        <p className="text-sm text-muted-foreground">کۆی خەرجی:</p>
+                        <p className="text-xl font-bold text-red-600">{formatCurrency(shareholderDistribution.totalExpenses)}</p>
+                      </div>
+                      <div className={`rounded-lg border p-4 ${shareholderDistribution.netProfit >= 0 ? 'bg-emerald-50 dark:bg-emerald-950' : 'bg-rose-50 dark:bg-rose-950'}`}>
+                        <p className="text-sm text-muted-foreground">{shareholderDistribution.netProfit >= 0 ? 'قازانجی تەواو:' : 'زیانی تەواو:'}</p>
+                        <p className={`text-xl font-bold ${shareholderDistribution.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {formatCurrency(Math.abs(shareholderDistribution.netProfit))}
+                        </p>
+                      </div>
+                    </div>
+                    <Button onClick={handlePrintShareholderDistribution} disabled={!shareholderDistribution?.distribution?.length} data-testid="button-print-shareholders">
+                      <Printer className="h-4 w-4 ml-2" />
+                      چاپکردن
+                    </Button>
+                  </div>
+                )}
+                {loadingDistribution ? (
+                  <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
+                ) : shareholderDistribution && shareholderDistribution.distribution.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right w-12">#</TableHead>
+                        <TableHead className="text-right">ناوی خاوەن پشک</TableHead>
+                        <TableHead className="text-right">ژ. مۆبایل</TableHead>
+                        <TableHead className="text-right">ڕێژەی پشک</TableHead>
+                        <TableHead className="text-right">بڕی قازانج/زیان</TableHead>
+                        <TableHead className="text-right">تێبینی</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {shareholderDistribution.distribution.map((item, idx) => (
+                        <TableRow key={item.id}>
+                          <TableCell>{idx + 1}</TableCell>
+                          <TableCell className="font-medium">{item.fullName}</TableCell>
+                          <TableCell>{item.mobile}</TableCell>
+                          <TableCell>{item.sharePercentage}%</TableCell>
+                          <TableCell className={`font-bold ${item.shareAmount >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {formatCurrency(Math.abs(item.shareAmount))} {item.shareAmount >= 0 ? '(قازانج)' : '(زیان)'}
+                          </TableCell>
+                          <TableCell>{item.notes || '-'}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">هیچ خاوەن پشکێک نییە</p>
                 )}
               </TabsContent>
             </Tabs>

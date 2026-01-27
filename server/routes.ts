@@ -595,6 +595,44 @@ export async function registerRoutes(
     }
   });
 
+  // Shareholder profit/loss distribution for a fiscal year
+  app.get("/api/archive/:fiscalYear/shareholder-distribution", async (req, res) => {
+    try {
+      const fiscalYear = req.params.fiscalYear;
+      
+      // Get income and expenses for the fiscal year
+      const incomeData = await storage.getIncomesByFiscalYear(fiscalYear);
+      const expenseData = await storage.getExpensesByFiscalYear(fiscalYear);
+      
+      const totalIncome = incomeData.reduce((sum, i) => sum + Number(i.amount), 0);
+      const totalExpenses = expenseData.reduce((sum, e) => sum + Number(e.amount), 0);
+      const netProfit = totalIncome - totalExpenses;
+      
+      // Get all shareholders
+      const shareholders = await storage.getShareholders();
+      
+      // Calculate each shareholder's share
+      const distribution = shareholders.map(sh => ({
+        id: sh.id,
+        fullName: sh.fullName,
+        mobile: sh.mobile,
+        sharePercentage: Number(sh.sharePercentage),
+        shareAmount: (netProfit * Number(sh.sharePercentage)) / 100,
+        notes: sh.notes
+      }));
+      
+      res.json({
+        fiscalYear,
+        totalIncome,
+        totalExpenses,
+        netProfit,
+        distribution
+      });
+    } catch (err) {
+      res.status(500).json({ message: "هەڵەیەک ڕوویدا" });
+    }
+  });
+
   // SEED DATA
   const existingStudents = await storage.getStudents();
   if (existingStudents.length === 0) {
