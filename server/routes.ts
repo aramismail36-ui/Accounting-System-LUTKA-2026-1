@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
+import { authStorage } from "./replit_integrations/auth/storage";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -39,14 +40,24 @@ const uploadLogo = multer({
 });
 
 // Middleware to require admin role for write operations
-function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const user = (req as any).user;
-  if (!user) {
+async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  const passportUser = (req as any).user;
+  if (!passportUser || !passportUser.claims?.sub) {
     return res.status(401).json({ message: "تکایە چوونەژوورەوە بکە" });
   }
-  if (user.role !== "admin") {
+  
+  // Fetch user from database to get their role
+  const dbUser = await authStorage.getUser(passportUser.claims.sub);
+  if (!dbUser) {
+    return res.status(401).json({ message: "تکایە چوونەژوورەوە بکە" });
+  }
+  
+  if (dbUser.role !== "admin") {
     return res.status(403).json({ message: "ناتوانیت ئەم کردارە ئەنجام بدەیت. تەنها بەڕێوەبەر دەتوانێت" });
   }
+  
+  // Attach database user to request for downstream use
+  (req as any).dbUser = dbUser;
   next();
 }
 
@@ -455,7 +466,7 @@ export async function registerRoutes(
   });
 
   app.delete(api.users.delete.path, requireAdmin, async (req, res) => {
-    const currentUser = (req as any).user;
+    const currentUser = (req as any).dbUser;
     if (currentUser.id === req.params.id) {
       return res.status(400).json({ message: "ناتوانیت خۆت بسڕیتەوە" });
     }
