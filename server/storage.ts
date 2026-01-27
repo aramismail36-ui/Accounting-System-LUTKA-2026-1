@@ -198,7 +198,20 @@ export class DatabaseStorage implements IStorage {
       }
 
       if (newGrade !== currentGrade) {
-        await db.update(students).set({ grade: newGrade }).where(eq(students.id, student.id));
+        // Calculate debt from this year (remaining unpaid amount)
+        const currentDebt = Number(student.remainingAmount) || 0;
+        // Add any existing previous year debt to current remaining
+        const existingPreviousDebt = Number(student.previousYearDebt) || 0;
+        const totalDebt = currentDebt + existingPreviousDebt;
+        
+        await db.update(students).set({ 
+          grade: newGrade,
+          // Move remaining amount to previous year debt
+          previousYearDebt: String(totalDebt),
+          // Reset for new year
+          paidAmount: "0",
+          remainingAmount: student.tuitionFee, // Full tuition for new year
+        }).where(eq(students.id, student.id));
         promotedCount++;
       }
     }

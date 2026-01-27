@@ -188,6 +188,12 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
               <span class="label">ماوە:</span>
               <span class="value">${Number(student.remainingAmount).toLocaleString()} د.ع</span>
             </div>
+            ${Number(student.previousYearDebt || 0) > 0 ? `
+            <div class="row" style="background: #fff3cd; padding: 6px; border-radius: 4px; margin-top: 4px;">
+              <span class="label" style="color: #856404;">قەرزی ساڵی پێشوو:</span>
+              <span class="value" style="color: #856404;">${Number(student.previousYearDebt).toLocaleString()} د.ع</span>
+            </div>
+            ` : ''}
           </div>
           
           <div class="signature-section">
@@ -284,6 +290,12 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
               <span className="text-slate-600">ماوە:</span>
               <span className="font-bold text-red-600">{Number(student.remainingAmount).toLocaleString()} د.ع</span>
             </div>
+            {Number(student.previousYearDebt || 0) > 0 && (
+              <div className="flex justify-between bg-amber-100 p-2 rounded mt-2">
+                <span className="text-amber-700">قەرزی ساڵی پێشوو:</span>
+                <span className="font-bold text-amber-700">{Number(student.previousYearDebt).toLocaleString()} د.ع</span>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-between mt-8 pt-4">

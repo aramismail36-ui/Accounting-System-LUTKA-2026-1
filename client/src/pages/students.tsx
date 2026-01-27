@@ -69,7 +69,7 @@ export default function StudentsPage() {
                 const html = generatePrintHtml({
                   title: "لیستی قوتابیان",
                   settings,
-                  tableHeaders: ["ژ", "ناوی سیانی", "پۆل", "مۆبایل", "کرێی خوێندن (د.ع)", "پارەی دراو (د.ع)", "ماوە (د.ع)"],
+                  tableHeaders: ["ژ", "ناوی سیانی", "پۆل", "مۆبایل", "کرێی خوێندن (د.ع)", "پارەی دراو (د.ع)", "ماوە (د.ع)", "قەرزی پار (د.ع)"],
                   tableRows: filteredStudents?.map((s, i) => [
                     String(i + 1),
                     s.fullName,
@@ -77,7 +77,8 @@ export default function StudentsPage() {
                     s.mobile,
                     Number(s.tuitionFee).toLocaleString(),
                     Number(s.paidAmount).toLocaleString(),
-                    Number(s.remainingAmount).toLocaleString()
+                    Number(s.remainingAmount).toLocaleString(),
+                    Number(s.previousYearDebt || 0) > 0 ? Number(s.previousYearDebt).toLocaleString() : "-"
                   ]) || []
                 });
                 printDocument(html);
@@ -181,6 +182,7 @@ export default function StudentsPage() {
                   <TableHead className="text-right font-bold">کرێی خوێندن</TableHead>
                   <TableHead className="text-right font-bold text-green-600">واصل کراو</TableHead>
                   <TableHead className="text-right font-bold text-red-600">ماوە</TableHead>
+                  <TableHead className="text-right font-bold text-orange-600">قەرزی پار</TableHead>
                   <TableHead className="text-right font-bold">ڕێکەوت و کات</TableHead>
                   <TableHead className="text-right font-bold">کردارەکان</TableHead>
                 </TableRow>
@@ -188,7 +190,7 @@ export default function StudentsPage() {
               <TableBody>
                 {filteredStudents?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                    <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
                       هیچ قوتابیەک نەدۆزرایەوە
                     </TableCell>
                   </TableRow>
@@ -202,6 +204,12 @@ export default function StudentsPage() {
                       <TableCell className="font-mono text-slate-600">{Number(student.tuitionFee).toLocaleString()} د.ع</TableCell>
                       <TableCell className="font-mono text-green-600 font-medium">{Number(student.paidAmount).toLocaleString()} د.ع</TableCell>
                       <TableCell className="font-mono text-red-600 font-medium">{Number(student.remainingAmount).toLocaleString()} د.ع</TableCell>
+                      <TableCell className="font-mono text-orange-600 font-medium">
+                        {Number(student.previousYearDebt || 0) > 0 
+                          ? `${Number(student.previousYearDebt).toLocaleString()} د.ع`
+                          : "-"
+                        }
+                      </TableCell>
                       <TableCell className="text-slate-500 text-xs font-mono">
                         {new Date(student.createdAt).toLocaleString('ku-Arab', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                       </TableCell>

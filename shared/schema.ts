@@ -29,6 +29,7 @@ export const students = pgTable("students", {
   tuitionFee: decimal("tuition_fee", { precision: 12, scale: 0 }).notNull(), // IQD - no decimals
   paidAmount: decimal("paid_amount", { precision: 12, scale: 0 }).default("0").notNull(),
   remainingAmount: decimal("remaining_amount", { precision: 12, scale: 0 }).default("0").notNull(),
+  previousYearDebt: decimal("previous_year_debt", { precision: 12, scale: 0 }).default("0").notNull(), // قەرزی ساڵی پێشتر
   createdAt: timestamp("created_at").defaultNow(),
 });
 
