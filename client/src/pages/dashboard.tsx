@@ -2,7 +2,7 @@ import { useStudents } from "@/hooks/use-students";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, GraduationCap, Wallet, TrendingUp, TrendingDown, PiggyBank, Printer } from "lucide-react";
+import { Users, GraduationCap, Wallet, TrendingUp, TrendingDown, PiggyBank, Printer, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from "recharts";
 import type { Staff, Income, Expense } from "@shared/schema";
@@ -28,6 +28,7 @@ export default function DashboardPage() {
   
   const totalIncomeReceived = students?.reduce((sum, s) => sum + Number(s.paidAmount), 0) || 0;
   const totalIncomeRemaining = students?.reduce((sum, s) => sum + Number(s.remainingAmount), 0) || 0;
+  const totalPreviousYearDebt = students?.reduce((sum, s) => sum + Number(s.previousYearDebt || 0), 0) || 0;
   const totalSchoolIncome = income?.reduce((sum, i) => sum + Number(i.amount), 0) || 0;
   const totalExpenses = expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
   
@@ -80,7 +81,7 @@ export default function DashboardPage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card className="shadow-lg border-l-4 border-l-cyan-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
             <CardTitle className="text-sm font-medium">کۆی قوتابیان</CardTitle>
@@ -122,6 +123,17 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{totalIncomeRemaining.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">د.ع نەدراو</p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-lg border-l-4 border-l-amber-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
+            <CardTitle className="text-sm font-medium">قەرزی ساڵی پێشوو</CardTitle>
+            <History className="h-5 w-5 text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-amber-600">{totalPreviousYearDebt.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">د.ع لە ساڵی پێشوو</p>
           </CardContent>
         </Card>
       </div>
