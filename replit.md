@@ -71,6 +71,10 @@ Key entities managed by the system:
 - **Category Details**: Click on a category to see detailed expense list for that category
 - **Print Support**: Print analysis results with school logo, filtered by current selection
 - **Constants**: EXPENSE_CATEGORIES defined in `client/src/pages/expenses.tsx` for consistent categorization
+- **Attachments**: Expenses can have receipt/document attachments (images or PDFs up to 10MB)
+  - Upload endpoint: POST `/api/upload-attachment`
+  - Files stored in `./uploads/attachments/` folder
+  - Attachments displayed with icon in expenses table and viewable via click
 
 ### Salary Analysis
 - **Staff Breakdown**: View salary payments grouped by staff member with totals sorted by highest amount
@@ -99,8 +103,9 @@ Key entities managed by the system:
   - All financial records (income, expenses, payments, salaries, food payments) are tagged with the closing year
   - All students are promoted to the next grade level
   - Outstanding payment amounts are transferred to "previous year debt"
-  - The year is marked as closed and cannot be modified
+  - The year is marked as closed and **cannot be reopened under any circumstances**
   - A new fiscal year is automatically created and set as current
+- **Permanent Closure**: Once a fiscal year is closed, it is permanently locked. There is no reopen functionality to ensure data integrity and audit compliance.
 - **Data Model**: Uses a "living record" model where:
   - Students are ongoing entities that progress through grades each year
   - Financial records (income, expenses, payments) are tagged with fiscalYear for historical access
