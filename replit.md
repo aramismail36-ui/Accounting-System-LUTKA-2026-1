@@ -67,10 +67,17 @@ Key entities managed by the system:
 
 ### Expense Analysis
 - **Category Breakdown**: View expenses grouped by category with totals sorted by highest spending
-- **Time Period Filtering**: Filter expenses by "all time", "this month", or "this year"
+- **Date Range Filtering**: Filter expenses by custom date range (start and end date)
 - **Category Details**: Click on a category to see detailed expense list for that category
 - **Print Support**: Print analysis results with school logo, filtered by current selection
 - **Constants**: EXPENSE_CATEGORIES defined in `client/src/pages/expenses.tsx` for consistent categorization
+
+### Salary Analysis
+- **Staff Breakdown**: View salary payments grouped by staff member with totals sorted by highest amount
+- **Date Range Filtering**: Filter salary payments by custom date range (start and end date)
+- **Staff Details**: Click on a staff member to see detailed payment list for that person
+- **Print Support**: Print analysis results with school logo, filtered by current selection
+- **Location**: Available on the salary payments page (`/salary-payments`)
 
 ### Currency and Receipts
 - **Currency**: All monetary amounts displayed in Iraqi Dinar (د.ع)
