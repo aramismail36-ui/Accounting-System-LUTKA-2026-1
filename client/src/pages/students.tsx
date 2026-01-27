@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, Search, Pencil, Trash2, Printer, Loader2, MessageCircle, GraduationCap } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Printer, Loader2, MessageCircle, GraduationCap, Filter } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
@@ -24,9 +25,19 @@ export default function StudentsPage() {
   const { data: settings } = useSchoolSettings();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [gradeFilter, setGradeFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [isPromoteDialogOpen, setIsPromoteDialogOpen] = useState(false);
+  
+  // Get unique grades from students
+  const uniqueGrades = students 
+    ? [...new Set(students.map(s => s.grade).filter(Boolean))].sort((a, b) => {
+        const numA = parseInt((a || '').replace(/\D/g, '')) || 999;
+        const numB = parseInt((b || '').replace(/\D/g, '')) || 999;
+        return numA - numB;
+      })
+    : [];
 
   const promoteGradesMutation = useMutation({
     mutationFn: async () => {
@@ -50,9 +61,11 @@ export default function StudentsPage() {
     },
   });
 
-  const filteredStudents = students?.filter(student =>
-    student.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStudents = students?.filter(student => {
+    const matchesSearch = student.fullName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGrade = gradeFilter === "all" || student.grade === gradeFilter;
+    return matchesSearch && matchesGrade;
+  });
 
   const printStudentReceipt = (student: Student) => {
     const printWindow = window.open('', '_blank');
@@ -351,7 +364,7 @@ export default function StudentsPage() {
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-4 mb-6 flex-wrap">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
@@ -359,8 +372,30 @@ export default function StudentsPage() {
               className="pr-10 h-12 rounded-xl"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              data-testid="input-search-students"
             />
           </div>
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-slate-400" />
+            <Select value={gradeFilter} onValueChange={setGradeFilter}>
+              <SelectTrigger className="w-[180px] h-12 rounded-xl" data-testid="select-grade-filter">
+                <SelectValue placeholder="فلتەرکردن بە پۆل" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" data-testid="option-grade-all">هەموو پۆلەکان</SelectItem>
+                {uniqueGrades.map(grade => (
+                  <SelectItem key={grade} value={grade || ''} data-testid={`option-grade-${grade}`}>
+                    پۆلی {grade}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {gradeFilter !== "all" && (
+            <div className="text-sm text-muted-foreground">
+              ({filteredStudents?.length || 0} قوتابی لە پۆلی {gradeFilter})
+            </div>
+          )}
         </div>
 
         {isLoading ? (
