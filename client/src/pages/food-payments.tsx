@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useFoodPayments, useCreateFoodPayment, useDeleteFoodPayment } from "@/hooks/use-food-payments";
 import { useStudents } from "@/hooks/use-students";
 import { useSchoolSettings } from "@/hooks/use-school-settings";
+import { useCurrentFiscalYear } from "@/hooks/use-fiscal-years";
 import { insertFoodPaymentSchema, type InsertFoodPayment, type FoodPayment, type Student } from "@shared/routes";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -215,7 +216,9 @@ export default function FoodPaymentsPage() {
 function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { payment: FoodPayment; studentName: string; studentGrade: string; rowNumber: number }) {
   const { mutate: deletePayment } = useDeleteFoodPayment();
   const { data: settings } = useSchoolSettings();
+  const { data: currentFiscalYear } = useCurrentFiscalYear();
   const { toast } = useToast();
+  const fiscalYearLabel = currentFiscalYear?.year || "";
 
   const handleDelete = () => {
     if (confirm("ئایا دڵنیایت لە سڕینەوەی ئەم تۆمارە؟")) {
@@ -427,6 +430,7 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
               ${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" class="header-logo" />` : ''}
               <h1>${schoolName}</h1>
               <p>سیستەمی ژمێریاری قوتابخانە</p>
+              ${fiscalYearLabel ? `<p style="margin-top: 2px; font-size: 10px; color: #93c5fd;">ساڵی خوێندن: ${fiscalYearLabel}</p>` : ''}
             </div>
             
             <div class="receipt-title">وەسڵی پارەی خواردن</div>

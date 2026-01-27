@@ -5,6 +5,7 @@ import { Printer, X } from "lucide-react";
 import { format } from "date-fns";
 import { formatAmountWithWords } from "@/lib/number-to-kurdish";
 import { useSchoolSettings } from "@/hooks/use-school-settings";
+import { useCurrentFiscalYear } from "@/hooks/use-fiscal-years";
 
 interface PaymentReceiptProps {
   payment: Payment;
@@ -14,8 +15,10 @@ interface PaymentReceiptProps {
 
 export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProps) {
   const { data: settings } = useSchoolSettings();
+  const { data: currentFiscalYear } = useCurrentFiscalYear();
   const schoolName = settings?.schoolName || "قوتابخانەی لوتکەی ناحکومی";
   const logoUrl = settings?.logoUrl || "";
+  const fiscalYearLabel = currentFiscalYear?.year || "";
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -237,6 +240,7 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
               ${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" class="header-logo" />` : ''}
               <h1>${schoolName}</h1>
               <p>سیستەمی ژمێریاری قوتابخانە</p>
+              ${fiscalYearLabel ? `<p style="margin-top: 2px; font-size: 10px; color: #93c5fd;">ساڵی خوێندن: ${fiscalYearLabel}</p>` : ''}
             </div>
             
             <div class="receipt-title">وەسڵی وەرگرتنی قیست</div>
@@ -350,6 +354,9 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
               )}
               <h1 className="text-base font-bold">{schoolName}</h1>
               <p className="text-blue-200 text-xs">سیستەمی ژمێریاری قوتابخانە</p>
+              {fiscalYearLabel && (
+                <p className="text-blue-200 text-xs mt-0.5">ساڵی خوێندن: {fiscalYearLabel}</p>
+              )}
             </div>
 
             <div className="text-center bg-gradient-to-r from-blue-700 to-blue-600 text-white py-1.5 rounded-md mb-2">
