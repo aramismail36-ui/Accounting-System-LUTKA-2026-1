@@ -27,9 +27,6 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
     if (!printWindow) return;
 
     const amountInfo = formatAmountWithWords(Number(payment.amount));
-    const logoHtml = logoUrl 
-      ? `<img src="${logoUrl}" alt="لۆگۆ" style="width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px;" />`
-      : '';
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -39,8 +36,8 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
         <title>وەسڵی وەرگرتنی قیست</title>
         <style>
           @page {
-            size: A6 landscape;
-            margin: 5mm;
+            size: A5 landscape;
+            margin: 8mm;
           }
           * {
             box-sizing: border-box;
@@ -50,252 +47,340 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
           body {
             font-family: 'Vazirmatn', 'Nrt', Arial, sans-serif;
             direction: rtl;
-            padding: 8mm;
-            width: 148mm;
-            height: 105mm;
-            font-size: 11px;
+            padding: 0;
+            background: #f8fafc;
           }
           .receipt {
-            border: 2px solid #1e40af;
-            border-radius: 8px;
-            padding: 12px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
+            width: 210mm;
+            height: 148mm;
+            background: #ffffff;
+            border: 3px solid #0f766e;
+            border-radius: 16px;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, #f0f7ff 0%, #e0efff 100%);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
           }
+          .decorative-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #0f766e 0%, #14b8a6 25%, #fbbf24 50%, #14b8a6 75%, #0f766e 100%);
+          }
+          .decorative-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #0f766e 0%, #14b8a6 25%, #fbbf24 50%, #14b8a6 75%, #0f766e 100%);
+          }
+          .corner-decoration {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 3px solid #14b8a6;
+            opacity: 0.3;
+          }
+          .corner-tl { top: 15px; right: 15px; border-radius: 0 0 0 30px; border-top: none; border-right: none; }
+          .corner-tr { top: 15px; left: 15px; border-radius: 0 0 30px 0; border-top: none; border-left: none; }
+          .corner-bl { bottom: 15px; right: 15px; border-radius: 0 30px 0 0; border-bottom: none; border-right: none; }
+          .corner-br { bottom: 15px; left: 15px; border-radius: 30px 0 0 0; border-bottom: none; border-left: none; }
           .watermark {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            opacity: 0.08;
+            opacity: 0.06;
             z-index: 0;
             pointer-events: none;
           }
           .watermark img {
-            width: 180px;
-            height: 180px;
+            width: 200px;
+            height: 200px;
             object-fit: contain;
           }
           .content-wrapper {
             position: relative;
             z-index: 1;
+            padding: 20px 25px;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            height: 100%;
           }
           .header {
-            text-align: center;
-            border-bottom: 2px solid #1e40af;
-            padding-bottom: 8px;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            margin: -12px -12px 10px -12px;
-            padding: 10px;
-            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 12px;
           }
           .header-logo {
-            width: 40px;
-            height: 40px;
+            width: 55px;
+            height: 55px;
             object-fit: contain;
-            margin-bottom: 4px;
             border-radius: 50%;
+            border: 3px solid #0f766e;
+            padding: 3px;
             background: white;
-            padding: 4px;
           }
-          .header h1 {
-            font-size: 14px;
-            margin-bottom: 2px;
-            color: white;
-          }
-          .header p {
-            font-size: 9px;
-            color: #bfdbfe;
-          }
-          .receipt-title {
+          .header-text {
             text-align: center;
-            font-size: 13px;
+          }
+          .header-text h1 {
+            font-size: 20px;
+            color: #0f766e;
+            margin-bottom: 3px;
             font-weight: bold;
-            margin: 6px 0;
-            padding: 6px;
-            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
-            border-radius: 6px;
-            color: white;
-            letter-spacing: 1px;
           }
-          .receipt-number {
-            text-align: center;
+          .header-text .info {
             font-size: 10px;
-            margin-bottom: 8px;
-            background: #dbeafe;
-            padding: 5px;
-            border-radius: 4px;
-            color: #1e40af;
-            font-weight: bold;
-            border: 1px solid #93c5fd;
+            color: #64748b;
           }
-          .content {
+          .receipt-badge {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+          }
+          .receipt-number-badge {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #78350f;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+          }
+          .main-content {
+            display: flex;
+            gap: 20px;
             flex: 1;
           }
-          .row {
+          .info-section {
+            flex: 1;
+          }
+          .info-card {
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+            border: 1px solid #99f6e4;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+          }
+          .info-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 8px;
-            border-bottom: 1px dashed #93c5fd;
-            font-size: 10px;
-            background: rgba(255,255,255,0.7);
-            margin-bottom: 2px;
-            border-radius: 3px;
+            padding: 6px 0;
+            border-bottom: 1px dashed #99f6e4;
+            font-size: 12px;
           }
-          .row:last-child {
+          .info-row:last-child {
             border-bottom: none;
           }
-          .label {
-            font-weight: bold;
-            color: #1e40af;
+          .info-label {
+            color: #0f766e;
+            font-weight: 600;
           }
-          .value {
+          .info-value {
+            color: #134e4a;
             font-weight: bold;
-            color: #1e3a8a;
+          }
+          .amount-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
           }
           .amount-box {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%);
-            color: white;
-            padding: 14px;
-            border-radius: 10px;
-            margin: 10px 0;
+            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 50%, #0f766e 100%);
+            border-radius: 16px;
+            padding: 20px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
-            border: 2px solid #60a5fa;
+            box-shadow: 0 8px 25px rgba(15, 118, 110, 0.35);
+            border: 3px solid #5eead4;
+            position: relative;
+            overflow: hidden;
+          }
+          .amount-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+          }
+          @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+          }
+          .amount-label {
+            font-size: 12px;
+            color: #99f6e4;
+            margin-bottom: 8px;
+            position: relative;
           }
           .amount-number {
-            font-size: 20px;
+            font-size: 28px;
             font-weight: bold;
-            margin-bottom: 4px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 8px;
+            position: relative;
           }
           .amount-words {
-            font-size: 10px;
-            opacity: 0.95;
+            font-size: 11px;
+            color: #ccfbf1;
             background: rgba(255,255,255,0.15);
-            padding: 4px 10px;
-            border-radius: 12px;
+            padding: 6px 14px;
+            border-radius: 20px;
             display: inline-block;
+            position: relative;
           }
-          .summary-box {
-            background: rgba(255,255,255,0.8);
-            border: 1px solid #93c5fd;
-            border-radius: 6px;
-            padding: 8px;
-            margin-top: 6px;
+          .summary-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px;
+            margin-top: 10px;
           }
           .summary-row {
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
-            padding: 3px 0;
-            color: #1e3a8a;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 6px;
+            margin-bottom: 3px;
           }
+          .summary-row.total { background: #f0fdfa; }
+          .summary-row.paid { background: #f0fdf4; }
+          .summary-row.remaining { background: #fef2f2; }
+          .summary-row.debt { background: #fffbeb; border: 1px solid #fbbf24; }
           .signature-section {
             display: flex;
             justify-content: space-between;
             margin-top: auto;
-            padding-top: 8px;
+            padding-top: 15px;
           }
           .signature-box {
-            width: 45%;
+            width: 42%;
             text-align: center;
-            font-size: 9px;
           }
           .signature-line {
-            border-top: 1.5px solid #1e40af;
-            margin-top: 18px;
-            padding-top: 5px;
-            color: #1e40af;
-            font-weight: bold;
+            border-top: 2px solid #0f766e;
+            margin-top: 25px;
+            padding-top: 8px;
+            color: #0f766e;
+            font-weight: 600;
+            font-size: 11px;
           }
           .footer {
             text-align: center;
-            font-size: 8px;
-            color: #3b82f6;
-            margin-top: 6px;
-            padding-top: 5px;
-            border-top: 1px solid #93c5fd;
+            font-size: 9px;
+            color: #94a3b8;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
           }
-          .debt-warning {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            padding: 6px;
-            border-radius: 4px;
-            margin-top: 4px;
-            border: 1px solid #f59e0b;
+          .fiscal-year-badge {
+            display: inline-block;
+            background: #f0fdfa;
+            border: 1px solid #14b8a6;
+            color: #0f766e;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin-top: 5px;
           }
         </style>
       </head>
       <body>
         <div class="receipt">
+          <div class="decorative-top"></div>
+          <div class="decorative-bottom"></div>
+          <div class="corner-decoration corner-tl"></div>
+          <div class="corner-decoration corner-tr"></div>
+          <div class="corner-decoration corner-bl"></div>
+          <div class="corner-decoration corner-br"></div>
           ${logoUrl ? `<div class="watermark"><img src="${logoUrl}" alt="لۆگۆ" /></div>` : ''}
+          
+          <div class="receipt-badge">وەسڵی وەرگرتنی قیست</div>
+          <div class="receipt-number-badge">P-${String(payment.id).padStart(6, '0')}</div>
+          
           <div class="content-wrapper">
             <div class="header">
               ${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" class="header-logo" />` : ''}
-              <h1>${schoolName}</h1>
-              ${schoolAddress ? `<p style="font-size: 8px; color: #bfdbfe; margin-top: 2px;">${schoolAddress}</p>` : ''}
-              ${schoolPhone ? `<p style="font-size: 8px; color: #bfdbfe;">تەلەفۆن: ${schoolPhone}</p>` : ''}
-              ${fiscalYearLabel ? `<p style="margin-top: 2px; font-size: 10px; color: #93c5fd;">ساڵی خوێندن: ${fiscalYearLabel}</p>` : ''}
+              <div class="header-text">
+                <h1>${schoolName}</h1>
+                ${schoolAddress ? `<div class="info">${schoolAddress}</div>` : ''}
+                ${schoolPhone ? `<div class="info">تەلەفۆن: ${schoolPhone}</div>` : ''}
+                ${fiscalYearLabel ? `<div class="fiscal-year-badge">ساڵی خوێندن: ${fiscalYearLabel}</div>` : ''}
+              </div>
             </div>
             
-            <div class="receipt-title">وەسڵی وەرگرتنی قیست</div>
-            <div class="receipt-number">
-              ژمارەی وەسڵ: P-${String(payment.id).padStart(6, '0')}
-            </div>
-            
-            <div class="content">
-              <div class="row">
-                <span class="label">ناوی قوتابی:</span>
-                <span class="value">${student.fullName}</span>
-              </div>
-              <div class="row">
-                <span class="label">پۆل:</span>
-                <span class="value">${student.grade || "نەدیاریکراو"}</span>
-              </div>
-              <div class="row">
-                <span class="label">ژمارەی مۆبایل:</span>
-                <span class="value">${student.mobile}</span>
-              </div>
-              <div class="row">
-                <span class="label">بەرواری وەرگرتن:</span>
-                <span class="value">${format(new Date(payment.date), "yyyy-MM-dd")}</span>
+            <div class="main-content">
+              <div class="info-section">
+                <div class="info-card">
+                  <div class="info-row">
+                    <span class="info-label">ناوی قوتابی:</span>
+                    <span class="info-value">${student.fullName}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">پۆل:</span>
+                    <span class="info-value">${student.grade || "نەدیاریکراو"}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">ژمارەی مۆبایل:</span>
+                    <span class="info-value">${student.mobile}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">بەرواری وەرگرتن:</span>
+                    <span class="info-value">${format(new Date(payment.date), "yyyy-MM-dd")}</span>
+                  </div>
+                </div>
+                
+                <div class="summary-card">
+                  <div class="summary-row total">
+                    <span>کۆی مەبلەغی خوێندن:</span>
+                    <span style="font-weight: bold;">${Number(student.tuitionFee).toLocaleString()} د.ع</span>
+                  </div>
+                  <div class="summary-row paid">
+                    <span>کۆی پارەی دراو:</span>
+                    <span style="font-weight: bold; color: #16a34a;">${Number(student.paidAmount).toLocaleString()} د.ع</span>
+                  </div>
+                  <div class="summary-row remaining">
+                    <span>ماوە:</span>
+                    <span style="font-weight: bold; color: #dc2626;">${Number(student.remainingAmount).toLocaleString()} د.ع</span>
+                  </div>
+                  ${Number(student.previousYearDebt || 0) > 0 ? `
+                  <div class="summary-row debt">
+                    <span style="color: #92400e; font-weight: 600;">قەرزی ساڵی پێشوو:</span>
+                    <span style="font-weight: bold; color: #92400e;">${Number(student.previousYearDebt).toLocaleString()} د.ع</span>
+                  </div>
+                  ` : ''}
+                </div>
               </div>
               
-              <div class="amount-box">
-                <div class="amount-number">${amountInfo.number}</div>
-                <div class="amount-words">${amountInfo.words}</div>
-              </div>
-              
-              <div class="summary-box">
-                <div class="summary-row">
-                  <span>کۆی مەبلەغی خوێندن:</span>
-                  <span style="font-weight: bold;">${Number(student.tuitionFee).toLocaleString()} د.ع</span>
-                </div>
-                <div class="summary-row">
-                  <span>کۆی پارەی دراو:</span>
-                  <span style="font-weight: bold; color: #16a34a;">${Number(student.paidAmount).toLocaleString()} د.ع</span>
-                </div>
-                <div class="summary-row">
-                  <span>ماوە:</span>
-                  <span style="font-weight: bold; color: #dc2626;">${Number(student.remainingAmount).toLocaleString()} د.ع</span>
+              <div class="amount-section">
+                <div class="amount-box">
+                  <div class="amount-label">بڕی پارەی وەرگیراو</div>
+                  <div class="amount-number">${amountInfo.number}</div>
+                  <div class="amount-words">${amountInfo.words}</div>
                 </div>
               </div>
-              ${Number(student.previousYearDebt || 0) > 0 ? `
-              <div class="debt-warning">
-                <div class="summary-row" style="color: #92400e;">
-                  <span style="font-weight: bold;">قەرزی ساڵی پێشوو:</span>
-                  <span style="font-weight: bold;">${Number(student.previousYearDebt).toLocaleString()} د.ع</span>
-                </div>
-              </div>
-              ` : ''}
             </div>
             
             <div class="signature-section">
@@ -330,11 +415,11 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[420px] p-4">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-base font-bold">پێشبینینی وەسڵ</h2>
+      <DialogContent className="sm:max-w-[480px] p-4">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-lg font-bold text-teal-700">پێشبینینی وەسڵ</h2>
           <div className="flex gap-2">
-            <Button size="sm" onClick={handlePrint} data-testid="button-print-receipt">
+            <Button size="sm" onClick={handlePrint} className="bg-teal-600 hover:bg-teal-700" data-testid="button-print-receipt">
               <Printer className="h-4 w-4 ml-1" /> چاپ
             </Button>
             <Button variant="ghost" size="icon" onClick={onClose}>
@@ -343,85 +428,98 @@ export function PaymentReceipt({ payment, student, onClose }: PaymentReceiptProp
           </div>
         </div>
 
-        <div className="border-2 border-blue-700 rounded-lg p-3 bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden text-sm">
+        <div className="border-3 border-teal-600 rounded-xl p-4 bg-white relative overflow-hidden shadow-lg">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-teal-600 via-amber-400 to-teal-600"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-teal-600 via-amber-400 to-teal-600"></div>
+          
           {logoUrl && (
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-[0.08] pointer-events-none">
-              <img src={logoUrl} alt="واتەرمارک" className="w-32 h-32 object-contain" />
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-[0.06] pointer-events-none">
+              <img src={logoUrl} alt="واتەرمارک" className="w-36 h-36 object-contain" />
             </div>
           )}
           
-          <div className="relative z-10">
-            <div className="text-center bg-gradient-to-r from-blue-800 to-blue-600 text-white py-2 px-3 rounded-md mb-2 -mx-1 -mt-1">
+          <div className="relative z-10 pt-2">
+            <div className="flex justify-between items-start mb-3">
+              <span className="bg-gradient-to-r from-teal-600 to-teal-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
+                وەسڵی وەرگرتنی قیست
+              </span>
+              <span className="bg-gradient-to-r from-amber-400 to-amber-500 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
+                P-{String(payment.id).padStart(6, '0')}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 pb-3 border-b-2 border-gray-200 mb-3">
               {logoUrl && (
-                <img src={logoUrl} alt="لۆگۆ" className="w-10 h-10 object-contain mx-auto mb-1 bg-white rounded-full p-0.5" />
+                <img src={logoUrl} alt="لۆگۆ" className="w-12 h-12 object-contain rounded-full border-2 border-teal-600 p-0.5 bg-white" />
               )}
-              <h1 className="text-base font-bold">{schoolName}</h1>
-              {schoolAddress && <p className="text-blue-200 text-[10px]">{schoolAddress}</p>}
-              {schoolPhone && <p className="text-blue-200 text-[10px]">تەلەفۆن: {schoolPhone}</p>}
-              {fiscalYearLabel && (
-                <p className="text-blue-200 text-xs mt-0.5">ساڵی خوێندن: {fiscalYearLabel}</p>
-              )}
-            </div>
-
-            <div className="text-center bg-gradient-to-r from-blue-700 to-blue-600 text-white py-1.5 rounded-md mb-2">
-              <span className="text-sm font-bold">وەسڵی وەرگرتنی قیست</span>
-            </div>
-
-            <div className="text-center bg-blue-100 border border-blue-300 py-1 rounded-md mb-2">
-              <span className="text-xs font-bold text-blue-700">ژمارەی وەسڵ: P-{String(payment.id).padStart(6, '0')}</span>
-            </div>
-
-            <div className="space-y-1 mb-2">
-              <div className="flex justify-between border-b border-dashed border-blue-300 pb-1 bg-white/70 px-2 py-0.5 rounded text-xs">
-                <span className="text-blue-700 font-medium">ناوی قوتابی:</span>
-                <span className="font-bold text-blue-900">{student.fullName}</span>
-              </div>
-              <div className="flex justify-between border-b border-dashed border-blue-300 pb-1 bg-white/70 px-2 py-0.5 rounded text-xs">
-                <span className="text-blue-700 font-medium">پۆل:</span>
-                <span className="font-bold text-blue-900">{student.grade || "نەدیاریکراو"}</span>
-              </div>
-              <div className="flex justify-between border-b border-dashed border-blue-300 pb-1 bg-white/70 px-2 py-0.5 rounded text-xs">
-                <span className="text-blue-700 font-medium">ژمارەی مۆبایل:</span>
-                <span className="font-bold text-blue-900">{student.mobile}</span>
-              </div>
-              <div className="flex justify-between border-b border-dashed border-blue-300 pb-1 bg-white/70 px-2 py-0.5 rounded text-xs">
-                <span className="text-blue-700 font-medium">بەرواری وەرگرتن:</span>
-                <span className="font-bold text-blue-900">{format(new Date(payment.date), "yyyy-MM-dd")}</span>
+              <div className="text-center">
+                <h1 className="text-lg font-bold text-teal-700">{schoolName}</h1>
+                {schoolAddress && <p className="text-gray-500 text-[10px]">{schoolAddress}</p>}
+                {schoolPhone && <p className="text-gray-500 text-[10px]">تەلەفۆن: {schoolPhone}</p>}
+                {fiscalYearLabel && (
+                  <span className="inline-block mt-1 bg-teal-50 border border-teal-300 text-teal-700 text-[10px] px-2 py-0.5 rounded-full">
+                    ساڵی خوێندن: {fiscalYearLabel}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-800 text-white p-3 rounded-lg text-center mb-2 shadow-md border-2 border-blue-400">
-              <div className="text-xl font-bold mb-1">{amountInfo.number}</div>
-              <div className="bg-white/20 inline-block px-3 py-0.5 rounded-full text-blue-100 text-xs">{amountInfo.words}</div>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200 rounded-lg p-2.5">
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs border-b border-dashed border-teal-200 pb-1">
+                    <span className="text-teal-600 font-medium">ناوی قوتابی:</span>
+                    <span className="font-bold text-teal-800">{student.fullName}</span>
+                  </div>
+                  <div className="flex justify-between text-xs border-b border-dashed border-teal-200 pb-1">
+                    <span className="text-teal-600 font-medium">پۆل:</span>
+                    <span className="font-bold text-teal-800">{student.grade || "نەدیاریکراو"}</span>
+                  </div>
+                  <div className="flex justify-between text-xs border-b border-dashed border-teal-200 pb-1">
+                    <span className="text-teal-600 font-medium">مۆبایل:</span>
+                    <span className="font-bold text-teal-800">{student.mobile}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-teal-600 font-medium">بەروار:</span>
+                    <span className="font-bold text-teal-800">{format(new Date(payment.date), "yyyy-MM-dd")}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-teal-600 via-teal-500 to-teal-600 rounded-lg p-3 text-center text-white shadow-lg border-2 border-teal-300 flex flex-col justify-center">
+                <div className="text-[10px] text-teal-100 mb-1">بڕی پارەی وەرگیراو</div>
+                <div className="text-xl font-bold mb-1 drop-shadow-md">{amountInfo.number}</div>
+                <div className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full text-teal-100 inline-block mx-auto">{amountInfo.words}</div>
+              </div>
             </div>
 
-            <div className="space-y-1 mb-2 bg-white/80 p-2 rounded-md border border-blue-200 text-xs">
-              <div className="flex justify-between">
-                <span className="text-blue-700">کۆی مەبلەغی خوێندن:</span>
-                <span className="font-bold text-blue-900">{Number(student.tuitionFee).toLocaleString()} د.ع</span>
+            <div className="bg-white border border-gray-200 rounded-lg p-2 mb-3 space-y-1">
+              <div className="flex justify-between text-xs bg-teal-50 p-1.5 rounded">
+                <span className="text-teal-700">کۆی مەبلەغی خوێندن:</span>
+                <span className="font-bold text-teal-800">{Number(student.tuitionFee).toLocaleString()} د.ع</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-blue-700">کۆی پارەی دراو:</span>
+              <div className="flex justify-between text-xs bg-green-50 p-1.5 rounded">
+                <span className="text-green-700">کۆی پارەی دراو:</span>
                 <span className="font-bold text-green-600">{Number(student.paidAmount).toLocaleString()} د.ع</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-blue-700">ماوە:</span>
+              <div className="flex justify-between text-xs bg-red-50 p-1.5 rounded">
+                <span className="text-red-700">ماوە:</span>
                 <span className="font-bold text-red-600">{Number(student.remainingAmount).toLocaleString()} د.ع</span>
               </div>
               {Number(student.previousYearDebt || 0) > 0 && (
-                <div className="flex justify-between bg-amber-100 p-1.5 rounded mt-1 border border-amber-300">
+                <div className="flex justify-between text-xs bg-amber-50 p-1.5 rounded border border-amber-300">
                   <span className="text-amber-700 font-medium">قەرزی ساڵی پێشوو:</span>
                   <span className="font-bold text-amber-700">{Number(student.previousYearDebt).toLocaleString()} د.ع</span>
                 </div>
               )}
             </div>
 
-            <div className="flex justify-between pt-2">
-              <div className="text-center w-[45%]">
-                <div className="border-t-2 border-blue-700 mt-6 pt-1 text-blue-700 font-medium text-xs">واژووی بەخێوکار</div>
+            <div className="flex justify-between pt-1">
+              <div className="text-center w-[42%]">
+                <div className="border-t-2 border-teal-600 mt-5 pt-1 text-teal-600 font-medium text-[10px]">واژووی بەخێوکار</div>
               </div>
-              <div className="text-center w-[45%]">
-                <div className="border-t-2 border-blue-700 mt-6 pt-1 text-blue-700 font-medium text-xs">واژووی ژمێریار</div>
+              <div className="text-center w-[42%]">
+                <div className="border-t-2 border-teal-600 mt-5 pt-1 text-teal-600 font-medium text-[10px]">واژووی ژمێریار</div>
               </div>
             </div>
           </div>
