@@ -250,8 +250,8 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
         <title>وەسڵی پارەی خواردن</title>
         <style>
           @page {
-            size: A5 landscape;
-            margin: 8mm;
+            size: A5 portrait;
+            margin: 0;
           }
           * {
             box-sizing: border-box;
@@ -261,204 +261,179 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
           body {
             font-family: 'Vazirmatn', 'Nrt', Arial, sans-serif;
             direction: rtl;
-            padding: 0;
-            background: #f8fafc;
+            background: #f5f5f5;
+            min-height: 100vh;
           }
           .receipt {
-            width: 210mm;
-            height: 148mm;
-            background: #ffffff;
-            border: 3px solid #ea580c;
-            border-radius: 16px;
+            width: 148mm;
+            min-height: 210mm;
+            background: #f8f8f8;
+            margin: 0 auto;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
           }
-          .decorative-top {
+          .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+            padding: 20px 25px 30px;
+            position: relative;
+            overflow: hidden;
+          }
+          .header::before {
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 8px;
-            background: linear-gradient(90deg, #ea580c 0%, #f97316 25%, #fbbf24 50%, #f97316 75%, #ea580c 100%);
-          }
-          .decorative-bottom {
-            position: absolute;
             bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='80' fill='none' stroke='%23ffffff' stroke-width='0.5' opacity='0.1'/%3E%3Ccircle cx='100' cy='100' r='60' fill='none' stroke='%23ffffff' stroke-width='0.5' opacity='0.1'/%3E%3Ccircle cx='100' cy='100' r='40' fill='none' stroke='%23ffffff' stroke-width='0.5' opacity='0.1'/%3E%3Cpath d='M100 20 L100 180 M20 100 L180 100 M35 35 L165 165 M165 35 L35 165' stroke='%23ffffff' stroke-width='0.3' opacity='0.08'/%3E%3C/svg%3E");
+            background-size: 150px;
+            background-position: left center;
+            background-repeat: no-repeat;
+            opacity: 0.6;
+          }
+          .orange-bar-top {
+            position: absolute;
+            top: 0;
             left: 0;
             right: 0;
-            height: 8px;
-            background: linear-gradient(90deg, #ea580c 0%, #f97316 25%, #fbbf24 50%, #f97316 75%, #ea580c 100%);
+            height: 6px;
+            background: linear-gradient(90deg, #ea580c, #f97316, #fbbf24);
           }
-          .corner-decoration {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            border: 3px solid #f97316;
-            opacity: 0.3;
-          }
-          .corner-tl { top: 15px; right: 15px; border-radius: 0 0 0 30px; border-top: none; border-right: none; }
-          .corner-tr { top: 15px; left: 15px; border-radius: 0 0 30px 0; border-top: none; border-left: none; }
-          .corner-bl { bottom: 15px; right: 15px; border-radius: 0 30px 0 0; border-bottom: none; border-right: none; }
-          .corner-br { bottom: 15px; left: 15px; border-radius: 30px 0 0 0; border-bottom: none; border-left: none; }
-          .watermark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            opacity: 0.06;
-            z-index: 0;
-            pointer-events: none;
-          }
-          .watermark img {
-            width: 200px;
-            height: 200px;
-            object-fit: contain;
-          }
-          .content-wrapper {
+          .header-content {
             position: relative;
             z-index: 1;
-            padding: 20px 25px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-          }
-          .header {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 15px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #e2e8f0;
-            margin-bottom: 12px;
           }
-          .header-logo {
-            width: 55px;
-            height: 55px;
+          .logo-container {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: white;
+            padding: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+          }
+          .logo-container img {
+            width: 100%;
+            height: 100%;
             object-fit: contain;
             border-radius: 50%;
-            border: 3px solid #ea580c;
-            padding: 3px;
-            background: white;
           }
           .header-text {
-            text-align: center;
-          }
-          .header-text h1 {
-            font-size: 20px;
-            color: #ea580c;
-            margin-bottom: 3px;
-            font-weight: bold;
-          }
-          .header-text .info {
-            font-size: 10px;
-            color: #64748b;
-          }
-          .receipt-badge {
-            position: absolute;
-            top: 25px;
-            left: 25px;
-            background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
-          }
-          .receipt-number-badge {
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            color: #78350f;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
-          }
-          .main-content {
-            display: flex;
-            gap: 20px;
             flex: 1;
+          }
+          .school-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ea580c;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+          }
+          .school-tagline {
+            font-size: 11px;
+            color: #e5e5e5;
+            margin-bottom: 8px;
+          }
+          .header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            font-size: 10px;
+            color: #d1d5db;
+          }
+          .header-info-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          }
+          .receipt-type-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #ea580c, #f97316);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(234, 88, 12, 0.4);
+          }
+          .body {
+            padding: 20px 25px;
+            background: #f8f8f8;
+          }
+          .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #ea580c;
+            margin-bottom: 12px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #ea580c;
+            display: inline-block;
           }
           .info-section {
-            flex: 1;
-          }
-          .info-card {
-            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-            border: 1px solid #fed7aa;
-            border-radius: 12px;
+            background: white;
+            border-radius: 10px;
             padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
           }
           .info-row {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
-            border-bottom: 1px dashed #fed7aa;
-            font-size: 12px;
+            border-bottom: 1px dotted #e5e5e5;
+            font-size: 11px;
           }
           .info-row:last-child {
             border-bottom: none;
           }
           .info-label {
-            color: #ea580c;
-            font-weight: 600;
+            color: #666;
           }
           .info-value {
-            color: #9a3412;
+            color: #1a1a2e;
             font-weight: bold;
           }
           .amount-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-          }
-          .amount-box {
-            background: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #ea580c 100%);
-            border-radius: 16px;
-            padding: 25px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 12px;
+            padding: 20px;
             text-align: center;
-            box-shadow: 0 8px 25px rgba(234, 88, 12, 0.35);
-            border: 3px solid #fdba74;
+            margin-bottom: 15px;
             position: relative;
             overflow: hidden;
           }
-          .amount-box::before {
+          .amount-section::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-            animation: shimmer 3s infinite;
-          }
-          @keyframes shimmer {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(234,88,12,0.1), transparent);
           }
           .amount-label {
-            font-size: 12px;
-            color: #fed7aa;
+            font-size: 11px;
+            color: #ea580c;
             margin-bottom: 8px;
             position: relative;
           }
           .amount-number {
             font-size: 32px;
             font-weight: bold;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-            margin-bottom: 10px;
+            color: #ea580c;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 8px;
             position: relative;
           }
           .amount-words {
             font-size: 11px;
-            color: #ffedd5;
-            background: rgba(255,255,255,0.15);
-            padding: 6px 14px;
+            color: #e5e5e5;
+            background: rgba(234,88,12,0.2);
+            padding: 6px 16px;
             border-radius: 20px;
             display: inline-block;
             position: relative;
@@ -466,108 +441,127 @@ function FoodPaymentRow({ payment, studentName, studentGrade, rowNumber }: { pay
           .signature-section {
             display: flex;
             justify-content: space-between;
-            margin-top: auto;
-            padding-top: 15px;
+            padding: 15px 0;
+            margin-top: 10px;
           }
           .signature-box {
             width: 42%;
             text-align: center;
           }
           .signature-line {
-            border-top: 2px solid #ea580c;
-            margin-top: 25px;
+            border-top: 2px solid #1a1a2e;
+            margin-top: 30px;
             padding-top: 8px;
-            color: #ea580c;
+            font-size: 10px;
+            color: #1a1a2e;
             font-weight: 600;
-            font-size: 11px;
           }
           .footer {
-            text-align: center;
-            font-size: 9px;
-            color: #94a3b8;
-            margin-top: 10px;
-            padding-top: 8px;
-            border-top: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 12px 25px;
+            position: relative;
           }
-          .fiscal-year-badge {
-            display: inline-block;
-            background: #fff7ed;
-            border: 1px solid #f97316;
+          .orange-bar-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #ea580c, #f97316, #fbbf24);
+          }
+          .footer-text {
+            text-align: center;
+            font-size: 10px;
+            color: #d1d5db;
+            position: relative;
+            z-index: 1;
+          }
+          .footer-thanks {
             color: #ea580c;
-            padding: 3px 12px;
+            font-weight: bold;
+            margin-bottom: 3px;
+          }
+          .receipt-number {
+            position: absolute;
+            top: 12px;
+            left: 25px;
+            background: rgba(234,88,12,0.2);
+            color: #ea580c;
+            padding: 4px 12px;
             border-radius: 12px;
             font-size: 10px;
-            margin-top: 5px;
+            font-weight: bold;
           }
         </style>
       </head>
       <body>
         <div class="receipt">
-          <div class="decorative-top"></div>
-          <div class="decorative-bottom"></div>
-          <div class="corner-decoration corner-tl"></div>
-          <div class="corner-decoration corner-tr"></div>
-          <div class="corner-decoration corner-bl"></div>
-          <div class="corner-decoration corner-br"></div>
-          ${logoUrl ? `<div class="watermark"><img src="${logoUrl}" alt="لۆگۆ" /></div>` : ''}
-          
-          <div class="receipt-badge">وەسڵی پارەی خواردن</div>
-          <div class="receipt-number-badge">F-${String(payment.id).padStart(6, '0')}</div>
-          
-          <div class="content-wrapper">
-            <div class="header">
-              ${logoUrl ? `<img src="${logoUrl}" alt="لۆگۆ" class="header-logo" />` : ''}
+          <div class="header">
+            <div class="orange-bar-top"></div>
+            <div class="receipt-number">F-${String(payment.id).padStart(6, '0')}</div>
+            <div class="header-content">
+              ${logoUrl ? `
+              <div class="logo-container">
+                <img src="${logoUrl}" alt="لۆگۆ" />
+              </div>
+              ` : ''}
               <div class="header-text">
-                <h1>${schoolName}</h1>
-                ${schoolAddress ? `<div class="info">${schoolAddress}</div>` : ''}
-                ${schoolPhone ? `<div class="info">تەلەفۆن: ${schoolPhone}</div>` : ''}
-                ${fiscalYearLabel ? `<div class="fiscal-year-badge">ساڵی خوێندن: ${fiscalYearLabel}</div>` : ''}
+                <div class="school-name">${schoolName}</div>
+                <div class="school-tagline">سیستەمی ژمێریاری قوتابخانە</div>
+                <div class="header-info">
+                  ${schoolAddress ? `<div class="header-info-item">📍 ${schoolAddress}</div>` : ''}
+                  ${schoolPhone ? `<div class="header-info-item">📞 ${schoolPhone}</div>` : ''}
+                  ${fiscalYearLabel ? `<div class="header-info-item">📅 ساڵی خوێندن: ${fiscalYearLabel}</div>` : ''}
+                </div>
               </div>
             </div>
             
-            <div class="main-content">
-              <div class="info-section">
-                <div class="info-card">
-                  <div class="info-row">
-                    <span class="info-label">ناوی قوتابی:</span>
-                    <span class="info-value">${studentName}</span>
-                  </div>
-                  <div class="info-row">
-                    <span class="info-label">پۆل:</span>
-                    <span class="info-value">${studentGrade || "نەدیاریکراو"}</span>
-                  </div>
-                  <div class="info-row">
-                    <span class="info-label">مانگ:</span>
-                    <span class="info-value">${payment.month}</span>
-                  </div>
-                  <div class="info-row">
-                    <span class="info-label">بەرواری وەرگرتن:</span>
-                    <span class="info-value">${format(new Date(payment.date), "yyyy-MM-dd")}</span>
-                  </div>
-                </div>
+            <div class="receipt-type-badge">وەسڵی خواردن</div>
+          </div>
+          
+          <div class="body">
+            <div class="section-title">زانیاری قوتابی :</div>
+            <div class="info-section">
+              <div class="info-row">
+                <span class="info-label">ناوی قوتابی:</span>
+                <span class="info-value">${studentName}</span>
               </div>
-              
-              <div class="amount-section">
-                <div class="amount-box">
-                  <div class="amount-label">بڕی پارەی وەرگیراو</div>
-                  <div class="amount-number">${amountInfo.number}</div>
-                  <div class="amount-words">${amountInfo.words}</div>
-                </div>
+              <div class="info-row">
+                <span class="info-label">پۆل:</span>
+                <span class="info-value">${studentGrade || "نەدیاریکراو"}</span>
               </div>
+                  <div class="info-row">
+                <span class="info-label">مانگ:</span>
+                <span class="info-value">${payment.month}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">بەرواری وەرگرتن:</span>
+                <span class="info-value">${format(new Date(payment.date), "yyyy-MM-dd")}</span>
+              </div>
+            </div>
+            
+            <div class="amount-section">
+              <div class="amount-label">بڕی پارەی وەرگیراو</div>
+              <div class="amount-number">${amountInfo.number}</div>
+              <div class="amount-words">${amountInfo.words}</div>
             </div>
             
             <div class="signature-section">
               <div class="signature-box">
-                <div class="signature-line">واژووی بەخێوکار</div>
+                <div class="signature-line">مۆر و واژووی بەخێوکار</div>
               </div>
               <div class="signature-box">
-                <div class="signature-line">واژووی ژمێریار</div>
+                <div class="signature-line">مۆر و واژووی ژمێریار</div>
               </div>
             </div>
-            
-            <div class="footer">
-              ئەم وەسڵە لە بەرواری ${format(new Date(), "yyyy-MM-dd")} چاپکراوە
+          </div>
+          
+          <div class="footer">
+            <div class="footer-text">
+              <div class="footer-thanks">سوپاس بۆ متمانەکەتان</div>
+              <div>ئەم وەسڵە لە بەرواری ${format(new Date(), "yyyy-MM-dd")} چاپکراوە</div>
             </div>
+            <div class="orange-bar-bottom"></div>
           </div>
         </div>
         <script>
