@@ -73,6 +73,8 @@ export default function StudentsPage() {
     
     const logoUrl = settings?.logoUrl || "";
     const schoolName = settings?.schoolName || "قوتابخانەی لوتکەی ناحکومی";
+    const schoolAddress = settings?.address || "";
+    const schoolPhone = settings?.phone || "";
     const logoHtml = logoUrl 
       ? `<img src="${logoUrl}" alt="لۆگۆ" style="width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px;" />`
       : '';
@@ -201,6 +203,8 @@ export default function StudentsPage() {
             ${logoHtml}
             <h1>${schoolName}</h1>
             <p>سیستەمی ژمێریاری قوتابخانە</p>
+            ${schoolAddress ? `<p style="margin-top: 4px;">📍 ${schoolAddress}</p>` : ''}
+            ${schoolPhone ? `<p>📞 ${schoolPhone}</p>` : ''}
           </div>
           
           <div class="receipt-title">زانیاری قوتابی</div>
