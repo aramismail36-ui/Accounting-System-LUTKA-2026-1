@@ -34,7 +34,12 @@ export default function SchoolSettingsPage() {
 
   useEffect(() => {
     if (settings) {
-      form.reset(settings);
+      form.reset({
+        ...settings,
+        address: settings.address || "",
+        phone: settings.phone || "",
+        logoUrl: settings.logoUrl || "",
+      });
       if (settings.logoUrl) {
         setLogoPreview(settings.logoUrl);
       }
