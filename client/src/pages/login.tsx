@@ -38,7 +38,7 @@ export default function LoginPage() {
       {/* Copyright Footer */}
       <footer className="py-4 text-center">
         <p className="text-sm text-slate-500">
-          مافى ئەم بەرهەمە پاریزراوە بۆ Aram kurdistani
+          مافى ئەم بەرهەمە پارێزراوە بۆ Aram Kurdistani
         </p>
       </footer>
     </div>

@@ -242,7 +242,7 @@ export default function ShareholderDashboardPage() {
       {/* Copyright Footer */}
       <footer className="mt-8 pt-4 border-t border-slate-200 text-center">
         <p className="text-sm text-slate-500">
-          مافى ئەم بەرهەمە پاریزراوە بۆ Aram kurdistani
+          مافى ئەم بەرهەمە پارێزراوە بۆ Aram Kurdistani
         </p>
       </footer>
     </div>

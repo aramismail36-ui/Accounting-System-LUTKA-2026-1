@@ -140,7 +140,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
         {/* Copyright Footer */}
         <footer className="py-4 px-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-center">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            مافى ئەم بەرهەمە پاریزراوە بۆ Aram kurdistani
+            مافى ئەم بەرهەمە پارێزراوە بۆ Aram Kurdistani
           </p>
         </footer>
       </main>
