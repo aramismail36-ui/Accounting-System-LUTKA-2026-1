@@ -238,6 +238,13 @@ export default function ShareholderDashboardPage() {
       <div className="text-center text-sm text-muted-foreground">
         چوونەژوورەوە وەک: {user?.firstName} {user?.lastName} ({user?.email})
       </div>
+      
+      {/* Copyright Footer */}
+      <footer className="mt-8 pt-4 border-t border-slate-200 text-center">
+        <p className="text-sm text-slate-500">
+          مافى ئەم بەرهەمە پاریزراوە بۆ Aram kurdistani
+        </p>
+      </footer>
     </div>
   );
 }
