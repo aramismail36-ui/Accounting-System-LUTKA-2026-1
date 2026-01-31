@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
-import { createServer } from "http";
+import { createServer, IncomingMessage } from "http";
 
 const app = express();
 const httpServer = createServer(app);
@@ -16,7 +16,7 @@ declare module "http" {
 // Middleware to capture raw JSON body
 app.use(
   express.json({
-    verify: (req, _res, buf: Buffer) => {
+    verify: (req: IncomingMessage, _res, buf: Buffer) => {
       req.rawBody = buf;
     },
   })
@@ -24,7 +24,7 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
-// Simple logger function
+// Logger function
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -36,15 +36,14 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
-// Middleware to log API requests and responses
+// Middleware to log API requests and JSON responses
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   const path = req.path;
 
-  // To capture JSON response safely in TypeScript
+  // Capture JSON response
   let capturedJsonResponse: unknown;
   const originalJson = res.json.bind(res);
-
   res.json = (body: unknown) => {
     capturedJsonResponse = body;
     return originalJson(body);
@@ -54,7 +53,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
+      if (capturedJsonResponse !== undefined) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
       log(logLine);
@@ -68,10 +67,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 (async () => {
   await registerRoutes(httpServer, app);
 
-  // Error handling middleware
-  app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+  // Global error handling
+  app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+    const status =
+      (err as { status?: number; statusCode?: number })?.status ||
+      (err as { status?: number; statusCode?: number })?.statusCode ||
+      500;
+    const message =
+      (err as { message?: string })?.message || "Internal Server Error";
 
     console.error("Internal Server Error:", err);
 
@@ -79,10 +82,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       return next(err);
     }
 
-    return res.status(status).json({ message });
+    res.status(status).json({ message });
   });
 
-  // Serve static files in production, or setup Vite in development
+  // Setup static files in production or Vite in development
   if (process.env.NODE_ENV === "production") {
     serveStatic(app);
   } else {
@@ -90,8 +93,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     await setupVite(httpServer, app);
   }
 
-  // Start the server
-  const port = parseInt(process.env.PORT || "5000", 10);
+  // Start server on PORT env or default 5000
+  const port = parseInt(process.env.PORT ?? "5000", 10);
   httpServer.listen(
     { port, host: "0.0.0.0", reusePort: true },
     () => log(`Server running on port ${port}`)
